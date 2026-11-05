@@ -840,12 +840,15 @@ const Lanyard = ({
       start();
     };
 
+    let currentViewHeight = 4.8;
+
     const frameView = () => {
       const s = settingsRef.current;
       const aspect = view.width / view.height;
       let viewHeight = layout.height / clampVal(s.size, 0.15, 0.9);
       const minimumWidth = layout.width / 0.72;
       if (viewHeight * aspect < minimumWidth) viewHeight = minimumWidth / aspect;
+      currentViewHeight = viewHeight;
       camera.aspect = aspect;
       camera.position.set(0, 0, viewHeight / 2 / Math.tan((FOV * Math.PI) / 360));
       camera.lookAt(0, 0, 0);
@@ -1113,6 +1116,12 @@ const Lanyard = ({
       if (sim.grab) {
         if (press && Math.hypot(event.clientX - press.x, event.clientY - press.y) > 6) press = null;
         raycaster.ray.at(sim.grab.reach, sim.grab.target);
+        // Soft-clamp target within camera frustum so the card never gets cropped when dragged
+        const aspect = view.width / Math.max(1, view.height);
+        const halfW = (currentViewHeight * aspect) * 0.44;
+        const halfH = currentViewHeight * 0.44;
+        sim.grab.target.x = clampVal(sim.grab.target.x, -halfW, halfW);
+        sim.grab.target.y = clampVal(sim.grab.target.y, -halfH, halfH);
         start();
         return;
       }

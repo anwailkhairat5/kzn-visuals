@@ -468,9 +468,9 @@ footer {
   .stage {
     position: relative;
     width: 100%;
-    height: 70vh;
-    min-height: 440px;
-    max-height: 540px;
+    height: 74vh;
+    min-height: 480px;
+    max-height: 580px;
     top: auto;
     inset: auto;
     pointer-events: auto;
@@ -599,14 +599,25 @@ footer {
     text-align: left;
     align-items: flex-start;
   }
-  .stage {
-    grid-column: 2;
+    .stage {
+    grid-column: 1 / -1;
     grid-row: 1;
     position: absolute;
-    inset: 0;
-    width: 100%;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100vw;
     height: 100%;
     pointer-events: none;
+    z-index: 5;
+    overflow: visible;
+  }
+  .stage .w-full,
+  .stage .lanyard {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
   }
   .mobile-scroll-hint {
     display: none !important;
