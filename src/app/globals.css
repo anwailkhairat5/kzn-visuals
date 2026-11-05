@@ -411,21 +411,33 @@ footer {
 }
 
 @media (max-width: 900px) {
+  nav {
+    height: 72px;
+  }
   nav .logo {
     display: none;
   }
   nav .wrap {
     justify-content: center;
-    padding-inline: 12px;
+    padding-inline: 8px;
+    overflow: visible;
   }
   .nav-gooey-wrapper {
-    max-width: 100%;
+    max-width: 100vw;
     overflow-x: auto;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
   }
-  .nav-gooey-wrapper::-webkit-scrollbar {
-    display: none;
+  .nav-gooey-wrapper::-webkit-scrollbar,
+  nav .wrap::-webkit-scrollbar,
+  .gooey-nav::-webkit-scrollbar,
+  .gooey-nav__stage::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    background: transparent !important;
   }
   nav ul {
     overflow-x: auto;
@@ -434,24 +446,139 @@ footer {
     padding: 10px 14px;
     font-size: 0.88rem;
   }
-  .hero {
-    grid-template-columns: 1fr;
-    padding-top: 100px;
+
+  .wrap {
+    padding-inline: clamp(16px, 5vw, 24px);
   }
+
+  .hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: auto;
+    padding-top: 76px;
+    padding-bottom: 72px;
+    grid-template-columns: none;
+  }
+
+  /* 1. KARTU LANYARD 3D MUNCUL PERTAMA DI VIEWPORT HP */
   .stage {
+    order: 1;
     position: relative;
     width: 100%;
-    height: 560px;
+    height: 65vh;
+    min-height: 420px;
+    max-height: 520px;
     top: auto;
     inset: auto;
     pointer-events: auto;
+    margin-bottom: 4px;
   }
+
+  /* 2. PETUNJUK PANDUAN SCROLL HALUS */
+  .mobile-scroll-hint {
+    order: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 16px;
+    border-radius: 999px;
+    background: rgba(47, 119, 255, 0.12);
+    border: 1px solid rgba(47, 119, 255, 0.3);
+    color: #93c5fd;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-bottom: 44px;
+    animation: bounce 2s infinite;
+  }
+
+  @keyframes bounce {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(6px);
+    }
+  }
+
+  /* 3. TEKS WELCOME, HI I'M ANWAIL MUNCUL KETIKA SCROLL KE BAWAH DENGAN RUANG LEGA */
+  .hero-content {
+    order: 3;
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: 520px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding-top: 12px;
+    padding-bottom: 24px;
+  }
+
+  .eyebrow {
+    font-size: 0.78rem;
+    letter-spacing: 0.28em;
+    color: #93c5fd;
+    margin-bottom: 12px;
+    text-align: center;
+  }
+
+  .hero-heading {
+    align-items: center;
+    text-align: center;
+    margin: 4px 0 16px;
+    gap: 4px;
+  }
+
+  .hero-greeting {
+    font-size: 1.55rem;
+  }
+
+  .role {
+    font-size: 1.25rem;
+    margin: 0 0 18px;
+    text-align: center;
+    color: #38bdf8;
+    line-height: 1.35;
+  }
+
+  .lead {
+    font-size: 0.98rem;
+    line-height: 1.8;
+    color: #cbd5e1;
+    margin: 0 0 32px;
+    text-align: center;
+    padding-inline: 4px;
+  }
+
+  .btns {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+    gap: 12px;
+  }
+
+  .btn {
+    height: 48px;
+    padding: 0 18px;
+    font-size: 0.88rem;
+    border-radius: 999px;
+    flex: 1 1 calc(50% - 12px);
+    min-width: 130px;
+    max-width: 200px;
+    justify-content: center;
+  }
+
   .down {
     display: none;
   }
-  .btn {
-    height: 52px;
-    padding: 0 24px;
+}
+
+@media (min-width: 901px) {
+  .mobile-scroll-hint {
+    display: none !important;
   }
 }
 

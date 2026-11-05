@@ -146,7 +146,8 @@ export default function Home() {
       <main>
         {/* ── HERO SECTION ── */}
         <header className="wrap hero" id="home">
-          <div style={{ position: 'relative', zIndex: 2 }}>
+          {/* ── TEKS HERO (DI MOBILE MUNCUL SETELAH SCROLL KE BAWAH) ── */}
+          <div className="hero-content">
             <div className="eyebrow">{config.general?.eyebrow || 'WELCOME TO MY PORTFOLIO'}</div>
             <h1 className="hero-heading">
               <span className="hero-greeting">Hi, I’m</span>
@@ -167,7 +168,7 @@ export default function Home() {
                     perspective={900}
                     autoOrbit={config.depthText?.autoOrbit ?? true}
                     orbitSpeed={config.depthText?.orbitSpeed ?? 0.35}
-                    fontSize="clamp(1.75rem, 5vw, 4.4rem)"
+                    fontSize={isMobile ? 'clamp(1.75rem, 7vw, 2.75rem)' : 'clamp(1.75rem, 5vw, 4.4rem)'}
                     fontWeight={900}
                     shadow={config.depthText?.shadow ?? true}
                     outline={false}
@@ -218,7 +219,7 @@ export default function Home() {
             </div>
           </div>
 
-          {/* ── 3D LANYARD INTERACTIVE PHYSICS COMPONENT ── */}
+          {/* ── 3D LANYARD CARD (DI MOBILE MUNCUL PERTAMA DI PALING ATAS) ── */}
           <div className="stage" id="stage">
             {mounted && (
               <div className="w-full h-full relative">
@@ -231,9 +232,9 @@ export default function Home() {
                   orientation="portrait"
                   finish={(config.lanyard?.finish as any) || 'glossy'}
                   cornerRadius={0.3}
-                  size={isMobile ? 0.40 : 0.46}
+                  size={isMobile ? 0.35 : 0.46}
                   anchor={isMobile ? 'center' : 0.74}
-                  strapLength={isMobile ? 0.28 : 0.32}
+                  strapLength={isMobile ? 0.22 : 0.32}
                   strapColor={config.lanyard?.strapColor || '#04050d'}
                   strapWidth={0.65}
                   metal="silver"
@@ -246,6 +247,14 @@ export default function Home() {
                 />
               </div>
             )}
+          </div>
+
+          {/* ── INDIKATOR PANDUAN SCROLL DI MOBILE ── */}
+          <div className="mobile-scroll-hint">
+            <span>Scroll ke bawah untuk biodata & karya</span>
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+            </svg>
           </div>
 
           {/* Scroll Down Button */}
