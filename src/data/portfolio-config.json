@@ -13,8 +13,8 @@
   },
   "depthText": {
     "text": "Anwail Khairat",
-    "faceColor": "#ffffff",
-    "depthColor": "#2f77ff",
+    "faceColor": "#00bfff",
+    "depthColor": "#822eff",
     "layers": 30,
     "depth": 2,
     "tilt": 7.5,
