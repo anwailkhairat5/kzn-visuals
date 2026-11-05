@@ -28,7 +28,7 @@ export default function Home() {
 
   useEffect(() => {
     setMounted(true);
-    const checkMobile = () => setIsMobile(window.innerWidth < 900);
+    const checkMobile = () => setIsMobile(window.innerWidth <= 1024);
     checkMobile();
 
     window.addEventListener('resize', checkMobile);
@@ -146,7 +146,45 @@ export default function Home() {
       <main>
         {/* ── HERO SECTION ── */}
         <header className="wrap hero" id="home">
-          {/* ── TEKS HERO (DI MOBILE MUNCUL SETELAH SCROLL KE BAWAH) ── */}
+          {/* ── 1. 3D LANYARD CARD (MUNCUL PERTAMA DI PALING ATAS PADA MOBILE & IPAD) ── */}
+          <div className="stage" id="stage">
+            {mounted && (
+              <div className="w-full h-full relative">
+                <Lanyard
+                  frontImage={config.lanyard?.frontImage || '/card-front.png'}
+                  backImage={config.lanyard?.backImage || '/card-back.png'}
+                  strapImage={config.lanyard?.strapImage || '/band.png'}
+                  imageFit="cover"
+                  cardColor={config.lanyard?.cardColor || '#0d6f9d'}
+                  orientation="portrait"
+                  finish={(config.lanyard?.finish as any) || 'glossy'}
+                  cornerRadius={0.3}
+                  size={isMobile ? 0.38 : 0.46}
+                  anchor={isMobile ? 'center' : 0.74}
+                  strapLength={isMobile ? 0.24 : 0.32}
+                  strapColor={config.lanyard?.strapColor || '#04050d'}
+                  strapWidth={0.65}
+                  metal="silver"
+                  gravity={config.lanyard?.gravity ?? 1}
+                  damping={config.lanyard?.damping ?? 0.5}
+                  elasticity={config.lanyard?.elasticity ?? 0.5}
+                  breeze={config.lanyard?.breeze ?? 0.4}
+                  interactive={true}
+                  intro={true}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* ── 2. INDIKATOR PANDUAN SCROLL DI MOBILE & IPAD ── */}
+          <div className="mobile-scroll-hint">
+            <span>Geser kartu 3D • Scroll ke bawah untuk info</span>
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+            </svg>
+          </div>
+
+          {/* ── 3. TEKS HERO (MUNCUL SETELAH SCROLL KE BAWAH PADA MOBILE & IPAD) ── */}
           <div className="hero-content">
             <div className="eyebrow">{config.general?.eyebrow || 'WELCOME TO MY PORTFOLIO'}</div>
             <h1 className="hero-heading">
@@ -168,7 +206,7 @@ export default function Home() {
                     perspective={900}
                     autoOrbit={config.depthText?.autoOrbit ?? true}
                     orbitSpeed={config.depthText?.orbitSpeed ?? 0.35}
-                    fontSize={isMobile ? 'clamp(1.75rem, 7vw, 2.75rem)' : 'clamp(1.75rem, 5vw, 4.4rem)'}
+                    fontSize={isMobile ? 'clamp(2.5rem, 9.5vw, 4.2rem)' : 'clamp(2.8rem, 6vw, 4.8rem)'}
                     fontWeight={900}
                     shadow={config.depthText?.shadow ?? true}
                     outline={false}
@@ -219,45 +257,7 @@ export default function Home() {
             </div>
           </div>
 
-          {/* ── 3D LANYARD CARD (DI MOBILE MUNCUL PERTAMA DI PALING ATAS) ── */}
-          <div className="stage" id="stage">
-            {mounted && (
-              <div className="w-full h-full relative">
-                <Lanyard
-                  frontImage={config.lanyard?.frontImage || '/card-front.png'}
-                  backImage={config.lanyard?.backImage || '/card-back.png'}
-                  strapImage={config.lanyard?.strapImage || '/band.png'}
-                  imageFit="cover"
-                  cardColor={config.lanyard?.cardColor || '#0d6f9d'}
-                  orientation="portrait"
-                  finish={(config.lanyard?.finish as any) || 'glossy'}
-                  cornerRadius={0.3}
-                  size={isMobile ? 0.35 : 0.46}
-                  anchor={isMobile ? 'center' : 0.74}
-                  strapLength={isMobile ? 0.22 : 0.32}
-                  strapColor={config.lanyard?.strapColor || '#04050d'}
-                  strapWidth={0.65}
-                  metal="silver"
-                  gravity={config.lanyard?.gravity ?? 1}
-                  damping={config.lanyard?.damping ?? 0.5}
-                  elasticity={config.lanyard?.elasticity ?? 0.5}
-                  breeze={config.lanyard?.breeze ?? 0.4}
-                  interactive={true}
-                  intro={true}
-                />
-              </div>
-            )}
-          </div>
-
-          {/* ── INDIKATOR PANDUAN SCROLL DI MOBILE ── */}
-          <div className="mobile-scroll-hint">
-            <span>Scroll ke bawah untuk biodata & karya</span>
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-            </svg>
-          </div>
-
-          {/* Scroll Down Button */}
+          {/* Scroll Down Button for Desktop */}
           <a className="down" href="#about" aria-label="Scroll ke bawah">
             <svg viewBox="0 0 24 24">
               <path d="M12 5v14m0 0l-6-6m6 6l6-6" />

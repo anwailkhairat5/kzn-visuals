@@ -14,11 +14,29 @@
 }
 
 .gooey-nav--sm {
-  --gn-pad: 5px;
+  --gn-pad: 4px;
   --gn-gap: 2px;
-  --gn-font: 13px;
-  --gn-x: 13px;
-  --gn-y: 7px;
+  --gn-font: 12px;
+  --gn-x: 10px;
+  --gn-y: 6px;
+}
+
+@media (max-width: 640px) {
+  .gooey-nav {
+    --gn-pad: 4px !important;
+    --gn-gap: 2px !important;
+    --gn-font: 11.5px !important;
+    --gn-x: 8.5px !important;
+    --gn-y: 6px !important;
+    max-width: 98vw;
+  }
+  .gooey-nav--sm {
+    --gn-pad: 3px !important;
+    --gn-gap: 2px !important;
+    --gn-font: 11px !important;
+    --gn-x: 7.5px !important;
+    --gn-y: 5.5px !important;
+  }
 }
 
 .gooey-nav--lg {
