@@ -850,7 +850,9 @@ const Lanyard = ({
       if (viewHeight * aspect < minimumWidth) viewHeight = minimumWidth / aspect;
       currentViewHeight = viewHeight;
       camera.aspect = aspect;
-      camera.position.set(0, 0, viewHeight / 2 / Math.tan((FOV * Math.PI) / 360));
+      // Extra vertical headroom (viewHeight + 0.6) so top strap never clips
+      const cameraFrustumHeight = viewHeight + 0.6;
+      camera.position.set(0, 0, cameraFrustumHeight / 2 / Math.tan((FOV * Math.PI) / 360));
       camera.lookAt(0, 0, 0);
       camera.updateProjectionMatrix();
       camera.updateMatrixWorld();
@@ -859,7 +861,7 @@ const Lanyard = ({
       foilUniforms.foilTop.value.set(0.5, 4.5, 8).normalize().transformDirection(camera.matrixWorldInverse);
       const anchorRatio = typeof s.anchor === 'number' ? s.anchor : (ANCHORS[s.anchor] ?? 0.5);
       const anchorX = (anchorRatio - 0.5) * (viewHeight * aspect);
-      const anchorY = viewHeight / 2 + 0.2;
+      const anchorY = viewHeight / 2 + 0.15;
       const cardTop = viewHeight / 2 - viewHeight * mix(0.12, 0.42, clampVal(s.strapLength, 0, 1));
       const hangTop = cardTop + (layout.hangY - layout.height / 2);
       sim.anchor.set(anchorX, anchorY, 0);
@@ -1116,12 +1118,15 @@ const Lanyard = ({
       if (sim.grab) {
         if (press && Math.hypot(event.clientX - press.x, event.clientY - press.y) > 6) press = null;
         raycaster.ray.at(sim.grab.reach, sim.grab.target);
-        // Soft-clamp target within camera frustum so the card never gets cropped when dragged
+        // Dynamic safe-bounds clamp accounting for card width and height so card never gets cropped anywhere
         const aspect = view.width / Math.max(1, view.height);
-        const halfW = (currentViewHeight * aspect) * 0.44;
-        const halfH = currentViewHeight * 0.44;
-        sim.grab.target.x = clampVal(sim.grab.target.x, -halfW, halfW);
-        sim.grab.target.y = clampVal(sim.grab.target.y, -halfH, halfH);
+        const viewW = currentViewHeight * aspect;
+        const viewH = currentViewHeight;
+        const safeHalfW = Math.max(0.4, (viewW * 0.5) - 1.15);
+        const safeMinY = - (viewH * 0.5) + 1.25;
+        const safeMaxY = (viewH * 0.5) - 0.35;
+        sim.grab.target.x = clampVal(sim.grab.target.x, -safeHalfW, safeHalfW);
+        sim.grab.target.y = clampVal(sim.grab.target.y, safeMinY, safeMaxY);
         start();
         return;
       }
