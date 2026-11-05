@@ -33,7 +33,15 @@ export default function Home() {
 
     window.addEventListener('resize', checkMobile);
 
-    // Fetch live config from admin if available
+    // Instant local cache check for administrator view
+    try {
+      const cached = localStorage.getItem('kzn_portfolio_config');
+      if (cached) {
+        setConfig(JSON.parse(cached));
+      }
+    } catch {}
+
+    // Fetch live config from cloud/admin
     fetch('/api/admin/config')
       .then((res) => res.json())
       .then((json) => {

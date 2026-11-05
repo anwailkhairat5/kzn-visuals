@@ -62,6 +62,12 @@ export default function AdminPage() {
     try {
       setSaving(true);
       setSaveMessage(null);
+
+      // Save locally to localStorage for immediate optimistic UI update
+      try {
+        localStorage.setItem('kzn_portfolio_config', JSON.stringify(config));
+      } catch (e) {}
+
       const res = await fetch('/api/admin/config', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -69,7 +75,7 @@ export default function AdminPage() {
       });
       const json = await res.json();
       if (json.success) {
-        setSaveMessage({ text: '✓ Semua perubahan berhasil disimpan & langsung aktif!', type: 'success' });
+        setSaveMessage({ text: '✓ ' + (json.message || 'Semua perubahan berhasil disimpan & langsung aktif!'), type: 'success' });
       } else {
         setSaveMessage({ text: `Gagal menyimpan: ${json.error}`, type: 'error' });
       }
@@ -77,7 +83,7 @@ export default function AdminPage() {
       setSaveMessage({ text: `Terjadi error: ${err.message}`, type: 'error' });
     } finally {
       setSaving(false);
-      setTimeout(() => setSaveMessage(null), 4000);
+      setTimeout(() => setSaveMessage(null), 5000);
     }
   };
 
