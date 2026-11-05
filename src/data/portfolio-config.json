@@ -1,0 +1,95 @@
+{
+  "general": {
+    "fullName": "Anwail Khairat",
+    "brandLogo": "Anwail Khairat",
+    "eyebrow": "WELCOME TO MY PORTFOLIO",
+    "role": "Multimedia Engineering Student",
+    "lead": "Mahasiswa Teknologi Rekayasa Multimedia Politeknik Negeri Lhokseumawe yang tertarik pada produksi 3D, film pendek, dan eksplorasi AI-generated modeling untuk workflow kreatif.",
+    "cvUrl": "#download-cv",
+    "githubUrl": "https://github.com/anwailkhairat5",
+    "linkedinUrl": "https://linkedin.com",
+    "contactEmail": "anwail.studio@gmail.com",
+    "footerText": "© 2026 Anwail Khairat. All rights reserved."
+  },
+  "depthText": {
+    "text": "Anwail Khairat",
+    "faceColor": "#ffffff",
+    "depthColor": "#2f77ff",
+    "layers": 30,
+    "depth": 2.0,
+    "tilt": 7.5,
+    "hoverPush": 0.5,
+    "float": true,
+    "autoOrbit": true,
+    "orbitSpeed": 0.35,
+    "shadow": true
+  },
+  "theme": {
+    "primaryColor": "#2f77ff",
+    "accentCyan": "#18d3ff",
+    "veilSpeed": 0.45,
+    "veilGlow": 0.55,
+    "veilBrightness": 1.15,
+    "mouseInteraction": true
+  },
+  "lanyard": {
+    "cardColor": "#0d6f9d",
+    "strapColor": "#04050d",
+    "frontImage": "/card-front.png",
+    "backImage": "/card-back.png",
+    "strapImage": "/band.png",
+    "finish": "glossy",
+    "gravity": 1.0,
+    "damping": 0.5,
+    "elasticity": 0.5,
+    "breeze": 0.4
+  },
+  "gooeyNav": {
+    "color": "#2f77ff",
+    "activeTextColor": "#ffffff",
+    "colors": ["#18d3ff", "#2f77ff", "#8b5cf6", "#38bdf8"],
+    "gooeyness": 0.55,
+    "spread": 48
+  },
+  "about": {
+    "heading": "About Me",
+    "lead": "Mahasiswa Teknologi Rekayasa Multimedia di Politeknik Negeri Lhokseumawe. Skripsi membandingkan pemodelan 3D berbasis AI (Tripo AI) dengan pemodelan konvensional (Blender) dalam produksi film pendek.",
+    "sub": "Fokus pada efisiensi workflow aset 3D, retopologi, texturing, dan rendering.",
+    "skills": [
+      "Blender 3D",
+      "Tripo AI (3D Gen)",
+      "Unreal Engine",
+      "Adobe Premiere Pro",
+      "After Effects",
+      "DaVinci Resolve",
+      "Photoshop",
+      "Substance Painter"
+    ]
+  },
+  "projects": [
+    {
+      "id": "proj-1",
+      "title": "Produksi Film Pendek 3D",
+      "category": "3D Animation & VFX",
+      "description": "Eksplorasi integrasi modeling konvensional dan generative AI workflow untuk percepatan produksi film pendek.",
+      "tags": ["Blender", "Tripo AI", "After Effects"],
+      "link": "#"
+    },
+    {
+      "id": "proj-2",
+      "title": "Studi Komparasi AI Modeling",
+      "category": "Research / Skripsi",
+      "description": "Analisis topologi mesh, kerapian UV layout, dan efisiensi waktu antara AI-generated mesh dan manual subdivision modeling.",
+      "tags": ["Tripo AI", "Blender", "Mesh Analysis"],
+      "link": "#"
+    },
+    {
+      "id": "proj-3",
+      "title": "Cinematic Motion & Lighting Reel",
+      "category": "Lighting & Compositing",
+      "description": "Showcase tata cahaya sinematik dan compositing atmosfer sci-fi dengan kedalaman shader dinamis.",
+      "tags": ["Unreal Engine", "DaVinci Resolve"],
+      "link": "#"
+    }
+  ]
+}
