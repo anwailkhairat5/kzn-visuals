@@ -9,6 +9,7 @@ const Lanyard = dynamic(() => import('@/components/Lanyard'), { ssr: false });
 const DarkVeil = dynamic(() => import('@/components/DarkVeil'), { ssr: false });
 const GooeyNav = dynamic(() => import('@/components/GooeyNav'), { ssr: false });
 const DepthText = dynamic(() => import('@/components/DepthText'), { ssr: false });
+const ProfileCard = dynamic(() => import('@/components/ProfileCard'), { ssr: false });
 
 const NAV_ITEMS = [
   { label: 'Home', href: '#home', id: 'home' },
@@ -160,7 +161,7 @@ export default function Home() {
                   finish={(config.lanyard?.finish as any) || 'glossy'}
                   cornerRadius={0.3}
                   size={isMobile ? 0.44 : 0.46}
-                  anchor={isMobile ? 'center' : 0.69}
+                  anchor={isMobile ? 'center' : 0.74}
                   strapLength={isMobile ? 0.22 : 0.28}
                   strapColor={config.lanyard?.strapColor || '#04050d'}
                   strapWidth={0.65}
@@ -265,14 +266,67 @@ export default function Home() {
           </a>
         </header>
 
-        {/* ── ABOUT SECTION ── */}
-        <section id="about">
+                {/* ── ABOUT SECTION WITH 3D PROFILECARD ── */}
+        <section id="about" className="about-section">
           <div className="wrap">
-            <h2>
-              {config.about?.heading ? config.about.heading.split(' ')[0] : 'About'}{' '}
-              <span className="g">{config.about?.heading ? config.about.heading.split(' ').slice(1).join(' ') : 'Me'}</span>
-            </h2>
-            <p className="sub">{config.about?.lead}</p>
+            <div className="about-layout">
+              {/* ProfileCard: Di samping About Me pada Desktop, di atas About Me pada Mobile */}
+              <div className="about-card-col">
+                <ProfileCard
+                  name={config.general?.fullName || 'Anwail Khairat'}
+                  title={config.general?.role || 'Multimedia Engineering Student'}
+                  handle="anwailkhairat5"
+                  status="Open to Work"
+                  statusColor="#22c55e"
+                  contactText="Email Me"
+                  avatarUrl="/uploads/Cinematic_Blue_Gimbal_Portrait_1793902850583.png"
+                  miniAvatarUrl="/uploads/Professional_Passport_Portrait_1793902304602.png"
+                  holo={0.85}
+                  glare={0.55}
+                  tiltStrength={14}
+                  parallax={10}
+                  radius={20}
+                  enableTilt={true}
+                  enableMobileTilt={true}
+                  intro={true}
+                  showUserInfo={true}
+                  theme="dark"
+                  onContactClick={() => {
+                    const el = document.getElementById('contact');
+                    if (el) el.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                />
+              </div>
+
+              {/* Teks Deskripsi About Me */}
+              <div className="about-text-col">
+                <div className="eyebrow" style={{ textAlign: 'inherit', marginBottom: '10px' }}>ABOUT THE CREATOR</div>
+                <h2>
+                  {config.about?.heading ? config.about.heading.split(' ')[0] : 'About'}{' '}
+                  <span className="g">{config.about?.heading ? config.about.heading.split(' ').slice(1).join(' ') : 'Me'}</span>
+                </h2>
+                <p className="sub" style={{ textAlign: 'inherit', margin: '0 0 20px 0' }}>{config.about?.lead}</p>
+                {config.about?.sub && (
+                  <p className="about-subtext" style={{ textAlign: 'inherit' }}>{config.about.sub}</p>
+                )}
+                
+                {/* Highlights / Quick stats badges */}
+                <div className="about-stats-row">
+                  <div className="about-stat-item">
+                    <span className="about-stat-number">3D</span>
+                    <span className="about-stat-label">Modeling & VFX</span>
+                  </div>
+                  <div className="about-stat-item">
+                    <span className="about-stat-number">AI</span>
+                    <span className="about-stat-label">Gen Workflow</span>
+                  </div>
+                  <div className="about-stat-item">
+                    <span className="about-stat-number">Film</span>
+                    <span className="about-stat-label">Direction & Edit</span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
