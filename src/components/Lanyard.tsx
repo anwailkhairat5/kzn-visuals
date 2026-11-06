@@ -851,7 +851,8 @@ const Lanyard = ({
       currentViewHeight = viewHeight;
       camera.aspect = aspect;
       // Extra vertical headroom (viewHeight + 0.6) so top strap never clips
-      const cameraFrustumHeight = viewHeight + 0.6;
+      const extraHeadroom = aspect < 1 ? 1.6 : 0.9;
+      const cameraFrustumHeight = viewHeight + extraHeadroom;
       camera.position.set(0, 0, cameraFrustumHeight / 2 / Math.tan((FOV * Math.PI) / 360));
       camera.lookAt(0, 0, 0);
       camera.updateProjectionMatrix();
@@ -1120,11 +1121,12 @@ const Lanyard = ({
         raycaster.ray.at(sim.grab.reach, sim.grab.target);
         // Dynamic safe-bounds clamp accounting for card width and height so card never gets cropped anywhere
         const aspect = view.width / Math.max(1, view.height);
-        const viewW = currentViewHeight * aspect;
-        const viewH = currentViewHeight;
-        const safeHalfW = Math.max(0.4, (viewW * 0.5) - 1.15);
-        const safeMinY = - (viewH * 0.5) + 1.25;
-        const safeMaxY = (viewH * 0.5) - 0.35;
+        const extraHeadroom = aspect < 1 ? 1.6 : 0.9;
+        const frustumH = currentViewHeight + extraHeadroom;
+        const frustumW = frustumH * aspect;
+        const safeHalfW = Math.max(0.3, (frustumW * 0.5) - 1.25);
+        const safeMinY = - (frustumH * 0.5) + 1.45;
+        const safeMaxY = (frustumH * 0.5) - 0.55;
         sim.grab.target.x = clampVal(sim.grab.target.x, -safeHalfW, safeHalfW);
         sim.grab.target.y = clampVal(sim.grab.target.y, safeMinY, safeMaxY);
         start();

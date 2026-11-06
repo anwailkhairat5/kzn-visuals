@@ -287,7 +287,7 @@ export default function Home() {
                   parallax={10}
                   radius={20}
                   enableTilt={true}
-                  enableMobileTilt={true}
+                  enableMobileTilt={false}
                   intro={true}
                   showUserInfo={true}
                   theme="dark"

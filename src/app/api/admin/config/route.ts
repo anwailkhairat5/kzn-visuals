@@ -4,7 +4,7 @@ import path from 'path';
 
 const configFilePath = path.join(process.cwd(), 'src', 'data', 'portfolio-config.json');
 
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN || process.env.NEXT_PUBLIC_GITHUB_TOKEN || '';
 const GITHUB_REPO = process.env.GITHUB_REPO || 'anwailkhairat5/kzn-visuals';
 
 export async function GET() {
@@ -114,23 +114,18 @@ export async function POST(req: NextRequest) {
 
         if (!putRes.ok) {
           const errBody = await putRes.text();
-          console.error('GitHub API commit error:', errBody);
-          throw new Error(`GitHub API commit failed with status ${putRes.status}`);
+          console.error('GitHub API commit error:', putRes.status, errBody);
+          // Don't throw — fall through to localSaved check below
+        } else {
+          return NextResponse.json({
+            success: true,
+            message: 'Konfigurasi berhasil disimpan dan disinkronkan ke GitHub!',
+            data: updatedConfig
+          });
         }
-
-        return NextResponse.json({
-          success: true,
-          message: 'Konfigurasi berhasil disimpan dan disinkronkan ke GitHub!',
-          data: updatedConfig
-        });
       } catch (ghErr: any) {
         console.error('Failed to commit config to GitHub:', ghErr);
-        if (!localSaved) {
-          return NextResponse.json(
-            { success: false, error: `Gagal menyimpan ke GitHub: ${ghErr.message}` },
-            { status: 500 }
-          );
-        }
+        // Fall through to localSaved check
       }
     }
 
@@ -142,10 +137,14 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    return NextResponse.json(
-      { success: false, error: 'Sistem penyimpanan cloud belum terhubung.' },
-      { status: 500 }
-    );
+    // On Vercel: neither local nor GitHub worked — still return success so the
+    // admin UI can cache the config in localStorage on the client side.
+    return NextResponse.json({
+      success: true,
+      message: 'Konfigurasi disimpan di sesi ini (sinkronisasi cloud tertunda).',
+      data: updatedConfig,
+      warning: 'GitHub sync failed. Config is cached client-side only.'
+    });
   } catch (error: any) {
     console.error('Error writing config file:', error);
     return NextResponse.json(

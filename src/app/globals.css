@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Allura&display=swap');
+﻿@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Allura&display=swap');
 @import 'tailwindcss';
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -587,34 +587,6 @@ footer {
   .down {
     display: none;
   }
-  /* About Me on Mobile: ProfileCard DI ATASNYA About Me! */
-  .about-layout {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 36px;
-  }
-  .about-card-col {
-    order: 1 !important; /* Di atasnya About Me pada mobile */
-    width: 100%;
-    display: flex;
-    justify-content: center;
-  }
-  .about-text-col {
-    order: 2 !important; /* Teks About Me di bawahnya pada mobile */
-    align-items: center;
-    text-align: center;
-  }
-  .about-text-col h2,
-  .about-text-col .eyebrow,
-  .about-text-col .sub,
-  .about-text-col .about-subtext {
-    text-align: center !important;
-  }
-  .about-stats-row {
-    justify-content: center;
-  }
-
 }
 
 @media (min-width: 1025px) {
@@ -806,12 +778,13 @@ body.grabbing {
     @apply font-sans;
   }
 }
-/* ── ABOUT ME + PROFILECARD LAYOUT ── */
+/* ── ABOUT ME + PROFILECARD LAYOUT (base styles, non-layout) ── */
 .about-section {
   position: relative;
   padding: 110px 0;
 }
 
+/* Layout defined in media queries below */
 .about-layout {
   display: grid;
   grid-template-columns: 0.95fr 1.05fr;
@@ -870,4 +843,39 @@ body.grabbing {
   color: #aab3d1;
   font-weight: 500;
   margin-top: 2px;
+}
+
+/* ── MOBILE / TABLET: about-layout stacks vertically ── */
+@media (max-width: 1024px) {
+  .about-layout {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 36px !important;
+    grid-template-columns: none !important;
+  }
+  .about-card-col {
+    order: 1 !important;
+    width: 100%;
+    max-width: 400px;
+    justify-content: center;
+  }
+  .about-text-col {
+    order: 2 !important;
+    width: 100%;
+    align-items: center !important;
+    text-align: center !important;
+  }
+  .about-text-col h2,
+  .about-text-col .eyebrow,
+  .about-text-col .sub,
+  .about-text-col .about-subtext {
+    text-align: center !important;
+  }
+  .about-stats-row {
+    justify-content: center;
+  }
+  .about-section {
+    padding: 60px 0 80px;
+  }
 }

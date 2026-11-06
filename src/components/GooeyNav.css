@@ -173,3 +173,23 @@
     color: var(--gn-ink);
   }
 }
+
+/* Force hide all scrollbars on mobile browsers */
+.gooey-nav,
+.gooey-nav *,
+.gooey-nav__stage,
+.gooey-nav__list {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+.gooey-nav::-webkit-scrollbar,
+.gooey-nav *::-webkit-scrollbar,
+.gooey-nav__stage::-webkit-scrollbar,
+.gooey-nav__list::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
+  -webkit-appearance: none !important;
+}
