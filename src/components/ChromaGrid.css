@@ -9,8 +9,8 @@
 }
 
 .chroma-grid.has-frame {
-  padding: 10px;
-  border-radius: calc(var(--chroma-radius) + 10px);
+  padding: 8px;
+  border-radius: calc(var(--chroma-radius) + 8px);
   background: var(--chroma-frame);
   box-shadow: var(--chroma-frame-shadow);
   -webkit-backdrop-filter: blur(20px) saturate(1.6);
@@ -46,9 +46,9 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   min-width: 0;
-  padding: 10px;
+  padding: 8px;
   box-sizing: border-box;
   border-radius: var(--chroma-radius);
   background: var(--chroma-tile);
@@ -107,7 +107,7 @@ div.chroma-card:active {
   position: relative;
   z-index: 1;
   aspect-ratio: var(--chroma-ratio);
-  border-radius: max(0px, calc(var(--chroma-radius) - 8px));
+  border-radius: max(0px, calc(var(--chroma-radius) - 6px));
   overflow: hidden;
   background: var(--chroma-well);
 }
@@ -139,53 +139,20 @@ div.chroma-card:active {
   pointer-events: none;
 }
 
-.chroma-media-overlay-badge {
-  position: absolute;
-  bottom: 8px;
-  right: 8px;
-  z-index: 3;
-  padding: 4px 10px;
-  font-size: 11px;
-  font-weight: 700;
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.65);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  color: #ffffff;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  transition: transform 0.2s ease, background 0.2s ease;
-}
-
-.chroma-card:hover .chroma-media-overlay-badge {
-  transform: scale(1.04);
-  background: rgba(14, 165, 233, 0.8);
-  border-color: rgba(255, 255, 255, 0.4);
-}
-
 .chroma-info {
   position: relative;
   z-index: 1;
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 2px;
   min-width: 0;
-  padding: 4px 4px 2px;
-}
-
-.chroma-title-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+  padding: 2px 4px 4px;
 }
 
 .chroma-title {
   overflow: hidden;
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 600;
   line-height: 1.35;
   letter-spacing: -0.01em;
   text-overflow: ellipsis;
@@ -195,28 +162,11 @@ div.chroma-card:active {
 
 .chroma-subtitle {
   overflow: hidden;
-  font-size: 12.5px;
-  line-height: 1.4;
+  font-size: 12px;
+  line-height: 1.35;
   color: var(--chroma-muted);
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.chroma-tags-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  margin-top: 6px;
-}
-
-.chroma-tag-pill {
-  font-size: 10px;
-  font-weight: 600;
-  padding: 2px 7px;
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #cbd5e1;
 }
 
 .chroma-card-rim,
@@ -237,7 +187,7 @@ div.chroma-card:active {
 .chroma-card-glow {
   box-shadow:
     inset 0 0 0 1px var(--chroma-accent),
-    inset 0 0 20px -6px var(--chroma-accent);
+    inset 0 0 18px -6px var(--chroma-accent);
   opacity: calc(var(--chroma-border) * var(--chroma-power));
 }
 
@@ -263,4 +213,18 @@ div.chroma-card:active {
 .chroma-grid[data-reveal='card'] .chroma-card:hover .chroma-card-glow {
   opacity: var(--chroma-border);
   transition-duration: 0.3s;
+}
+
+/* Responsif Mobile Khusus */
+@media (max-width: 640px) {
+  .chroma-card {
+    padding: 6px;
+    gap: 6px;
+  }
+  .chroma-title {
+    font-size: 12.5px;
+  }
+  .chroma-subtitle {
+    font-size: 11px;
+  }
 }

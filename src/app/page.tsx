@@ -404,34 +404,23 @@ export default function Home() {
 
             {/* ChromaGrid from React Bits */}
             <ChromaGrid
-              items={(config.projects || []).map((proj: any, idx: number) => {
-                const parsed = parseMediaUrl(proj.link);
-                const fallbackImages = [
-                  'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=900&q=80&auto=format&fit=crop',
-                  'https://images.unsplash.com/photo-1485846234645-a62644f84728?w=900&q=80&auto=format&fit=crop',
-                  'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=900&q=80&auto=format&fit=crop',
-                  'https://images.unsplash.com/photo-1536240478700-b869070f9279?w=900&q=80&auto=format&fit=crop'
-                ];
-                const defaultAccents = ['#22d3ee', '#f59e0b', '#3b82f6', '#a855f7'];
-
+              items={(config.projects || []).map((proj: any) => {
                 return {
                   title: proj.title,
                   subtitle: proj.category || 'Portfolio Showcase',
-                  image: proj.image || fallbackImages[idx % fallbackImages.length],
-                  accent: proj.accent || defaultAccents[idx % defaultAccents.length],
-                  badge: parsed.badgeText,
-                  tags: proj.tags || [],
+                  image: proj.image || 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=800&q=80&auto=format&fit=crop',
+                  accent: proj.accent || '#22d3ee',
                   rawProject: proj,
                   onClick: () => setActiveMediaProject(proj)
                 };
               })}
-              columns={isMobile ? 1 : 2}
-              minCardWidth={isMobile ? 260 : 340}
-              gap={isMobile ? 14 : 20}
-              radius={320}
-              aspectRatio="16 / 10"
-              cardRadius={22}
-              glow={0.65}
+              columns={isMobile ? 2 : 3}
+              minCardWidth={isMobile ? 135 : 200}
+              gap={isMobile ? 10 : 14}
+              radius={240}
+              aspectRatio="3 / 2"
+              cardRadius={18}
+              glow={0.5}
               borderGlow={1}
               reveal="spotlight"
               theme="dark"
@@ -598,38 +587,32 @@ export default function Home() {
       {/* ── INTERACTIVE PROJECT DETAIL MODAL ("PENJELASAN LENGKAP") ── */}
       {activeMediaProject && (() => {
         const parsed = parseMediaUrl(activeMediaProject.link);
-        const fallbackImages = [
-          'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=900&q=80&auto=format&fit=crop',
-          'https://images.unsplash.com/photo-1485846234645-a62644f84728?w=900&q=80&auto=format&fit=crop',
-          'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=900&q=80&auto=format&fit=crop',
-          'https://images.unsplash.com/photo-1536240478700-b869070f9279?w=900&q=80&auto=format&fit=crop'
-        ];
-        const projectImg = activeMediaProject.image || fallbackImages[0];
+        const projectImg = activeMediaProject.image || 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=800&q=80&auto=format&fit=crop';
         const accentColor = activeMediaProject.accent || '#22d3ee';
 
         return (
           <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/85 backdrop-blur-xl transition-all duration-300"
+            className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/80 backdrop-blur-xl transition-all duration-200"
             onClick={() => setActiveMediaProject(null)}
           >
             <div
-              className="relative w-full max-w-3xl max-h-[92vh] bg-[#0c101d] border border-white/20 rounded-3xl shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9)] overflow-hidden modal-fade-enter flex flex-col"
+              className="relative w-full max-w-xl max-h-[90vh] bg-[#0d1222]/95 border border-white/12 rounded-3xl shadow-[0_25px_60px_-15px_rgba(0,0,0,0.85)] overflow-hidden modal-fade-enter flex flex-col"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Top Header Bar */}
-              <div className="flex items-center justify-between p-4 px-6 border-b border-white/10 bg-white/[0.04]">
-                <div className="flex items-center gap-2.5 flex-wrap">
+              {/* Modal Minimal Header */}
+              <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/10 bg-white/[0.03]">
+                <div className="flex items-center gap-2 flex-wrap">
                   <span
-                    className="text-[11px] font-bold px-3 py-1 rounded-full border shadow-sm"
+                    className="text-[11px] font-bold px-2.5 py-0.5 rounded-full border shadow-sm"
                     style={{
-                      borderColor: `${accentColor}50`,
-                      background: `${accentColor}18`,
+                      borderColor: `${accentColor}40`,
+                      background: `${accentColor}15`,
                       color: accentColor
                     }}
                   >
                     {activeMediaProject.category || 'Featured Work'}
                   </span>
-                  <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full border ${parsed.badgeColor}`}>
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${parsed.badgeColor}`}>
                     {parsed.badgeText}
                   </span>
                 </div>
@@ -637,24 +620,24 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={() => setActiveMediaProject(null)}
-                  className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-all text-base font-bold shadow-md hover:rotate-90 duration-200"
-                  aria-label="Tutup Detail"
+                  className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white/80 hover:text-white flex items-center justify-center transition-all text-sm font-bold shadow-sm"
+                  aria-label="Tutup"
                 >
                   ✕
                 </button>
               </div>
 
-              {/* Scrollable Modal Content */}
-              <div className="overflow-y-auto p-5 sm:p-7 space-y-6 scrollbar-thin scrollbar-thumb-white/20">
-                {/* Media / Video Player Stage */}
-                <div className="w-full rounded-2xl overflow-hidden bg-black/70 border border-white/15 shadow-inner">
+              {/* Scrollable Content */}
+              <div className="overflow-y-auto p-4 sm:p-5 space-y-4 scrollbar-thin scrollbar-thumb-white/20">
+                {/* Media Stage */}
+                <div className="w-full rounded-2xl overflow-hidden bg-black/80 border border-white/10 shadow-inner">
                   {(() => {
                     if (parsed.type === 'instagram') {
                       return (
-                        <div className="w-full flex flex-col items-center justify-center py-4 bg-gradient-to-b from-[#11162a] to-black">
+                        <div className="w-full flex flex-col items-center justify-center py-2 bg-gradient-to-b from-[#11162a] to-black">
                           <iframe
                             src={parsed.embedUrl}
-                            className="w-full max-w-[460px] h-[520px] sm:h-[580px] border-0 rounded-2xl shadow-2xl"
+                            className="w-full max-w-[420px] h-[460px] sm:h-[500px] border-0 rounded-xl"
                             scrolling="no"
                             allowTransparency
                             title={activeMediaProject.title}
@@ -694,33 +677,18 @@ export default function Home() {
                         />
                       );
                     } else {
-                      // High aesthetic preview banner with quick launcher
+                      // High Aesthetic Preview Banner
                       return (
-                        <div className="relative w-full aspect-video sm:aspect-[21/9] overflow-hidden group">
+                        <div className="relative w-full aspect-video overflow-hidden group">
                           <img
                             src={projectImg}
                             alt={activeMediaProject.title}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                           />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
-                          <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-3">
-                            <div>
-                              <span className="text-[10px] font-bold uppercase tracking-wider text-white/60 block">
-                                Visual Showcase
-                              </span>
-                              <h4 className="text-base sm:text-lg font-bold text-white drop-shadow-md">
-                                {activeMediaProject.title}
-                              </h4>
-                            </div>
-                            <a
-                              href={parsed.originalUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="px-3.5 py-1.5 rounded-xl bg-white/15 hover:bg-white/25 text-white text-xs font-semibold backdrop-blur-md border border-white/20 transition-all flex items-center gap-1.5 shrink-0"
-                            >
-                              <span>Buka Media</span>
-                              <span>↗</span>
-                            </a>
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex items-end p-4">
+                            <span className="text-xs font-semibold text-white/90 drop-shadow flex items-center gap-1.5">
+                              <span>▶</span> Tonton di Instagram Reels / Eksternal
+                            </span>
                           </div>
                         </div>
                       );
@@ -728,38 +696,34 @@ export default function Home() {
                   })()}
                 </div>
 
-                {/* Title and Category */}
+                {/* Project Title */}
                 <div>
-                  <span className="text-xs font-bold uppercase tracking-wider text-[#18d3ff] block mb-1">
-                    {activeMediaProject.category || 'Multimedia Engineering Project'}
-                  </span>
-                  <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+                  <h3 className="text-lg sm:text-xl font-bold text-white tracking-tight leading-snug">
                     {activeMediaProject.title}
                   </h3>
                 </div>
 
-                {/* Penjelasan Lengkap (Rapi, Kiri, Readable) */}
-                <div className="p-4 sm:p-5 rounded-2xl bg-white/[0.03] border border-white/10 space-y-2">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-white/70 flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#18d3ff]" />
-                    Penjelasan Lengkap Proyek
+                {/* Penjelasan Lengkap (Rapi & Bersih) */}
+                <div className="p-3.5 sm:p-4 rounded-xl bg-white/[0.03] border border-white/8 space-y-1.5">
+                  <h4 className="text-[11px] font-bold uppercase tracking-wider text-[#18d3ff] flex items-center gap-1.5">
+                    <span>📌</span> Penjelasan Lengkap
                   </h4>
-                  <p className="text-sm sm:text-base text-slate-200 leading-relaxed text-left text-wrap-pretty font-normal">
+                  <p className="text-xs sm:text-sm text-slate-200 leading-relaxed text-left text-wrap-pretty font-normal">
                     {activeMediaProject.description}
                   </p>
                 </div>
 
-                {/* Tools & Tags Stack */}
+                {/* Software / Tools Tags */}
                 {activeMediaProject.tags && activeMediaProject.tags.length > 0 && (
                   <div>
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-white/60 block mb-2">
-                      Software & Workflow yang Digunakan:
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-white/50 block mb-1.5">
+                      Software & Workflow:
                     </span>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-1.5">
                       {activeMediaProject.tags.map((t: string) => (
                         <span
                           key={t}
-                          className="px-3 py-1 rounded-xl text-xs font-semibold bg-white/[0.05] border border-white/15 text-slate-200 shadow-sm"
+                          className="px-2.5 py-0.5 rounded-md text-[11px] font-medium bg-white/[0.04] border border-white/10 text-slate-300"
                         >
                           {t}
                         </span>
@@ -769,30 +733,24 @@ export default function Home() {
                 )}
               </div>
 
-              {/* Modal Action Footer */}
-              <div className="p-4 px-6 border-t border-white/10 bg-white/[0.03] flex items-center justify-between gap-3 shrink-0">
-                <div className="text-xs text-white/50 hidden sm:block">
-                  Tekan <kbd className="px-1.5 py-0.5 rounded bg-white/10 font-mono text-[10px]">Esc</kbd> untuk menutup
-                </div>
-
-                <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
-                  <button
-                    type="button"
-                    onClick={() => setActiveMediaProject(null)}
-                    className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white/80 text-xs font-semibold transition-all"
-                  >
-                    Tutup
-                  </button>
-                  <a
-                    href={parseMediaUrl(activeMediaProject.link).originalUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#2f77ff] to-[#18d3ff] hover:opacity-95 text-white text-xs font-bold transition-all flex items-center gap-2 shadow-lg shadow-blue-500/25"
-                  >
-                    <span>Tonton di Sumber Asli</span>
-                    <span>↗</span>
-                  </a>
-                </div>
+              {/* Modal Footer */}
+              <div className="px-5 py-3 border-t border-white/10 bg-white/[0.02] flex items-center justify-between gap-3 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setActiveMediaProject(null)}
+                  className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white/80 text-xs font-semibold transition-all"
+                >
+                  Tutup
+                </button>
+                <a
+                  href={parseMediaUrl(activeMediaProject.link).originalUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-4 py-2 rounded-xl bg-[#2f77ff] hover:bg-[#3d82ff] text-white text-xs font-bold transition-all flex items-center gap-1.5 shadow-md shadow-blue-500/25"
+                >
+                  <span>Buka di Sumber Asli</span>
+                  <span>↗</span>
+                </a>
               </div>
             </div>
           </div>

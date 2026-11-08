@@ -127,7 +127,7 @@
       "id": "proj-1",
       "title": "Castrol & YPTI Commercial Visuals",
       "category": "VFX & Commercial Video",
-      "image": "https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=900&q=80&auto=format&fit=crop",
+      "image": "https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=800&q=80&auto=format&fit=crop",
       "accent": "#22d3ee",
       "description": "Produksi video promosi dan reels komersial dengan penerapan visual effects (VFX), 3D logo animation, motion graphic, color grading, dan sound design profesional. Kolaborasi bersama Unicam Studio untuk menghasilkan standar visual setara industri periklanan modern.",
       "tags": [
@@ -143,7 +143,7 @@
       "id": "proj-2",
       "title": "Film Pendek \"Money Politic\"",
       "category": "Film Pendek & Sinematografi",
-      "image": "https://images.unsplash.com/photo-1485846234645-a62644f84728?w=900&q=80&auto=format&fit=crop",
+      "image": "https://images.unsplash.com/photo-1485846234645-a62644f84728?w=800&q=80&auto=format&fit=crop",
       "accent": "#f59e0b",
       "description": "Film pendek pemenang Juara 1 KIP Aceh dengan penceritaan visual sinematik dramatis, blocking kamera presisi, komposisi warna atmosferik, dan tata suara berbobot yang menyampaikan pesan sosial secara mendalam dan mengesankan.",
       "tags": [
@@ -159,7 +159,7 @@
       "id": "proj-3",
       "title": "Video Reels QRIS & CBP Bank Indonesia",
       "category": "Motion & Social Media",
-      "image": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=900&q=80&auto=format&fit=crop",
+      "image": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&q=80&auto=format&fit=crop",
       "accent": "#3b82f6",
       "description": "Seri video reels edukatif peraih Juara 1 Bank Indonesia, menggabungkan AI workflow (voice over AI generatif, auto caption dinamis, smart cutting) dan ritme editing yang energik untuk engagement maksimal generasi muda.",
       "tags": [
@@ -175,7 +175,7 @@
       "id": "proj-4",
       "title": "Ezran Core & KzN Visual Showcase",
       "category": "Videografi & Branding",
-      "image": "https://images.unsplash.com/photo-1536240478700-b869070f9279?w=900&q=80&auto=format&fit=crop",
+      "image": "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=800&q=80&auto=format&fit=crop",
       "accent": "#a855f7",
       "description": "Koleksi karya videografi dan fotografi komersial untuk kebutuhan branding media sosial klien, menekankan tampilan modern, estetika visual tinggi, color tone berkarakter, dan komposisi frame modern yang siap memikat audiens.",
       "tags": [
@@ -183,6 +183,38 @@
         "Ezran Core",
         "Videografi",
         "Fotografi"
+      ],
+      "link": "https://www.instagram.com/kzn.visuals",
+      "mediaType": "instagram"
+    },
+    {
+      "id": "proj-5",
+      "title": "3D Modeling & Retopology Workflow",
+      "category": "3D Asset & AI Research",
+      "image": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&q=80&auto=format&fit=crop",
+      "accent": "#ec4899",
+      "description": "Riset komparasi pemodelan 3D generatif berbasis AI (Tripo AI) versus pemodelan konvensional (Blender). Berfokus pada efisiensi waktu, topologi mesh, texturing, dan kesiapan aset untuk pipeline film animasi.",
+      "tags": [
+        "Blender",
+        "Tripo AI",
+        "3D Modeling",
+        "Retopology"
+      ],
+      "link": "https://www.instagram.com/kzn.visuals",
+      "mediaType": "instagram"
+    },
+    {
+      "id": "proj-6",
+      "title": "BEM PNL Visual Identity & Campaign",
+      "category": "Branding & Social Campaign",
+      "image": "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=800&q=80&auto=format&fit=crop",
+      "accent": "#10b981",
+      "description": "Pengelolaan identitas visual menyeluruh organisasi mahasiswa, mulai dari motion poster acara, feed Instagram informatif, bumper logo animasi, hingga after-movie dokumentasi kegiatan kampus berstandar tinggi.",
+      "tags": [
+        "Social Media",
+        "After-Movie",
+        "Motion Graphics",
+        "Branding"
       ],
       "link": "https://www.instagram.com/kzn.visuals",
       "mediaType": "instagram"

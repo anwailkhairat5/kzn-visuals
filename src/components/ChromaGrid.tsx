@@ -13,8 +13,6 @@ export interface ChromaItem {
   borderColor?: string;
   url?: string;
   alt?: string;
-  badge?: string;
-  tags?: string[];
   rawProject?: any;
   onClick?: (item: ChromaItem, index: number) => void;
 }
@@ -44,20 +42,20 @@ export interface ChromaGridProps {
 
 const THEMES = {
   dark: {
-    '--chroma-frame': 'rgba(15, 20, 35, 0.75)',
+    '--chroma-frame': 'rgba(20, 24, 38, 0.75)',
     '--chroma-frame-edge': 'rgba(255, 255, 255, 0.08)',
     '--chroma-frame-highlight': 'rgba(255, 255, 255, 0.08)',
-    '--chroma-frame-shadow': '0 24px 48px -20px rgba(0, 0, 0, 0.85), 0 8px 20px -8px rgba(0, 0, 0, 0.5)',
-    '--chroma-tile': 'linear-gradient(180deg, #151b2e 0%, #0c101c 100%)',
-    '--chroma-tile-edge': 'rgba(255, 255, 255, 0.08)',
-    '--chroma-tile-highlight': 'rgba(255, 255, 255, 0.14)',
-    '--chroma-tile-shadow': '0 8px 24px -6px rgba(0, 0, 0, 0.7)',
-    '--chroma-media-edge': 'rgba(255, 255, 255, 0.08)',
+    '--chroma-frame-shadow': '0 20px 40px -18px rgba(0, 0, 0, 0.8), 0 6px 16px -8px rgba(0, 0, 0, 0.5)',
+    '--chroma-tile': 'linear-gradient(180deg, #181d2f 0%, #0e1220 100%)',
+    '--chroma-tile-edge': 'rgba(255, 255, 255, 0.07)',
+    '--chroma-tile-highlight': 'rgba(255, 255, 255, 0.12)',
+    '--chroma-tile-shadow': '0 6px 18px -4px rgba(0, 0, 0, 0.6)',
+    '--chroma-media-edge': 'rgba(255, 255, 255, 0.06)',
     '--chroma-well': 'rgba(255, 255, 255, 0.04)',
     '--chroma-ink': '#f4f6ff',
-    '--chroma-muted': 'rgba(203, 213, 225, 0.7)',
-    '--chroma-hover': 'brightness(1.15)',
-    '--chroma-press': 'brightness(0.92)'
+    '--chroma-muted': 'rgba(203, 213, 225, 0.58)',
+    '--chroma-hover': 'brightness(1.12)',
+    '--chroma-press': 'brightness(0.9)'
   },
   light: {
     '--chroma-frame': 'rgba(240, 240, 243, 0.8)',
@@ -80,27 +78,21 @@ const THEMES = {
 const DEFAULT_ITEMS: ChromaItem[] = [
   {
     image: 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=800&q=80&auto=format&fit=crop',
-    title: 'Castrol & YPTI Commercials',
-    subtitle: 'VFX & Commercial Video',
-    accent: '#22d3ee'
+    title: 'Canola Field',
+    subtitle: 'Midday',
+    accent: '#ffd23f'
   },
   {
     image: 'https://images.unsplash.com/photo-1485846234645-a62644f84728?w=800&q=80&auto=format&fit=crop',
-    title: 'Film Pendek "Money Politic"',
-    subtitle: 'Juara 1 KIP Aceh',
-    accent: '#f59e0b'
+    title: 'The Pier',
+    subtitle: 'Clear sky',
+    accent: '#3fb8ff'
   },
   {
     image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&q=80&auto=format&fit=crop',
-    title: 'Video Reels QRIS & CBP BI',
-    subtitle: 'Juara 1 Bank Indonesia',
-    accent: '#3b82f6'
-  },
-  {
-    image: 'https://images.unsplash.com/photo-1536240478700-b869070f9279?w=800&q=80&auto=format&fit=crop',
-    title: 'Ezran Core & KzN Showcase',
-    subtitle: 'Videografi & Branding',
-    accent: '#a855f7'
+    title: 'Open Sky',
+    subtitle: 'Golden hour',
+    accent: '#ff8a4c'
   }
 ];
 
@@ -121,19 +113,19 @@ const falloffStops = (softness: number) => {
 export const ChromaGrid: React.FC<ChromaGridProps> = ({
   items,
   columns = 3,
-  minCardWidth = 240,
-  gap = 18,
-  radius = 320,
+  minCardWidth = 180,
+  gap = 12,
+  radius = 260,
   softness = 0.6,
   damping = 0.45,
   fadeOut = 0.6,
   grayscale = 1,
   dim = 0.12,
-  glow = 0.6,
+  glow = 0.5,
   borderGlow = 1,
   reveal = 'spotlight',
-  aspectRatio = '16 / 10',
-  cardRadius = 20,
+  aspectRatio = '3 / 2',
+  cardRadius = 18,
   showInfo = true,
   frame = false,
   theme = 'dark',
@@ -283,33 +275,11 @@ export const ChromaGrid: React.FC<ChromaGridProps> = ({
                 <img className="chroma-mono" src={item.image} alt={item.alt ?? item.title ?? ''} loading="lazy" />
                 <img className="chroma-color" src={item.image} alt="" aria-hidden="true" loading="lazy" />
                 <span className="chroma-media-rim" aria-hidden="true" />
-                {item.badge && (
-                  <span className="chroma-media-overlay-badge">
-                    <span>{item.badge}</span>
-                  </span>
-                )}
               </div>
               {showInfo && (item.title || item.subtitle) && (
                 <div className="chroma-info">
-                  <div className="chroma-title-row">
-                    {item.title && <span className="chroma-title">{item.title}</span>}
-                    <span className="text-[11px] font-bold text-[#18d3ff] shrink-0 opacity-80 group-hover:opacity-100 flex items-center gap-0.5">
-                      Lihat Info →
-                    </span>
-                  </div>
+                  {item.title && <span className="chroma-title">{item.title}</span>}
                   {item.subtitle && <span className="chroma-subtitle">{item.subtitle}</span>}
-                  {item.tags && item.tags.length > 0 && (
-                    <div className="chroma-tags-row">
-                      {item.tags.slice(0, 3).map((t) => (
-                        <span key={t} className="chroma-tag-pill">
-                          {t}
-                        </span>
-                      ))}
-                      {item.tags.length > 3 && (
-                        <span className="chroma-tag-pill">+{item.tags.length - 3}</span>
-                      )}
-                    </div>
-                  )}
                 </div>
               )}
               <span className="chroma-card-rim" aria-hidden="true" />
@@ -317,14 +287,13 @@ export const ChromaGrid: React.FC<ChromaGridProps> = ({
             </>
           );
 
-          // If item has explicit onClick or grid has onItemClick, render as interactive card opening modal
           if (item.onClick || onItemClick) {
             return (
               <div
                 key={key}
                 role="button"
                 tabIndex={0}
-                className="chroma-card group"
+                className="chroma-card"
                 data-chroma-area=""
                 style={cardStyle}
                 onClick={handleCardClick}
@@ -343,7 +312,7 @@ export const ChromaGrid: React.FC<ChromaGridProps> = ({
           return item.url ? (
             <a
               key={key}
-              className="chroma-card group"
+              className="chroma-card"
               data-chroma-area=""
               style={cardStyle}
               href={item.url}
@@ -353,7 +322,7 @@ export const ChromaGrid: React.FC<ChromaGridProps> = ({
               {body}
             </a>
           ) : (
-            <article key={key} className="chroma-card group" data-chroma-area="" style={cardStyle}>
+            <article key={key} className="chroma-card" data-chroma-area="" style={cardStyle}>
               {body}
             </article>
           );
