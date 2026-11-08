@@ -11,6 +11,15 @@
   max-width: 100%;
   font-size: var(--gn-font);
   line-height: 1.2;
+  overflow: visible !important;
+}
+
+.gn-label-full {
+  display: inline;
+}
+
+.gn-label-short {
+  display: none;
 }
 
 .gooey-nav--sm {
@@ -29,6 +38,7 @@
     --gn-x: 8.5px !important;
     --gn-y: 6px !important;
     max-width: 98vw;
+    overflow: visible !important;
   }
   .gooey-nav--sm {
     --gn-pad: 3px !important;
@@ -36,6 +46,12 @@
     --gn-font: 11px !important;
     --gn-x: 7.5px !important;
     --gn-y: 5.5px !important;
+  }
+  .gn-label-full {
+    display: none !important;
+  }
+  .gn-label-short {
+    display: inline !important;
   }
 }
 
@@ -62,6 +78,7 @@
   display: flex;
   align-items: center;
   max-width: 100%;
+  overflow: visible !important;
 }
 
 .gooey-nav__canvas {

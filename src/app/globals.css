@@ -412,7 +412,9 @@ footer {
 
 @media (max-width: 1024px) {
   nav {
-    height: 68px;
+    height: 72px;
+    padding-top: max(8px, env(safe-area-inset-top, 8px));
+    overflow: visible !important;
   }
   nav .logo {
     display: none;
@@ -420,11 +422,11 @@ footer {
   nav .wrap {
     justify-content: center;
     padding-inline: 4px;
-    overflow: visible;
+    overflow: visible !important;
   }
   .nav-gooey-wrapper {
     max-width: 100vw;
-    overflow: hidden !important;
+    overflow: visible !important;
     display: flex;
     justify-content: center;
     scrollbar-width: none !important;
@@ -442,7 +444,7 @@ footer {
     -webkit-appearance: none !important;
   }
   nav ul {
-    overflow: hidden;
+    overflow: visible;
   }
   nav a.l {
     padding: 8px 12px;

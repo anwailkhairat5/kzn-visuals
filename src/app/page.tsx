@@ -12,13 +12,13 @@ const DepthText = dynamic(() => import('@/components/DepthText'), { ssr: false }
 const ProfileCard = dynamic(() => import('@/components/ProfileCard'), { ssr: false });
 
 const NAV_ITEMS = [
-  { label: 'Home', href: '#home', id: 'home' },
-  { label: 'About', href: '#about', id: 'about' },
-  { label: 'Skills', href: '#skills', id: 'skills' },
-  { label: 'Projects', href: '#projects', id: 'projects' },
-  { label: 'Experience', href: '#experience', id: 'experience' },
-  { label: 'Certificates', href: '#certificates', id: 'certificates' },
-  { label: 'Contact', href: '#contact', id: 'contact' },
+  { label: 'Home', shortLabel: 'Home', href: '#home', id: 'home' },
+  { label: 'About', shortLabel: 'About', href: '#about', id: 'about' },
+  { label: 'Skills', shortLabel: 'Skills', href: '#skills', id: 'skills' },
+  { label: 'Projects', shortLabel: 'Projects', href: '#projects', id: 'projects' },
+  { label: 'Experience', shortLabel: 'Exp', href: '#experience', id: 'experience' },
+  { label: 'Certificates', shortLabel: 'Certs', href: '#certificates', id: 'certificates' },
+  { label: 'Contact', shortLabel: 'Contact', href: '#contact', id: 'contact' },
 ];
 
 export default function Home() {
@@ -142,7 +142,7 @@ export default function Home() {
                 size={isMobile ? 'sm' : 'md'}
                 frame={true}
                 particleCount={16}
-                spread={config.gooeyNav?.spread ?? 48}
+                spread={isMobile ? Math.min(34, Math.round((config.gooeyNav?.spread ?? 48) * 0.7)) : (config.gooeyNav?.spread ?? 48)}
                 animationTime={500}
                 timeVariance={250}
                 gooeyness={config.gooeyNav?.gooeyness ?? 0.55}

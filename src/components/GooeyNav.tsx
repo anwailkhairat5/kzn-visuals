@@ -34,6 +34,7 @@ const SIZES: Record<string, string> = { sm: 'gooey-nav--sm', md: 'gooey-nav--md'
 
 export interface GooeyNavItem {
   label: string;
+  shortLabel?: string;
   href?: string;
   icon?: ReactNode;
 }
@@ -770,7 +771,7 @@ export const GooeyNav: React.FC<GooeyNavProps> = ({
 
   useEffect(() => {
     engineRef.current?.refresh();
-  }, [pillColor, palette, gooeyness, size, frame]);
+  }, [items, pillColor, palette, gooeyness, size, frame]);
 
   const textColor = activeTextColor || contrastInk(pillRgb);
 
@@ -779,7 +780,16 @@ export const GooeyNav: React.FC<GooeyNavProps> = ({
       const content = (
         <>
           {item.icon && <span className="gooey-nav__icon">{item.icon}</span>}
-          {item.label && <span className="gooey-nav__label">{item.label}</span>}
+          {item.label && (
+            item.shortLabel ? (
+              <span className="gooey-nav__label">
+                <span className="gn-label-full">{item.label}</span>
+                <span className="gn-label-short">{item.shortLabel}</span>
+              </span>
+            ) : (
+              <span className="gooey-nav__label">{item.label}</span>
+            )
+          )}
         </>
       );
       if (!interactive) {
