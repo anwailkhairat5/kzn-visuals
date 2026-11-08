@@ -58,10 +58,10 @@
   },
   "profileCard": {
     "avatarUrl": "/uploads/Cinematic_Blue_Gimbal_Portrait_1793902850583.png",
-    "miniAvatarUrl": "/uploads/Professional_Passport_Portrait_1793902304602.png",
+    "miniAvatarUrl": "https://raw.githubusercontent.com/anwailkhairat5/kzn-visuals/main/public/uploads/crop_1794138976684_1794138977519.png",
     "name": "Anwail Khairat",
     "title": "Multimedia Engineering Student",
-    "handle": "anwailkhairat5",
+    "handle": "kzn.visuals",
     "status": "Open to Work",
     "statusColor": "#22c55e",
     "contactText": "Email Me",
