@@ -631,198 +631,140 @@ export default function Home() {
         </section>
       </main>
 
-      {/* ── REFERENCE MODAL: CREATIVE PROJECT (MATCHING IMAGE 1) ── */}
+      {/* ── COMPACT ELEGANT MODAL: CREATIVE PROJECT (BLUE/CYAN THEME & FADE ANIMATION) ── */}
       {activeProjectIndex !== null && (() => {
         const activeProject = (config.projects || [])[activeProjectIndex];
         if (!activeProject) return null;
 
         const parsed = parseMediaUrl(activeProject.link);
         const projectImg = activeProject.image || 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=800&q=80&auto=format&fit=crop';
-        const total = (config.projects || []).length;
+        const isInstagramProfile = activeProject.link?.includes('instagram.com') && !activeProject.link?.includes('/p/') && !activeProject.link?.includes('/reel/');
+
+        let ctaText = 'Buka Tautan Asli';
+        if (parsed.type === 'instagram' || isInstagramProfile) ctaText = 'Tonton di Instagram';
+        else if (parsed.type === 'gdrive') ctaText = 'Buka di Google Drive';
+        else if (parsed.type === 'youtube') ctaText = 'Tonton di YouTube';
 
         return (
           <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 bg-black/85 backdrop-blur-md transition-all duration-200"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md modal-backdrop-enter"
             onClick={() => setActiveProjectIndex(null)}
           >
             <div
-              className="relative w-full max-w-5xl max-h-[92vh] bg-[#121316] border border-white/12 rounded-xl sm:rounded-2xl shadow-[0_25px_80px_rgba(0,0,0,0.95)] overflow-hidden flex flex-col"
+              className="relative w-full max-w-md sm:max-w-lg max-h-[90vh] bg-[#0c101d] border border-white/12 rounded-2xl sm:rounded-3xl shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9)] overflow-hidden flex flex-col modal-fade-enter"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Top Navigation Bar (Matching Image 1) */}
-              <div className="px-4 sm:px-6 py-2.5 sm:py-3 bg-[#18191d] border-b border-white/10 flex items-center justify-between gap-3 shrink-0">
-                {/* Left Badge & Meta */}
-                <div className="flex items-center gap-2.5">
-                  <span className="px-2.5 py-0.5 rounded-sm bg-[#eab308] text-black font-extrabold text-[11px] uppercase tracking-wider font-mono">
-                    {activeProject.badge || 'VIDEOGRAFI'}
-                  </span>
-                  <span className="text-xs text-white/70 font-mono tracking-wide hidden sm:inline">
-                    {activeProject.subField || activeProject.category || 'Reels'} • {activeProject.year || '2026'}
-                  </span>
+              {/* Media Preview Stage */}
+              <div className="relative w-full aspect-video bg-black shrink-0 overflow-hidden border-b border-white/10">
+                {(() => {
+                  if (parsed.type === 'gdrive') {
+                    return (
+                      <iframe
+                        src={parsed.embedUrl}
+                        className="w-full h-full border-0"
+                        allow="autoplay; fullscreen"
+                        title={activeProject.title}
+                      />
+                    );
+                  } else if (parsed.type === 'youtube') {
+                    return (
+                      <iframe
+                        src={parsed.embedUrl}
+                        className="w-full h-full border-0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                        title={activeProject.title}
+                      />
+                    );
+                  } else if (parsed.type === 'video') {
+                    return (
+                      <video
+                        src={parsed.embedUrl}
+                        controls
+                        autoPlay
+                        className="w-full h-full object-cover"
+                      />
+                    );
+                  } else {
+                    return (
+                      <div className="relative w-full h-full">
+                        <img
+                          src={projectImg}
+                          alt={activeProject.title}
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#0c101d] via-transparent to-transparent opacity-60" />
+                      </div>
+                    );
+                  }
+                })()}
+
+                {/* Close Button at Top Right Corner */}
+                <button
+                  type="button"
+                  onClick={() => setActiveProjectIndex(null)}
+                  className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/60 hover:bg-black/90 text-white/90 hover:text-white flex items-center justify-center text-xs font-bold transition-all border border-white/15 z-20 shadow-md backdrop-blur-md"
+                  aria-label="Tutup"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Information Body (Matching Image 1 Professional Typography) */}
+              <div className="p-5 sm:p-6 space-y-3 overflow-y-auto font-sans">
+                {/* Year / Ribbon Tag */}
+                <div className="flex items-center gap-1.5 text-xs font-medium text-pink-400">
+                  <span>🎗</span>
+                  <span>{activeProject.year || activeProject.badge || '2025'}</span>
                 </div>
 
-                {/* Right Controls (Matching Image 1) */}
-                <div className="flex items-center gap-1.5 sm:gap-2">
-                  <button
-                    type="button"
-                    onClick={handlePrevProject}
-                    className="px-2 sm:px-2.5 py-1 rounded bg-white/[0.06] hover:bg-white/[0.12] text-white/80 hover:text-white border border-white/15 text-[10px] sm:text-[11px] font-mono tracking-wider transition-colors flex items-center gap-1"
-                    title="Karya Sebelumnya (Panah Kiri)"
+                {/* Project Title */}
+                <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight leading-snug">
+                  {activeProject.title}
+                </h3>
+
+                {/* Client / Organization in Signature Cyan */}
+                <div className="text-sm font-semibold text-[#18d3ff] tracking-normal">
+                  {activeProject.client || activeProject.category}
+                </div>
+
+                {/* Description */}
+                <p className="text-sm text-slate-300 leading-relaxed font-normal pt-0.5 text-wrap-pretty">
+                  {activeProject.description}
+                </p>
+
+                {/* Software / Skills Tags */}
+                {activeProject.tags && activeProject.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-2 pt-1.5">
+                    {activeProject.tags.map((t: string) => (
+                      <span
+                        key={t}
+                        className="px-3 py-1 rounded-full text-xs font-medium bg-white/[0.04] border border-white/10 text-slate-300"
+                      >
+                        {t}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {/* Blue / Cyan Action Footer Button */}
+                <div className="pt-4 border-t border-white/8 mt-4 flex items-center justify-between gap-3">
+                  <a
+                    href={parsed.originalUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 shadow-lg shadow-blue-500/25"
                   >
-                    <span>|◀</span>
-                    <span className="hidden sm:inline">KARYA SEB.</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleNextProject}
-                    className="px-2 sm:px-2.5 py-1 rounded bg-white/[0.06] hover:bg-white/[0.12] text-white/80 hover:text-white border border-white/15 text-[10px] sm:text-[11px] font-mono tracking-wider transition-colors flex items-center gap-1"
-                    title="Karya Berikutnya (Panah Kanan)"
-                  >
-                    <span className="hidden sm:inline">KARYA BER.</span>
-                    <span>▶|</span>
-                  </button>
+                    <span>{ctaText}</span>
+                    <span>↗</span>
+                  </a>
                   <button
                     type="button"
                     onClick={() => setActiveProjectIndex(null)}
-                    className="px-2.5 py-1 rounded bg-white/[0.08] hover:bg-rose-500/20 hover:text-rose-300 hover:border-rose-500/40 text-white/90 border border-white/15 text-[10px] sm:text-[11px] font-mono tracking-wider transition-colors"
+                    className="px-4 py-2 rounded-xl text-slate-400 hover:text-white text-xs sm:text-sm font-medium transition-colors"
                   >
-                    TUTUP ✕
+                    Tutup
                   </button>
-                </div>
-              </div>
-
-              {/* Content Area: Split 2 Columns on Desktop */}
-              <div className="overflow-y-auto flex-1 grid grid-cols-1 lg:grid-cols-12">
-                {/* Left Column: Visual Media Stage with In-Media Arrows */}
-                <div className="lg:col-span-7 xl:col-span-8 bg-black relative flex items-center justify-center min-h-[260px] sm:min-h-[360px] lg:min-h-[460px] overflow-hidden border-b lg:border-b-0 lg:border-r border-white/10 group">
-                  {/* Left Arrow Button */}
-                  <button
-                    type="button"
-                    onClick={handlePrevProject}
-                    className="absolute left-0 top-1/2 -translate-y-1/2 w-8 sm:w-10 h-12 sm:h-14 bg-black/60 hover:bg-black/90 text-white/80 hover:text-white flex items-center justify-center rounded-r transition-colors z-20 text-base"
-                    aria-label="Previous"
-                  >
-                    ‹
-                  </button>
-
-                  {/* Media Viewer */}
-                  {(() => {
-                    if (parsed.type === 'gdrive') {
-                      return (
-                        <iframe
-                          src={parsed.embedUrl}
-                          className="w-full h-full border-0 min-h-[320px] lg:min-h-[440px]"
-                          allow="autoplay; fullscreen"
-                          title={activeProject.title}
-                        />
-                      );
-                    } else if (parsed.type === 'youtube') {
-                      return (
-                        <iframe
-                          src={parsed.embedUrl}
-                          className="w-full h-full border-0 min-h-[320px] lg:min-h-[440px]"
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          allowFullScreen
-                          title={activeProject.title}
-                        />
-                      );
-                    } else if (parsed.type === 'video') {
-                      return (
-                        <video
-                          src={parsed.embedUrl}
-                          controls
-                          autoPlay
-                          className="w-full h-full object-cover max-h-[500px]"
-                        />
-                      );
-                    } else {
-                      return (
-                        <div className="relative w-full h-full flex items-center justify-center bg-black">
-                          <img
-                            src={projectImg}
-                            alt={activeProject.title}
-                            className="w-full h-full object-cover max-h-[500px]"
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent pointer-events-none" />
-                        </div>
-                      );
-                    }
-                  })()}
-
-                  {/* Right Arrow Button */}
-                  <button
-                    type="button"
-                    onClick={handleNextProject}
-                    className="absolute right-0 top-1/2 -translate-y-1/2 w-8 sm:w-10 h-12 sm:h-14 bg-black/60 hover:bg-black/90 text-white/80 hover:text-white flex items-center justify-center rounded-l transition-colors z-20 text-base"
-                    aria-label="Next"
-                  >
-                    ›
-                  </button>
-                </div>
-
-                {/* Right Column: Information, Metadata Table & Action Button */}
-                <div className="lg:col-span-5 xl:col-span-4 bg-[#141519] p-5 sm:p-6 flex flex-col justify-between overflow-y-auto space-y-4">
-                  <div>
-                    {/* Project Title */}
-                    <h3 className="text-lg sm:text-xl font-extrabold text-white tracking-tight uppercase leading-snug mb-3">
-                      {activeProject.title}
-                    </h3>
-
-                    {/* Description */}
-                    <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-normal mb-4 text-wrap-pretty">
-                      {activeProject.description}
-                    </p>
-
-                    {/* Tags */}
-                    {activeProject.tags && activeProject.tags.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5 mb-5">
-                        {activeProject.tags.map((t: string) => (
-                          <span
-                            key={t}
-                            className="px-2 py-0.5 rounded bg-white/[0.05] border border-white/10 text-slate-300 text-[10px] font-mono uppercase tracking-wider"
-                          >
-                            {t}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Metadata Key-Value Table (Matching Image 1) */}
-                    <div className="border-t border-b border-white/10 divide-y divide-white/[0.07] text-[11px] font-mono">
-                      <div className="py-2 flex items-center justify-between">
-                        <span className="text-slate-400 uppercase tracking-wider">Kategori</span>
-                        <span className="text-white font-semibold text-right">{activeProject.category || 'Videografi'}</span>
-                      </div>
-                      <div className="py-2 flex items-center justify-between">
-                        <span className="text-slate-400 uppercase tracking-wider">Sub-Bidang</span>
-                        <span className="text-[#f59e0b] font-semibold text-right">{activeProject.subField || 'Reels'}</span>
-                      </div>
-                      <div className="py-2 flex items-center justify-between">
-                        <span className="text-slate-400 uppercase tracking-wider">Sorotan</span>
-                        <span className="text-[#f59e0b] font-semibold text-right">{activeProject.highlight || activeProject.category || 'Reels'}</span>
-                      </div>
-                      <div className="py-2 flex items-center justify-between">
-                        <span className="text-slate-400 uppercase tracking-wider">Instansi / Klien</span>
-                        <span className="text-white font-semibold text-right">{activeProject.client || 'KzN Visuals'}</span>
-                      </div>
-                      <div className="py-2 flex items-center justify-between">
-                        <span className="text-slate-400 uppercase tracking-wider">Tahun Karya</span>
-                        <span className="text-white font-semibold text-right">{activeProject.year || '2026'}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Bottom CTA Button (Matching Image 1) */}
-                  <div className="pt-2">
-                    <a
-                      href={parsed.originalUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-full py-2.5 px-4 rounded bg-[#d97706] hover:bg-[#b45309] text-white font-bold text-xs uppercase tracking-wider font-mono flex items-center justify-center gap-2 shadow-lg transition-colors"
-                    >
-                      <span>↗ LIHAT POSTINGAN DI INSTAGRAM</span>
-                    </a>
-                  </div>
                 </div>
               </div>
             </div>
@@ -830,171 +772,96 @@ export default function Home() {
         );
       })()}
 
-      {/* ── REFERENCE MODAL: CERTIFICATE (MATCHING IMAGE 5) ── */}
+      {/* ── COMPACT ELEGANT MODAL: CERTIFICATE (MATCHING IMAGE 1 EXACTLY) ── */}
       {activeCertificateIndex !== null && (() => {
         const activeCert = (config.certificates || [])[activeCertificateIndex];
         if (!activeCert) return null;
 
         const certImg = activeCert.image || '/certificates/cert-qris.svg';
-        const total = (config.certificates || []).length;
 
         return (
           <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 bg-black/85 backdrop-blur-md transition-all duration-200"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md modal-backdrop-enter"
             onClick={() => setActiveCertificateIndex(null)}
           >
             <div
-              className="relative w-full max-w-5xl max-h-[92vh] bg-[#121316] border border-white/12 rounded-xl sm:rounded-2xl shadow-[0_25px_80px_rgba(0,0,0,0.95)] overflow-hidden flex flex-col"
+              className="relative w-full max-w-md sm:max-w-lg max-h-[90vh] bg-[#0c101d] border border-white/12 rounded-2xl sm:rounded-3xl shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9)] overflow-hidden flex flex-col modal-fade-enter"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Top Navigation Bar (Matching Image 5) */}
-              <div className="px-4 sm:px-6 py-2.5 sm:py-3 bg-[#18191d] border-b border-white/10 flex items-center justify-between gap-3 shrink-0">
-                {/* Left Badge & Meta */}
-                <div className="flex items-center gap-2.5">
-                  <span className="px-2.5 py-0.5 rounded-sm bg-[#eab308] text-black font-extrabold text-[11px] uppercase tracking-wider font-mono">
-                    {activeCert.badge || '🏆 LOMBA'}
-                  </span>
-                  <span className="text-xs text-white/70 font-mono tracking-wide hidden sm:inline">
-                    {activeCert.period || '2026'}
-                  </span>
+              {/* Certificate Preview Stage (Clean Document Frame with Close Button) */}
+              <div className="relative w-full aspect-[4/3] sm:aspect-[16/11] bg-[#f8fafc] overflow-hidden flex items-center justify-center p-3 sm:p-4 border-b border-white/10 shrink-0">
+                <img
+                  src={certImg}
+                  alt={activeCert.title}
+                  className="max-w-full max-h-full object-contain rounded-lg shadow-md"
+                />
+
+                {/* Close Button at Top Right Corner */}
+                <button
+                  type="button"
+                  onClick={() => setActiveCertificateIndex(null)}
+                  className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/60 hover:bg-black/90 text-white/90 hover:text-white flex items-center justify-center text-xs font-bold transition-all border border-white/15 z-20 shadow-md backdrop-blur-md"
+                  aria-label="Tutup"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Information Body (Matching Image 1 EXACTLY) */}
+              <div className="p-5 sm:p-6 space-y-3 overflow-y-auto font-sans">
+                {/* Ribbon + Year */}
+                <div className="flex items-center gap-1.5 text-xs font-medium text-pink-400">
+                  <span>🎗</span>
+                  <span>{activeCert.period || '2026'}</span>
                 </div>
 
-                {/* Right Controls (Matching Image 5) */}
-                <div className="flex items-center gap-1.5 sm:gap-2">
-                  <button
-                    type="button"
-                    onClick={handlePrevCert}
-                    className="px-2 sm:px-2.5 py-1 rounded bg-white/[0.06] hover:bg-white/[0.12] text-white/80 hover:text-white border border-white/15 text-[10px] sm:text-[11px] font-mono tracking-wider transition-colors flex items-center gap-1"
-                    title="Sertifikat Sebelumnya (Panah Kiri)"
-                  >
-                    <span>|◀</span>
-                    <span className="hidden sm:inline">SERTIF SEB.</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleNextCert}
-                    className="px-2 sm:px-2.5 py-1 rounded bg-white/[0.06] hover:bg-white/[0.12] text-white/80 hover:text-white border border-white/15 text-[10px] sm:text-[11px] font-mono tracking-wider transition-colors flex items-center gap-1"
-                    title="Sertifikat Berikutnya (Panah Kanan)"
-                  >
-                    <span className="hidden sm:inline">SERTIF BER.</span>
-                    <span>▶|</span>
-                  </button>
+                {/* Certificate Title */}
+                <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight leading-snug">
+                  {activeCert.title}
+                </h3>
+
+                {/* Issuer in Signature Cyan */}
+                <div className="text-sm font-semibold text-[#18d3ff] tracking-normal">
+                  {activeCert.issuer}
+                </div>
+
+                {/* Description */}
+                <p className="text-sm text-slate-300 leading-relaxed font-normal pt-0.5 text-wrap-pretty">
+                  {activeCert.description}
+                </p>
+
+                {/* Tags */}
+                {activeCert.tags && activeCert.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-2 pt-1.5">
+                    {activeCert.tags.map((t: string) => (
+                      <span
+                        key={t}
+                        className="px-3 py-1 rounded-full text-xs font-medium bg-white/[0.04] border border-white/10 text-slate-300"
+                      >
+                        {t}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {/* Blue / Cyan Action Footer Button */}
+                <div className="pt-4 border-t border-white/8 mt-4 flex items-center justify-between gap-3">
                   <a
                     href={certImg}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-2 sm:px-2.5 py-1 rounded bg-white/[0.06] hover:bg-white/[0.12] text-white/80 hover:text-white border border-white/15 text-[10px] sm:text-[11px] font-mono tracking-wider transition-colors flex items-center gap-1"
+                    className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 shadow-lg shadow-blue-500/25"
                   >
-                    <span>🔍</span>
-                    <span className="hidden sm:inline">PERBESAR</span>
+                    <span>Buka Dokumen Asli</span>
+                    <span>↗</span>
                   </a>
                   <button
                     type="button"
                     onClick={() => setActiveCertificateIndex(null)}
-                    className="px-2.5 py-1 rounded bg-white/[0.08] hover:bg-rose-500/20 hover:text-rose-300 hover:border-rose-500/40 text-white/90 border border-white/15 text-[10px] sm:text-[11px] font-mono tracking-wider transition-colors"
+                    className="px-4 py-2 rounded-xl text-slate-400 hover:text-white text-xs sm:text-sm font-medium transition-colors"
                   >
-                    TUTUP ✕
+                    Tutup
                   </button>
-                </div>
-              </div>
-
-              {/* Content Area: Split 2 Columns */}
-              <div className="overflow-y-auto flex-1 grid grid-cols-1 lg:grid-cols-12">
-                {/* Left Column: Certificate Document Display with In-Media Arrows */}
-                <div className="lg:col-span-7 xl:col-span-8 bg-[#0a0c10] relative flex items-center justify-center p-3 sm:p-5 border-b lg:border-b-0 lg:border-r border-white/10 group">
-                  {/* Left Arrow Button */}
-                  <button
-                    type="button"
-                    onClick={handlePrevCert}
-                    className="absolute left-0 top-1/2 -translate-y-1/2 w-8 sm:w-10 h-12 sm:h-14 bg-black/60 hover:bg-black/90 text-white/80 hover:text-white flex items-center justify-center rounded-r transition-colors z-20 text-base"
-                    aria-label="Previous"
-                  >
-                    ‹
-                  </button>
-
-                  {/* Certificate Image Frame */}
-                  <div className="w-full h-full flex items-center justify-center max-h-[500px]">
-                    <img
-                      src={certImg}
-                      alt={activeCert.title}
-                      className="max-w-full max-h-[460px] object-contain rounded-lg shadow-2xl"
-                    />
-                  </div>
-
-                  {/* Right Arrow Button */}
-                  <button
-                    type="button"
-                    onClick={handleNextCert}
-                    className="absolute right-0 top-1/2 -translate-y-1/2 w-8 sm:w-10 h-12 sm:h-14 bg-black/60 hover:bg-black/90 text-white/80 hover:text-white flex items-center justify-center rounded-l transition-colors z-20 text-base"
-                    aria-label="Next"
-                  >
-                    ›
-                  </button>
-                </div>
-
-                {/* Right Column: Metadata & Details */}
-                <div className="lg:col-span-5 xl:col-span-4 bg-[#141519] p-5 sm:p-6 flex flex-col justify-between overflow-y-auto space-y-4">
-                  <div>
-                    {/* Certificate Title */}
-                    <h3 className="text-lg sm:text-xl font-extrabold text-white tracking-tight uppercase leading-snug mb-3">
-                      {activeCert.title}
-                    </h3>
-
-                    {/* Description */}
-                    <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-normal mb-4 text-wrap-pretty">
-                      {activeCert.description}
-                    </p>
-
-                    {/* Tags */}
-                    {activeCert.tags && activeCert.tags.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5 mb-5">
-                        {activeCert.tags.map((t: string) => (
-                          <span
-                            key={t}
-                            className="px-2 py-0.5 rounded bg-white/[0.05] border border-white/10 text-slate-300 text-[10px] font-mono uppercase tracking-wider"
-                          >
-                            {t}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Metadata Key-Value Table (Matching Image 5) */}
-                    <div className="border-t border-b border-white/10 divide-y divide-white/[0.07] text-[11px] font-mono">
-                      <div className="py-2 flex items-center justify-between">
-                        <span className="text-slate-400 uppercase tracking-wider">Kategori</span>
-                        <span className="text-white font-semibold text-right">{activeCert.category || 'Lomba'}</span>
-                      </div>
-                      <div className="py-2 flex items-center justify-between">
-                        <span className="text-slate-400 uppercase tracking-wider">Jumlah Slide</span>
-                        <span className="text-white font-semibold text-right">{activeCert.slides || '1 Halaman'}</span>
-                      </div>
-                      <div className="py-2 flex items-center justify-between">
-                        <span className="text-slate-400 uppercase tracking-wider">Penerbit</span>
-                        <span className="text-white font-semibold text-right max-w-[180px] truncate">{activeCert.issuer}</span>
-                      </div>
-                      <div className="py-2 flex items-center justify-between">
-                        <span className="text-slate-400 uppercase tracking-wider">Tahun / Masa Berlaku</span>
-                        <span className="text-white font-semibold text-right">{activeCert.period || '2026'}</span>
-                      </div>
-                      <div className="py-2 flex items-center justify-between">
-                        <span className="text-slate-400 uppercase tracking-wider">No. / Keterangan</span>
-                        <span className="text-white font-semibold text-right">{activeCert.keterangan || activeCert.tag || 'Juara 1 Content Reels'}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Bottom CTA Button */}
-                  <div className="pt-2">
-                    <a
-                      href={certImg}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-full py-2.5 px-4 rounded bg-[#d97706] hover:bg-[#b45309] text-white font-bold text-xs uppercase tracking-wider font-mono flex items-center justify-center gap-2 shadow-lg transition-colors"
-                    >
-                      <span>↗ BUKA DOKUMEN ASLI</span>
-                    </a>
-                  </div>
                 </div>
               </div>
             </div>
