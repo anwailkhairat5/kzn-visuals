@@ -89,15 +89,11 @@
     "lead": "Profesional multimedia yang kreatif dan berdedikasi dengan minat besar di dunia perfilman dan industri kreatif. Menguasai videografi dan editing, serta mahir menggunakan software editing ternama seperti Adobe Creative Suite (Premiere Pro, After Effects, Photoshop, dan Illustrator). Berpengalaman dalam menciptakan konten visual yang menarik dengan kemampuan bekerja secara mandiri maupun dalam tim.",
     "sub": "Mengintegrasikan teknologi AI ke dalam editing workflow—termasuk voice over AI, footage AI, dan auto caption—serta menerapkan visual effects seperti 3D logo animation, compositing, masking, dan 3D tracking untuk memperkuat identitas brand visual. Selalu siap belajar dan berkontribusi maksimal dalam mewujudkan karya inspiratif.",
     "skills": [
-<<<<<<< HEAD
-      "Adobe Premiere Pro",
-      "After Effects",
-      "DaVinci Resolve",
-=======
       "Videografi",
       "Fotografi",
       "Adobe Premiere Pro",
       "Adobe After Effects",
+      "DaVinci Resolve",
       "Adobe Photoshop",
       "Adobe Illustrator",
       "VFX Compositing",
@@ -105,7 +101,6 @@
       "Motion Graphics",
       "Color Grading",
       "Sound Design",
->>>>>>> 6894681 (feat: sync CV data, add Instagram & Drive embed video player, justify text, update WhatsApp & Instagram, remove GitHub)
       "AI Workflow"
     ],
     "stats": [
