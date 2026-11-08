@@ -127,7 +127,9 @@
       "id": "proj-1",
       "title": "Castrol & YPTI Commercial Visuals",
       "category": "VFX & Commercial Video",
-      "description": "Produksi video promosi dan reels komersial dengan penerapan visual effects (VFX), 3D logo animation, motion graphic, color grading, dan sound design profesional.",
+      "image": "https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=900&q=80&auto=format&fit=crop",
+      "accent": "#22d3ee",
+      "description": "Produksi video promosi dan reels komersial dengan penerapan visual effects (VFX), 3D logo animation, motion graphic, color grading, dan sound design profesional. Kolaborasi bersama Unicam Studio untuk menghasilkan standar visual setara industri periklanan modern.",
       "tags": [
         "Castrol",
         "After Effects",
@@ -141,7 +143,9 @@
       "id": "proj-2",
       "title": "Film Pendek \"Money Politic\"",
       "category": "Film Pendek & Sinematografi",
-      "description": "Film pendek pemenang Juara 1 KIP Aceh dengan penceritaan visual sinematik dramatis, teknik videografi presisi, dan tata suara berbobot.",
+      "image": "https://images.unsplash.com/photo-1485846234645-a62644f84728?w=900&q=80&auto=format&fit=crop",
+      "accent": "#f59e0b",
+      "description": "Film pendek pemenang Juara 1 KIP Aceh dengan penceritaan visual sinematik dramatis, blocking kamera presisi, komposisi warna atmosferik, dan tata suara berbobot yang menyampaikan pesan sosial secara mendalam dan mengesankan.",
       "tags": [
         "Juara 1 KIP",
         "Film Pendek",
@@ -155,7 +159,9 @@
       "id": "proj-3",
       "title": "Video Reels QRIS & CBP Bank Indonesia",
       "category": "Motion & Social Media",
-      "description": "Seri video reels edukatif peraih Juara 1 Bank Indonesia, menggabungkan AI workflow (voice over AI, auto caption) dan ritme editing yang dinamis.",
+      "image": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=900&q=80&auto=format&fit=crop",
+      "accent": "#3b82f6",
+      "description": "Seri video reels edukatif peraih Juara 1 Bank Indonesia, menggabungkan AI workflow (voice over AI generatif, auto caption dinamis, smart cutting) dan ritme editing yang energik untuk engagement maksimal generasi muda.",
       "tags": [
         "Juara 1 BI",
         "Reels",
@@ -169,7 +175,9 @@
       "id": "proj-4",
       "title": "Ezran Core & KzN Visual Showcase",
       "category": "Videografi & Branding",
-      "description": "Koleksi karya videografi dan fotografi komersial untuk kebutuhan branding media sosial klien, menekankan tampilan modern dan estetika visual tinggi.",
+      "image": "https://images.unsplash.com/photo-1536240478700-b869070f9279?w=900&q=80&auto=format&fit=crop",
+      "accent": "#a855f7",
+      "description": "Koleksi karya videografi dan fotografi komersial untuk kebutuhan branding media sosial klien, menekankan tampilan modern, estetika visual tinggi, color tone berkarakter, dan komposisi frame modern yang siap memikat audiens.",
       "tags": [
         "KzN Visuals",
         "Ezran Core",

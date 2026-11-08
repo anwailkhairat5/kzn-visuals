@@ -1962,6 +1962,63 @@ export default function AdminPage() {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {/* Image & Accent Row */}
+                    <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 bg-[#080a12] rounded-xl border border-white/10">
+                      <div className="sm:col-span-2 space-y-1">
+                        <label className="text-[10px] font-bold uppercase text-[#18d3ff] block">
+                          🖼 URL Gambar / Thumbnail Proyek (ChromaGrid)
+                        </label>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            placeholder="https://... atau /uploads/..."
+                            value={proj.image || ''}
+                            onChange={(e) => {
+                              const updated = [...(config.projects || [])];
+                              updated[idx] = { ...updated[idx], image: e.target.value };
+                              updateConfigValue('projects', updated);
+                            }}
+                            className="flex-1 bg-[#101422] border border-white/15 rounded-lg px-2.5 py-1.5 text-xs text-white"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => triggerDirectUpload(`projects[${idx}].image`)}
+                            className="text-[11px] font-bold px-2.5 py-1.5 rounded-lg bg-emerald-600/80 hover:bg-emerald-600 text-white shrink-0"
+                          >
+                            Upload File
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold uppercase text-white/60 block">
+                          ✨ Warna Aksen Glow
+                        </label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="color"
+                            value={proj.accent || '#22d3ee'}
+                            onChange={(e) => {
+                              const updated = [...(config.projects || [])];
+                              updated[idx] = { ...updated[idx], accent: e.target.value };
+                              updateConfigValue('projects', updated);
+                            }}
+                            className="w-8 h-8 rounded-lg bg-transparent border border-white/20 cursor-pointer"
+                          />
+                          <input
+                            type="text"
+                            value={proj.accent || '#22d3ee'}
+                            onChange={(e) => {
+                              const updated = [...(config.projects || [])];
+                              updated[idx] = { ...updated[idx], accent: e.target.value };
+                              updateConfigValue('projects', updated);
+                            }}
+                            className="flex-1 bg-[#101422] border border-white/15 rounded-lg px-2 py-1 text-xs font-mono text-white"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
                     <div>
                       <label className="text-[10px] font-bold uppercase text-white/60 block mb-1">Judul Project</label>
                       <input
