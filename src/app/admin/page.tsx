@@ -36,6 +36,7 @@ export default function AdminPage() {
 
   // File upload & crop states
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const directFileInputRef = useRef<HTMLInputElement>(null);
   const [currentUploadField, setCurrentUploadField] = useState<string | null>(null);
   const [cropModalOpen, setCropModalOpen] = useState(false);
   const [rawImageForCrop, setRawImageForCrop] = useState<string | null>(null);
@@ -170,6 +171,54 @@ export default function AdminPage() {
       curr[parts[parts.length - 1]] = value;
       return next;
     });
+  };
+
+  // Direct HD File Upload (No crop, preserves original 100% 4K/HD quality)
+  const triggerDirectUpload = (fieldPath: string) => {
+    setCurrentUploadField(fieldPath);
+    directFileInputRef.current?.click();
+  };
+
+  const onDirectFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !currentUploadField) return;
+
+    try {
+      setIsUploading(true);
+      // Instant local preview
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          updateConfigValue(currentUploadField, event.target.result as string);
+        }
+      };
+      reader.readAsDataURL(file);
+
+      // Upload raw file to API
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await fetch('/api/admin/upload', {
+        method: 'POST',
+        body: formData
+      });
+      const json = await res.json();
+      if (json.success && (json.url || json.githubUrl)) {
+        const finalUrl = json.githubUrl || json.url;
+        updateConfigValue(currentUploadField, finalUrl);
+        setSaveMessage({
+          text: '✓ Foto HD asli berhasil diunggah dengan resolusi penuh! Klik "Simpan Perubahan" untuk sinkronisasi.',
+          type: 'success'
+        });
+      } else {
+        setSaveMessage({ text: '✓ Foto diterapkan lokal.', type: 'success' });
+      }
+    } catch (err: any) {
+      setSaveMessage({ text: 'Gagal upload: ' + err.message, type: 'error' });
+    } finally {
+      setIsUploading(false);
+      e.target.value = '';
+    }
   };
 
   // Trigger file picker for cropping
@@ -433,6 +482,14 @@ export default function AdminPage() {
         className="hidden"
         onChange={onFileSelected}
       />
+      {/* Hidden File Picker for Direct Full-HD Upload (No Compression) */}
+      <input
+        ref={directFileInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={onDirectFileSelected}
+      />
 
       {/* Interactive Crop Modal */}
       <ImageCropperModal
@@ -539,13 +596,35 @@ export default function AdminPage() {
         )}
       </header>
 
-      {/* ── NAVIGATION TABS BAR ── */}
-      <nav className="bg-[#090b14] border-b border-white/10 px-4 lg:px-6 py-2 overflow-x-auto scrollbar-none flex gap-1.5 z-30">
+      {/* ── MOBILE TAB SELECTOR (DROPDOWN) ── */}
+      <div className="lg:hidden bg-[#0a0d18] border-b border-white/10 px-4 py-3 flex items-center justify-between gap-3 z-30">
+        <label className="text-xs font-bold text-[#18d3ff] whitespace-nowrap flex items-center gap-1.5">
+          <span>⚙️ Bagian:</span>
+        </label>
+        <select
+          value={activeTab}
+          onChange={(e) => setActiveTab(e.target.value as TabType)}
+          className="flex-1 bg-[#121829] border border-[#18d3ff]/30 text-white rounded-xl px-3 py-2 text-xs font-bold focus:outline-none focus:border-[#18d3ff] shadow-inner"
+        >
+          <option value="profile">🪪 About Me & 3D ProfileCard (Foto & Bio)</option>
+          <option value="lanyard">🪢 3D Lanyard Card (Kartu Gantung 3D)</option>
+          <option value="general">👤 Identitas, Teks Hero & Kontak</option>
+          <option value="depth">💎 3D DepthText (Judul Berkedalaman 3D)</option>
+          <option value="theme">🌌 Warna & DarkVeil Background</option>
+          <option value="nav">🔘 GooeyNav Menu Navigasi</option>
+          <option value="skills">🛠 Skills & Keahlian</option>
+          <option value="projects">🚀 Projects (Portofolio Karya)</option>
+          <option value="experience">💼 Pengalaman & Sertifikat</option>
+        </select>
+      </div>
+
+      {/* ── DESKTOP & TABLET NAVIGATION TABS BAR ── */}
+      <nav className="bg-[#090b14] border-b border-white/10 px-4 lg:px-6 py-2 overflow-x-auto flex gap-1.5 z-30 scrollbar-thin scrollbar-thumb-white/20">
         {[
           { id: 'profile', label: '🪪 About & ProfileCard', desc: 'Kartu 3D, foto & bio' },
           { id: 'lanyard', label: '🪢 3D Lanyard Card', desc: 'Kartu gantung 3D' },
+          { id: 'general', label: '👤 Identitas & Teks Hero', desc: 'Nama, bio & kontak' },
           { id: 'depth', label: '💎 3D DepthText', desc: 'Judul berkedalaman 3D' },
-          { id: 'general', label: '👤 Identitas & Umum', desc: 'Nama, kontak & sosial' },
           { id: 'theme', label: '🌌 Warna & DarkVeil', desc: 'Warna tema & background' },
           { id: 'nav', label: '🔘 GooeyNav', desc: 'Navigasi menu utama' },
           { id: 'skills', label: '🛠 Skills', desc: 'Daftar keahlian' },
@@ -557,7 +636,7 @@ export default function AdminPage() {
             onClick={() => setActiveTab(tab.id as TabType)}
             className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex flex-col items-start gap-0.5 ${
               activeTab === tab.id
-                ? 'bg-gradient-to-r from-[#2f77ff]/20 to-[#18d3ff]/20 text-[#18d3ff] border border-[#18d3ff]/40 shadow-sm'
+                ? 'bg-gradient-to-r from-[#2f77ff]/30 to-[#18d3ff]/30 text-[#18d3ff] border border-[#18d3ff]/60 shadow-md shadow-blue-500/20 ring-1 ring-[#18d3ff]/40'
                 : 'text-white/60 hover:text-white hover:bg-white/5 border border-transparent'
             }`}
           >
@@ -1008,13 +1087,22 @@ export default function AdminPage() {
                     <div className="w-28 h-40 rounded-lg overflow-hidden border border-white/20 bg-black mb-3">
                       <img src={config.lanyard?.frontImage || '/card-front.png'} alt="Front" className="w-full h-full object-cover" />
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => triggerCropUpload('lanyard.frontImage', 'Potong Gambar Depan Lanyard', 'idcard')}
-                      className="w-full text-xs font-bold py-2 px-3 rounded-lg bg-[#2f77ff] hover:bg-[#3d82ff] text-white transition-all shadow-md shadow-blue-500/20"
-                    >
-                      Upload & Potong
-                    </button>
+                    <div className="flex flex-col gap-1.5 w-full">
+                      <button
+                        type="button"
+                        onClick={() => triggerCropUpload('lanyard.frontImage', 'Potong Gambar Depan Lanyard', 'idcard')}
+                        className="w-full text-xs font-bold py-1.5 px-2.5 rounded-lg bg-[#2f77ff] hover:bg-[#3d82ff] text-white transition-all shadow-md shadow-blue-500/20"
+                      >
+                        ✂️ Potong (HD)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => triggerDirectUpload('lanyard.frontImage')}
+                        className="w-full text-xs font-bold py-1.5 px-2.5 rounded-lg bg-emerald-600/80 hover:bg-emerald-600 text-white transition-all"
+                      >
+                        📁 File Asli HD
+                      </button>
+                    </div>
                   </div>
 
                   {/* Back Image */}
@@ -1023,13 +1111,22 @@ export default function AdminPage() {
                     <div className="w-28 h-40 rounded-lg overflow-hidden border border-white/20 bg-black mb-3">
                       <img src={config.lanyard?.backImage || '/card-back.png'} alt="Back" className="w-full h-full object-cover" />
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => triggerCropUpload('lanyard.backImage', 'Potong Gambar Belakang Lanyard', 'idcard')}
-                      className="w-full text-xs font-bold py-2 px-3 rounded-lg bg-[#2f77ff] hover:bg-[#3d82ff] text-white transition-all shadow-md shadow-blue-500/20"
-                    >
-                      Upload & Potong
-                    </button>
+                    <div className="flex flex-col gap-1.5 w-full">
+                      <button
+                        type="button"
+                        onClick={() => triggerCropUpload('lanyard.backImage', 'Potong Gambar Belakang Lanyard', 'idcard')}
+                        className="w-full text-xs font-bold py-1.5 px-2.5 rounded-lg bg-[#2f77ff] hover:bg-[#3d82ff] text-white transition-all shadow-md shadow-blue-500/20"
+                      >
+                        ✂️ Potong (HD)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => triggerDirectUpload('lanyard.backImage')}
+                        className="w-full text-xs font-bold py-1.5 px-2.5 rounded-lg bg-emerald-600/80 hover:bg-emerald-600 text-white transition-all"
+                      >
+                        📁 File Asli HD
+                      </button>
+                    </div>
                   </div>
 
                   {/* Strap Image */}
@@ -1038,13 +1135,22 @@ export default function AdminPage() {
                     <div className="w-28 h-40 rounded-lg overflow-hidden border border-white/20 bg-black mb-3 flex items-center justify-center p-2">
                       <img src={config.lanyard?.strapImage || '/band.png'} alt="Strap" className="w-12 h-full object-cover" />
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => triggerCropUpload('lanyard.strapImage', 'Potong Tekstur Tali Lanyard', 'strap')}
-                      className="w-full text-xs font-bold py-2 px-3 rounded-lg bg-[#2f77ff] hover:bg-[#3d82ff] text-white transition-all shadow-md shadow-blue-500/20"
-                    >
-                      Upload & Potong
-                    </button>
+                    <div className="flex flex-col gap-1.5 w-full">
+                      <button
+                        type="button"
+                        onClick={() => triggerCropUpload('lanyard.strapImage', 'Potong Tekstur Tali Lanyard', 'strap')}
+                        className="w-full text-xs font-bold py-1.5 px-2.5 rounded-lg bg-[#2f77ff] hover:bg-[#3d82ff] text-white transition-all shadow-md shadow-blue-500/20"
+                      >
+                        ✂️ Potong (HD)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => triggerDirectUpload('lanyard.strapImage')}
+                        className="w-full text-xs font-bold py-1.5 px-2.5 rounded-lg bg-emerald-600/80 hover:bg-emerald-600 text-white transition-all"
+                      >
+                        📁 File Asli HD
+                      </button>
+                    </div>
                   </div>
                 </div>
 

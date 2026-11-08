@@ -211,53 +211,46 @@ export default function ImageCropperModal({
     const cropX = (width - cropW) / 2;
     const cropY = (height - cropH) / 2;
 
-    // Create high-resolution export canvas
-    const exportCanvas = document.createElement('canvas');
-    exportCanvas.width = Math.round(cropW);
-    exportCanvas.height = Math.round(cropH);
-    const exportCtx = exportCanvas.getContext('2d');
+    // Calculate full-resolution export dimensions directly from native source image
+    const imgWidth = img.naturalWidth || img.width;
+    const imgHeight = img.naturalHeight || img.height;
+    const baseScale = Math.min((width * 0.75) / imgWidth, (height * 0.75) / imgHeight);
+    const sourceCropW = cropW / (baseScale * zoom);
+    const sourceCropH = cropH / (baseScale * zoom);
 
+    // Target crisp HD export (at least 1200px, up to 2560px for razor-sharp retina displays)
+    const targetExportW = Math.max(1200, Math.min(2560, Math.round(sourceCropW)));
+    const exportScale = targetExportW / cropW;
+    const targetExportH = Math.round(cropH * exportScale);
+
+    const exportCanvas = document.createElement('canvas');
+    exportCanvas.width = targetExportW;
+    exportCanvas.height = targetExportH;
+    const exportCtx = exportCanvas.getContext('2d');
     if (!exportCtx) return;
 
-    // Extract the cropped pixels from main canvas
-    const mainCtx = canvas.getContext('2d');
-    if (!mainCtx) return;
+    exportCtx.imageSmoothingEnabled = true;
+    exportCtx.imageSmoothingQuality = 'high';
 
-    // Redraw without dimming and borders to export clean image
-    const tempCanvas = document.createElement('canvas');
-    tempCanvas.width = width;
-    tempCanvas.height = height;
-    const tempCtx = tempCanvas.getContext('2d');
-    if (!tempCtx) return;
+    // Position image center relative to crop box in export canvas scale
+    const imageCenterRelX = (width / 2 + position.x - cropX) * exportScale;
+    const imageCenterRelY = (height / 2 + position.y - cropY) * exportScale;
+    const exportDrawW = imgWidth * baseScale * zoom * exportScale;
+    const exportDrawH = imgHeight * baseScale * zoom * exportScale;
 
-    tempCtx.save();
-    tempCtx.translate(width / 2 + position.x, height / 2 + position.y);
-    tempCtx.rotate((rotation * Math.PI) / 180);
-    tempCtx.scale(zoom, zoom);
-
-    const imgWidth = img.width;
-    const imgHeight = img.height;
-    const scale = Math.min((width * 0.75) / imgWidth, (height * 0.75) / imgHeight);
-    const drawW = imgWidth * scale;
-    const drawH = imgHeight * scale;
-
-    tempCtx.drawImage(img, -drawW / 2, -drawH / 2, drawW, drawH);
-    tempCtx.restore();
-
-    // Copy exact crop area
+    exportCtx.save();
+    exportCtx.translate(imageCenterRelX, imageCenterRelY);
+    exportCtx.rotate((rotation * Math.PI) / 180);
     exportCtx.drawImage(
-      tempCanvas,
-      cropX,
-      cropY,
-      cropW,
-      cropH,
-      0,
-      0,
-      exportCanvas.width,
-      exportCanvas.height
+      img,
+      -exportDrawW / 2,
+      -exportDrawH / 2,
+      exportDrawW,
+      exportDrawH
     );
+    exportCtx.restore();
 
-    const croppedDataUrl = exportCanvas.toDataURL('image/png', 0.95);
+    const croppedDataUrl = exportCanvas.toDataURL('image/png');
     onCropComplete(croppedDataUrl);
     onClose();
   };
