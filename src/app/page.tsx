@@ -125,7 +125,7 @@ export default function Home() {
       </div>
 
       {/* ── NAVIGATION ── */}
-      <nav aria-label="Menu utama">
+      <nav className="site-nav" aria-label="Menu utama">
         <div className="wrap">
           <a className="logo" href="#home">
             {config.general?.brandLogo || 'Anwail Khairat'}<i>.</i>

@@ -619,7 +619,7 @@ export default function AdminPage() {
       </div>
 
       {/* ── DESKTOP & TABLET NAVIGATION TABS BAR ── */}
-      <nav className="bg-[#090b14] border-b border-white/10 px-4 lg:px-6 py-2 overflow-x-auto flex gap-1.5 z-30 scrollbar-thin scrollbar-thumb-white/20">
+      <div className="w-full bg-[#0d1222] border-b border-white/15 px-4 lg:px-6 py-2.5 overflow-x-auto flex items-center gap-2 z-30 shadow-lg shrink-0 scrollbar-thin scrollbar-thumb-white/20">
         {[
           { id: 'profile', label: '🪪 About & ProfileCard', desc: 'Kartu 3D, foto & bio' },
           { id: 'lanyard', label: '🪢 3D Lanyard Card', desc: 'Kartu gantung 3D' },
@@ -644,7 +644,7 @@ export default function AdminPage() {
             <span className="text-[10px] font-normal opacity-50">{tab.desc}</span>
           </button>
         ))}
-      </nav>
+      </div>
 
       {/* ── MAIN WORKSPACE: SPLIT VIEW (EDITOR + LIVE PREVIEW) ── */}
       <div className="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
