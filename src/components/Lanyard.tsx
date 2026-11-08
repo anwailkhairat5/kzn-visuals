@@ -871,7 +871,7 @@ const Lanyard = ({
       const anchorRatio = typeof s.anchor === 'number' ? s.anchor : (ANCHORS[s.anchor] ?? 0.5);
       const anchorX = (anchorRatio - 0.5) * (viewHeight * aspect);
       const visibleTopY = cameraFrustumHeight / 2;
-      const anchorY = visibleTopY + 0.35;
+      const anchorY = visibleTopY + (aspect < 1 ? 1.4 : 0.5);
       const cardTop = viewHeight / 2 - viewHeight * mix(0.12, 0.42, clampVal(s.strapLength, 0, 1));
       const hangTop = cardTop + (layout.hangY - layout.height / 2);
       sim.anchor.set(anchorX, anchorY, 0);

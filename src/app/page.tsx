@@ -11,6 +11,7 @@ const DarkVeil = dynamic(() => import('@/components/DarkVeil'), { ssr: false });
 const GooeyNav = dynamic(() => import('@/components/GooeyNav'), { ssr: false });
 const DepthText = dynamic(() => import('@/components/DepthText'), { ssr: false });
 const ProfileCard = dynamic(() => import('@/components/ProfileCard'), { ssr: false });
+const GlowCursor = dynamic(() => import('@/components/GlowCursor'), { ssr: false });
 import ChromaGrid from '@/components/ChromaGrid';
 
 const NAV_ITEMS = [
@@ -112,6 +113,22 @@ export default function Home() {
 
   return (
     <div className="relative min-h-screen text-[#f4f6ff]">
+      {/* ── AMBIENT GLOW CURSOR (REACT BITS WEBGL2) ── */}
+      {mounted && (
+        <div className="fixed inset-0 pointer-events-none z-30 overflow-hidden" aria-hidden="true">
+          <GlowCursor
+            color={config.theme?.primaryColor || '#2f77ff'}
+            secondaryColor={config.theme?.accentCyan || '#18d3ff'}
+            intensity={1.25}
+            trailWidth={3.5}
+            linger={1.3}
+            glow={1.1}
+            clickBurst={true}
+            theme="dark"
+            className="w-full h-full pointer-events-none"
+          />
+        </div>
+      )}
       {/* ── INTERACTIVE DARKVEIL WEBGL BACKGROUND ── */}
       <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
         {mounted && (
@@ -201,7 +218,7 @@ export default function Home() {
                   finish={(config.lanyard?.finish as any) || 'glossy'}
                   cornerRadius={0.3}
                   size={isMobile ? (config.lanyard?.cardSizeMobile ?? 0.52) : (config.lanyard?.cardSizeDesktop ?? 0.38)}
-                  anchor={isMobile ? 'center' : (config.lanyard?.anchorDesktop ?? 0.82)}
+                  anchor={isMobile ? 'center' : (config.lanyard?.anchorDesktop ?? 0.74)}
                   strapLength={isMobile ? (config.lanyard?.strapLengthMobile ?? 0.34) : (config.lanyard?.strapLengthDesktop ?? 0.28)}
                   strapColor={config.lanyard?.strapColor || '#04050d'}
                   strapWidth={0.65}
@@ -588,167 +605,169 @@ export default function Home() {
       {activeMediaProject && (() => {
         const parsed = parseMediaUrl(activeMediaProject.link);
         const projectImg = activeMediaProject.image || 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=800&q=80&auto=format&fit=crop';
-        const accentColor = activeMediaProject.accent || '#22d3ee';
+        const accentColor = activeMediaProject.accent || '#2f77ff';
+
+        const isInstagramProfile = activeMediaProject.link?.includes('instagram.com') && !activeMediaProject.link?.includes('/p/') && !activeMediaProject.link?.includes('/reel/');
+
+        let ctaText = 'Buka di Sumber Asli';
+        if (parsed.type === 'instagram' || isInstagramProfile) ctaText = 'Tonton di Instagram';
+        else if (parsed.type === 'gdrive') ctaText = 'Buka Google Drive';
+        else if (parsed.type === 'youtube') ctaText = 'Tonton di YouTube';
 
         return (
           <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/80 backdrop-blur-xl transition-all duration-200"
+            className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-md transition-all duration-300"
             onClick={() => setActiveMediaProject(null)}
           >
             <div
-              className="relative w-full max-w-xl max-h-[90vh] bg-[#0d1222]/95 border border-white/12 rounded-3xl shadow-[0_25px_60px_-15px_rgba(0,0,0,0.85)] overflow-hidden modal-fade-enter flex flex-col"
+              className="relative w-full max-w-lg sm:max-w-xl max-h-[88vh] bg-[#0b0f19] border border-white/12 rounded-2xl sm:rounded-3xl shadow-[0_30px_90px_-20px_rgba(0,0,0,0.95)] overflow-hidden flex flex-col transition-transform duration-200"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Modal Minimal Header */}
-              <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/10 bg-white/[0.03]">
-                <div className="flex items-center gap-2 flex-wrap">
+              {/* Media Visual Stage */}
+              <div className="relative w-full bg-black shrink-0 overflow-hidden border-b border-white/10">
+                {(() => {
+                  if (parsed.type === 'instagram' && !isInstagramProfile) {
+                    return (
+                      <div className="w-full flex flex-col items-center justify-center py-2 bg-gradient-to-b from-[#11162a] to-black max-h-[460px] overflow-hidden">
+                        <iframe
+                          src={parsed.embedUrl}
+                          className="w-full max-w-[420px] h-[440px] border-0 rounded-xl"
+                          scrolling="no"
+                          allowTransparency
+                          title={activeMediaProject.title}
+                        />
+                      </div>
+                    );
+                  } else if (parsed.type === 'gdrive') {
+                    return (
+                      <div className="w-full aspect-video bg-black">
+                        <iframe
+                          src={parsed.embedUrl}
+                          className="w-full h-full border-0"
+                          allow="autoplay; fullscreen"
+                          title={activeMediaProject.title}
+                        />
+                      </div>
+                    );
+                  } else if (parsed.type === 'youtube') {
+                    return (
+                      <div className="w-full aspect-video bg-black">
+                        <iframe
+                          src={parsed.embedUrl}
+                          className="w-full h-full border-0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                          title={activeMediaProject.title}
+                        />
+                      </div>
+                    );
+                  } else if (parsed.type === 'video') {
+                    return (
+                      <video
+                        src={parsed.embedUrl}
+                        controls
+                        autoPlay
+                        className="w-full aspect-video bg-black"
+                      />
+                    );
+                  } else {
+                    return (
+                      <a
+                        href={parsed.originalUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="relative block w-full aspect-[16/9] overflow-hidden group cursor-pointer"
+                      >
+                        <img
+                          src={projectImg}
+                          alt={activeMediaProject.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#0b0f19] via-black/20 to-transparent" />
+                        <div className="absolute bottom-3 right-3 px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-md border border-white/15 text-white/90 text-xs font-medium flex items-center gap-1.5 group-hover:bg-blue-600 transition-colors">
+                          <span>{ctaText}</span>
+                          <span>↗</span>
+                        </div>
+                      </a>
+                    );
+                  }
+                })()}
+
+                {/* Floating Category Badge (Top Left) */}
+                <div className="absolute top-3 left-3 flex items-center gap-2 pointer-events-none z-10">
                   <span
-                    className="text-[11px] font-bold px-2.5 py-0.5 rounded-full border shadow-sm"
+                    className="text-[11px] font-semibold px-2.5 py-1 rounded-full backdrop-blur-md border shadow-md"
                     style={{
                       borderColor: `${accentColor}40`,
-                      background: `${accentColor}15`,
+                      background: 'rgba(11, 15, 25, 0.75)',
                       color: accentColor
                     }}
                   >
                     {activeMediaProject.category || 'Featured Work'}
                   </span>
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${parsed.badgeColor}`}>
-                    {parsed.badgeText}
-                  </span>
                 </div>
 
+                {/* Floating Close Button (Top Right) */}
                 <button
                   type="button"
                   onClick={() => setActiveMediaProject(null)}
-                  className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white/80 hover:text-white flex items-center justify-center transition-all text-sm font-bold shadow-sm"
+                  className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/60 hover:bg-black/90 text-white/80 hover:text-white backdrop-blur-md flex items-center justify-center transition-all text-sm font-bold border border-white/15 shadow-md z-10"
                   aria-label="Tutup"
                 >
                   ✕
                 </button>
               </div>
 
-              {/* Scrollable Content */}
-              <div className="overflow-y-auto p-4 sm:p-5 space-y-4 scrollbar-thin scrollbar-thumb-white/20">
-                {/* Media Stage */}
-                <div className="w-full rounded-2xl overflow-hidden bg-black/80 border border-white/10 shadow-inner">
-                  {(() => {
-                    if (parsed.type === 'instagram') {
-                      return (
-                        <div className="w-full flex flex-col items-center justify-center py-2 bg-gradient-to-b from-[#11162a] to-black">
-                          <iframe
-                            src={parsed.embedUrl}
-                            className="w-full max-w-[420px] h-[460px] sm:h-[500px] border-0 rounded-xl"
-                            scrolling="no"
-                            allowTransparency
-                            title={activeMediaProject.title}
-                          />
-                        </div>
-                      );
-                    } else if (parsed.type === 'gdrive') {
-                      return (
-                        <div className="w-full aspect-video bg-black rounded-2xl overflow-hidden">
-                          <iframe
-                            src={parsed.embedUrl}
-                            className="w-full h-full border-0"
-                            allow="autoplay; fullscreen"
-                            title={activeMediaProject.title}
-                          />
-                        </div>
-                      );
-                    } else if (parsed.type === 'youtube') {
-                      return (
-                        <div className="w-full aspect-video bg-black rounded-2xl overflow-hidden">
-                          <iframe
-                            src={parsed.embedUrl}
-                            className="w-full h-full border-0"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowFullScreen
-                            title={activeMediaProject.title}
-                          />
-                        </div>
-                      );
-                    } else if (parsed.type === 'video') {
-                      return (
-                        <video
-                          src={parsed.embedUrl}
-                          controls
-                          autoPlay
-                          className="w-full aspect-video bg-black rounded-2xl"
-                        />
-                      );
-                    } else {
-                      // High Aesthetic Preview Banner
-                      return (
-                        <div className="relative w-full aspect-video overflow-hidden group">
-                          <img
-                            src={projectImg}
-                            alt={activeMediaProject.title}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex items-end p-4">
-                            <span className="text-xs font-semibold text-white/90 drop-shadow flex items-center gap-1.5">
-                              <span>▶</span> Tonton di Instagram Reels / Eksternal
-                            </span>
-                          </div>
-                        </div>
-                      );
-                    }
-                  })()}
-                </div>
-
+              {/* Scrollable Content Body */}
+              <div className="overflow-y-auto p-5 sm:p-6 space-y-4 scrollbar-thin scrollbar-thumb-white/20">
                 {/* Project Title */}
                 <div>
-                  <h3 className="text-lg sm:text-xl font-bold text-white tracking-tight leading-snug">
+                  <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight leading-snug">
                     {activeMediaProject.title}
                   </h3>
                 </div>
 
-                {/* Penjelasan Lengkap (Rapi & Bersih) */}
-                <div className="p-3.5 sm:p-4 rounded-xl bg-white/[0.03] border border-white/8 space-y-1.5">
-                  <h4 className="text-[11px] font-bold uppercase tracking-wider text-[#18d3ff] flex items-center gap-1.5">
-                    <span>📌</span> Penjelasan Lengkap
-                  </h4>
+                {/* Software / Tags */}
+                {activeMediaProject.tags && activeMediaProject.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {activeMediaProject.tags.map((t: string) => (
+                      <span
+                        key={t}
+                        className="px-2.5 py-0.5 rounded-md text-[11px] font-medium bg-white/[0.04] border border-white/10 text-slate-300"
+                      >
+                        {t}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {/* Penjelasan Lengkap (Clean, Minimalist Card) */}
+                <div className="p-4 rounded-xl bg-white/[0.025] border border-white/8 space-y-2">
+                  <div className="text-[11px] font-bold uppercase tracking-wider text-[#18d3ff] flex items-center gap-1.5">
+                    <span>✦</span> Penjelasan Lengkap
+                  </div>
                   <p className="text-xs sm:text-sm text-slate-200 leading-relaxed text-left text-wrap-pretty font-normal">
                     {activeMediaProject.description}
                   </p>
                 </div>
-
-                {/* Software / Tools Tags */}
-                {activeMediaProject.tags && activeMediaProject.tags.length > 0 && (
-                  <div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-white/50 block mb-1.5">
-                      Software & Workflow:
-                    </span>
-                    <div className="flex flex-wrap gap-1.5">
-                      {activeMediaProject.tags.map((t: string) => (
-                        <span
-                          key={t}
-                          className="px-2.5 py-0.5 rounded-md text-[11px] font-medium bg-white/[0.04] border border-white/10 text-slate-300"
-                        >
-                          {t}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
 
-              {/* Modal Footer */}
-              <div className="px-5 py-3 border-t border-white/10 bg-white/[0.02] flex items-center justify-between gap-3 shrink-0">
+              {/* Fixed Action Footer */}
+              <div className="px-5 py-3.5 border-t border-white/10 bg-[#070a13] flex items-center justify-between gap-3 shrink-0">
                 <button
                   type="button"
                   onClick={() => setActiveMediaProject(null)}
-                  className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white/80 text-xs font-semibold transition-all"
+                  className="px-4 py-2 rounded-xl text-slate-400 hover:text-white text-xs sm:text-sm font-medium transition-colors"
                 >
                   Tutup
                 </button>
                 <a
-                  href={parseMediaUrl(activeMediaProject.link).originalUrl}
+                  href={parsed.originalUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-4 py-2 rounded-xl bg-[#2f77ff] hover:bg-[#3d82ff] text-white text-xs font-bold transition-all flex items-center gap-1.5 shadow-md shadow-blue-500/25"
+                  className="px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs sm:text-sm font-semibold transition-all flex items-center gap-1.5 shadow-lg shadow-blue-500/25"
                 >
-                  <span>Buka di Sumber Asli</span>
+                  <span>{ctaText}</span>
                   <span>↗</span>
                 </a>
               </div>

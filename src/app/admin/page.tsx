@@ -1339,14 +1339,14 @@ export default function AdminPage() {
                     <div>
                       <div className="flex justify-between text-xs mb-1">
                         <span className="text-white/70">Posisi Kanan Kartu (Laptop)</span>
-                        <span className="text-[#18d3ff] font-mono">{config.lanyard?.anchorDesktop ?? 0.82}</span>
+                        <span className="text-[#18d3ff] font-mono">{config.lanyard?.anchorDesktop ?? 0.74}</span>
                       </div>
                       <input
                         type="range"
                         min="0.65"
                         max="0.90"
                         step="0.01"
-                        value={config.lanyard?.anchorDesktop ?? 0.82}
+                        value={config.lanyard?.anchorDesktop ?? 0.74}
                         onChange={(e) => updateConfigValue('lanyard.anchorDesktop', parseFloat(e.target.value))}
                         className="w-full accent-[#18d3ff]"
                       />

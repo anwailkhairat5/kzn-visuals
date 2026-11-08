@@ -465,7 +465,7 @@ footer {
     flex-direction: column;
     align-items: center;
     min-height: auto;
-    padding-top: 72px;
+    padding-top: 0;
     padding-bottom: 96px;
     grid-template-columns: none;
     overflow-x: hidden;
@@ -483,8 +483,8 @@ footer {
     top: auto;
     inset: auto;
     pointer-events: auto;
-    margin-top: -68px;
-    padding-top: 68px;
+    margin-top: 0;
+    padding-top: 0;
     margin-bottom: 12px;
     z-index: 10;
     overflow: visible;
