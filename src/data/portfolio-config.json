@@ -84,13 +84,10 @@
     "lead": "Mahasiswa Teknologi Rekayasa Multimedia di Politeknik Negeri Lhokseumawe. Skripsi membandingkan pemodelan 3D berbasis AI (Tripo AI) dengan pemodelan konvensional (Blender) dalam produksi film pendek.",
     "sub": "Fokus pada efisiensi workflow aset 3D, retopologi, texturing, dan rendering.",
     "skills": [
-      "Blender 3D",
-      "Tripo AI (3D Gen)",
-      "Unreal Engine",
       "Adobe Premiere Pro",
       "After Effects",
       "DaVinci Resolve",
-      "Substance Painter"
+      "AI Workflow"
     ],
     "stats": [
       {
