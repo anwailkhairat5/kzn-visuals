@@ -1,11 +1,12 @@
-import { NextRequest, NextResponse } from 'next/server';
+﻿import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs/promises';
 import path from 'path';
 
 const configFilePath = path.join(process.cwd(), 'src', 'data', 'portfolio-config.json');
 
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN || process.env.NEXT_PUBLIC_GITHUB_TOKEN || '';
-const GITHUB_REPO = process.env.GITHUB_REPO || 'anwailkhairat5/kzn-visuals';
+const rawToken = process.env.GITHUB_TOKEN || process.env.NEXT_PUBLIC_GITHUB_TOKEN || '';
+const GITHUB_TOKEN = rawToken.replace(/[^\x20-\x7E]/g, '').trim();
+const GITHUB_REPO = (process.env.GITHUB_REPO || 'anwailkhairat5/kzn-visuals').replace(/[^\x20-\x7E]/g, '').trim();
 
 const NO_CACHE_HEADERS = {
   'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
