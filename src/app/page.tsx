@@ -191,9 +191,9 @@ export default function Home() {
                   orientation="portrait"
                   finish={(config.lanyard?.finish as any) || 'glossy'}
                   cornerRadius={0.3}
-                  size={isMobile ? 0.44 : 0.46}
+                  size={isMobile ? (config.lanyard?.cardSizeMobile ?? 0.58) : (config.lanyard?.cardSizeDesktop ?? 0.48)}
                   anchor={isMobile ? 'center' : 0.74}
-                  strapLength={isMobile ? 0.22 : 0.28}
+                  strapLength={isMobile ? (config.lanyard?.strapLengthMobile ?? 0.34) : (config.lanyard?.strapLengthDesktop ?? 0.28)}
                   strapColor={config.lanyard?.strapColor || '#04050d'}
                   strapWidth={0.65}
                   metal="silver"

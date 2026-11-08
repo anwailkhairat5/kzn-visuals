@@ -776,6 +776,11 @@ const Lanyard = ({
     const ring = new THREE.Mesh(new THREE.TorusGeometry(RING_RADIUS, RING_TUBE, 18, 72), metalMaterial);
     ring.rotation.y = Math.PI / 2 - 0.7;
     cardGroup.add(bodyMesh, frontMesh, backMesh, ring);
+    cardGroup.frustumCulled = false;
+    bodyMesh.frustumCulled = false;
+    frontMesh.frustumCulled = false;
+    backMesh.frustumCulled = false;
+    ring.frustumCulled = false;
     scene.add(cardGroup);
 
     const bandGeometry = buildBandGeometry(SAMPLES);
@@ -787,6 +792,9 @@ const Lanyard = ({
     const clampMesh = new THREE.Mesh(buildClampGeometry(STRAP_WIDTH), metalMaterial);
     clampMesh.position.y = EYELET_RADIUS + CLAMP_BODY / 2 - 0.004;
     const eyelet = new THREE.Mesh(new THREE.TorusGeometry(EYELET_RADIUS, 0.0105, 14, 40), metalMaterial);
+    clampMesh.frustumCulled = false;
+    eyelet.frustumCulled = false;
+    clampGroup.frustumCulled = false;
     clampGroup.add(clampMesh, eyelet);
     scene.add(clampGroup);
 
@@ -850,8 +858,8 @@ const Lanyard = ({
       if (viewHeight * aspect < minimumWidth) viewHeight = minimumWidth / aspect;
       currentViewHeight = viewHeight;
       camera.aspect = aspect;
-      // Extra vertical headroom (viewHeight + 0.6) so top strap never clips
-      const extraHeadroom = aspect < 1 ? 1.6 : 0.9;
+      // Extra vertical headroom so top strap never clips and anchor stays off-screen
+      const extraHeadroom = aspect < 1 ? 1.1 : 0.8;
       const cameraFrustumHeight = viewHeight + extraHeadroom;
       camera.position.set(0, 0, cameraFrustumHeight / 2 / Math.tan((FOV * Math.PI) / 360));
       camera.lookAt(0, 0, 0);
@@ -862,7 +870,8 @@ const Lanyard = ({
       foilUniforms.foilTop.value.set(0.5, 4.5, 8).normalize().transformDirection(camera.matrixWorldInverse);
       const anchorRatio = typeof s.anchor === 'number' ? s.anchor : (ANCHORS[s.anchor] ?? 0.5);
       const anchorX = (anchorRatio - 0.5) * (viewHeight * aspect);
-      const anchorY = viewHeight / 2 + 0.15;
+      const visibleTopY = cameraFrustumHeight / 2;
+      const anchorY = visibleTopY + 0.35;
       const cardTop = viewHeight / 2 - viewHeight * mix(0.12, 0.42, clampVal(s.strapLength, 0, 1));
       const hangTop = cardTop + (layout.hangY - layout.height / 2);
       sim.anchor.set(anchorX, anchorY, 0);

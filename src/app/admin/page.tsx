@@ -1262,6 +1262,80 @@ export default function AdminPage() {
                     />
                   </div>
                 </div>
+                {/* UKURAN & PANJANG TALI RESPOCIF */}
+                <div className="mt-5 pt-4 border-t border-white/10">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-white/80 mb-1">
+                    📏 Ukuran & Panjang Tali Lanyard (Responsif)
+                  </h3>
+                  <p className="text-[11px] text-white/50 mb-4">
+                    Atur besar kartu dan panjang gantungan tali secara terpisah untuk tampilan HP / iPad dan Laptop.
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div>
+                      <div className="flex justify-between text-xs mb-1">
+                        <span className="text-white/70">Ukuran Kartu (HP/iPad)</span>
+                        <span className="text-[#18d3ff] font-mono">{config.lanyard?.cardSizeMobile ?? 0.58}</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="0.35"
+                        max="0.80"
+                        step="0.02"
+                        value={config.lanyard?.cardSizeMobile ?? 0.58}
+                        onChange={(e) => updateConfigValue('lanyard.cardSizeMobile', parseFloat(e.target.value))}
+                        className="w-full accent-[#18d3ff]"
+                      />
+                    </div>
+
+                    <div>
+                      <div className="flex justify-between text-xs mb-1">
+                        <span className="text-white/70">Panjang Tali (HP/iPad)</span>
+                        <span className="text-[#18d3ff] font-mono">{config.lanyard?.strapLengthMobile ?? 0.34}</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="0.15"
+                        max="0.60"
+                        step="0.02"
+                        value={config.lanyard?.strapLengthMobile ?? 0.34}
+                        onChange={(e) => updateConfigValue('lanyard.strapLengthMobile', parseFloat(e.target.value))}
+                        className="w-full accent-[#18d3ff]"
+                      />
+                    </div>
+
+                    <div>
+                      <div className="flex justify-between text-xs mb-1">
+                        <span className="text-white/70">Ukuran Kartu (Laptop)</span>
+                        <span className="text-[#18d3ff] font-mono">{config.lanyard?.cardSizeDesktop ?? 0.48}</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="0.30"
+                        max="0.70"
+                        step="0.02"
+                        value={config.lanyard?.cardSizeDesktop ?? 0.48}
+                        onChange={(e) => updateConfigValue('lanyard.cardSizeDesktop', parseFloat(e.target.value))}
+                        className="w-full accent-[#18d3ff]"
+                      />
+                    </div>
+
+                    <div>
+                      <div className="flex justify-between text-xs mb-1">
+                        <span className="text-white/70">Panjang Tali (Laptop)</span>
+                        <span className="text-[#18d3ff] font-mono">{config.lanyard?.strapLengthDesktop ?? 0.28}</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="0.15"
+                        max="0.50"
+                        step="0.02"
+                        value={config.lanyard?.strapLengthDesktop ?? 0.28}
+                        onChange={(e) => updateConfigValue('lanyard.strapLengthDesktop', parseFloat(e.target.value))}
+                        className="w-full accent-[#18d3ff]"
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           )}
