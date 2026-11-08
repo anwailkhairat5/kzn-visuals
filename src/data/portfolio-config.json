@@ -47,10 +47,11 @@
     "damping": 0.5,
     "elasticity": 0.5,
     "breeze": 0.4,
-    "cardSizeMobile": 0.58,
+    "cardSizeMobile": 0.52,
     "strapLengthMobile": 0.34,
-    "cardSizeDesktop": 0.48,
-    "strapLengthDesktop": 0.28
+    "cardSizeDesktop": 0.38,
+    "strapLengthDesktop": 0.28,
+    "anchorDesktop": 0.82
   },
   "gooeyNav": {
     "color": "#2f77ff",

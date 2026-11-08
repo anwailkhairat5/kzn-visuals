@@ -1271,18 +1271,18 @@ export default function AdminPage() {
                   <p className="text-[11px] text-white/50 mb-4">
                     Atur besar kartu dan panjang gantungan tali secara terpisah untuk tampilan HP / iPad dan Laptop.
                   </p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                     <div>
                       <div className="flex justify-between text-xs mb-1">
                         <span className="text-white/70">Ukuran Kartu (HP/iPad)</span>
-                        <span className="text-[#18d3ff] font-mono">{config.lanyard?.cardSizeMobile ?? 0.58}</span>
+                        <span className="text-[#18d3ff] font-mono">{config.lanyard?.cardSizeMobile ?? 0.52}</span>
                       </div>
                       <input
                         type="range"
                         min="0.35"
                         max="0.80"
                         step="0.02"
-                        value={config.lanyard?.cardSizeMobile ?? 0.58}
+                        value={config.lanyard?.cardSizeMobile ?? 0.52}
                         onChange={(e) => updateConfigValue('lanyard.cardSizeMobile', parseFloat(e.target.value))}
                         className="w-full accent-[#18d3ff]"
                       />
@@ -1307,14 +1307,14 @@ export default function AdminPage() {
                     <div>
                       <div className="flex justify-between text-xs mb-1">
                         <span className="text-white/70">Ukuran Kartu (Laptop)</span>
-                        <span className="text-[#18d3ff] font-mono">{config.lanyard?.cardSizeDesktop ?? 0.48}</span>
+                        <span className="text-[#18d3ff] font-mono">{config.lanyard?.cardSizeDesktop ?? 0.38}</span>
                       </div>
                       <input
                         type="range"
                         min="0.30"
                         max="0.70"
                         step="0.02"
-                        value={config.lanyard?.cardSizeDesktop ?? 0.48}
+                        value={config.lanyard?.cardSizeDesktop ?? 0.38}
                         onChange={(e) => updateConfigValue('lanyard.cardSizeDesktop', parseFloat(e.target.value))}
                         className="w-full accent-[#18d3ff]"
                       />
@@ -1332,6 +1332,22 @@ export default function AdminPage() {
                         step="0.02"
                         value={config.lanyard?.strapLengthDesktop ?? 0.28}
                         onChange={(e) => updateConfigValue('lanyard.strapLengthDesktop', parseFloat(e.target.value))}
+                        className="w-full accent-[#18d3ff]"
+                      />
+                    </div>
+
+                    <div>
+                      <div className="flex justify-between text-xs mb-1">
+                        <span className="text-white/70">Posisi Kanan Kartu (Laptop)</span>
+                        <span className="text-[#18d3ff] font-mono">{config.lanyard?.anchorDesktop ?? 0.82}</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="0.65"
+                        max="0.90"
+                        step="0.01"
+                        value={config.lanyard?.anchorDesktop ?? 0.82}
+                        onChange={(e) => updateConfigValue('lanyard.anchorDesktop', parseFloat(e.target.value))}
                         className="w-full accent-[#18d3ff]"
                       />
                     </div>

@@ -211,12 +211,11 @@ nav.site-nav a.l.on {
 
 .lead {
   font-size: 1.05rem;
-  line-height: 1.85;
+  line-height: 1.8;
   color: #cbd5e1;
   margin: 0 0 36px;
-  text-align: justify;
-  text-justify: inter-word;
-  hyphens: auto;
+  text-align: left;
+  text-wrap: pretty;
 }
 
 .btns {
@@ -565,13 +564,13 @@ footer {
 
   .lead {
     font-size: 1.02rem;
-    line-height: 1.8;
+    line-height: 1.75;
     color: #cbd5e1;
-    margin: 0 0 36px;
-    text-align: justify;
-    text-justify: inter-word;
-    hyphens: auto;
-    padding-inline: 4px;
+    margin: 0 0 32px;
+    text-align: left;
+    text-wrap: pretty;
+    word-spacing: normal;
+    padding-inline: 0;
   }
 
   .btns {
@@ -607,12 +606,37 @@ footer {
     align-items: center;
     padding-top: 0;
     padding-bottom: 0;
+    position: relative;
   }
   .hero-content {
     grid-column: 1;
     grid-row: 1;
     text-align: left;
     align-items: flex-start;
+    max-width: 560px;
+    z-index: 10;
+  }
+  .hero h1 {
+    font-size: clamp(2.4rem, 4.2vw, 3.6rem);
+    line-height: 1.1;
+    margin: 4px 0 24px;
+    font-weight: 800;
+    letter-spacing: -0.035em;
+    max-width: 560px;
+  }
+  .hero-name-wrapper {
+    display: inline-block;
+    line-height: 1;
+    max-width: 100%;
+  }
+  .lead {
+    font-size: 1.05rem;
+    line-height: 1.8;
+    color: #cbd5e1;
+    margin: 0 0 36px;
+    text-align: left;
+    text-wrap: pretty;
+    max-width: 520px;
   }
     .stage {
     grid-column: 1 / -1;
@@ -882,10 +906,10 @@ body.grabbing {
   }
   .about-text-col .sub,
   .about-text-col .about-subtext {
-    text-align: justify !important;
-    text-justify: inter-word;
-    hyphens: auto;
-    line-height: 1.8;
+    text-align: left !important;
+    text-wrap: pretty;
+    line-height: 1.75;
+    word-spacing: normal;
   }
   .about-stats-row {
     justify-content: center;

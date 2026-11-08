@@ -199,8 +199,8 @@ export default function Home() {
                   orientation="portrait"
                   finish={(config.lanyard?.finish as any) || 'glossy'}
                   cornerRadius={0.3}
-                  size={isMobile ? (config.lanyard?.cardSizeMobile ?? 0.58) : (config.lanyard?.cardSizeDesktop ?? 0.48)}
-                  anchor={isMobile ? 'center' : 0.74}
+                  size={isMobile ? (config.lanyard?.cardSizeMobile ?? 0.52) : (config.lanyard?.cardSizeDesktop ?? 0.38)}
+                  anchor={isMobile ? 'center' : (config.lanyard?.anchorDesktop ?? 0.82)}
                   strapLength={isMobile ? (config.lanyard?.strapLengthMobile ?? 0.34) : (config.lanyard?.strapLengthDesktop ?? 0.28)}
                   strapColor={config.lanyard?.strapColor || '#04050d'}
                   strapWidth={0.65}
@@ -233,6 +233,7 @@ export default function Home() {
                 {mounted ? (
                   <DepthText
                     text={config.depthText?.text || 'Anwail Khairat'}
+                    fontSize={isMobile ? 'clamp(1.8rem, 6.5vw, 2.6rem)' : 'clamp(2.3rem, 4.0vw, 3.5rem)'}
                     layers={config.depthText?.layers ?? 30}
                     depth={config.depthText?.depth ?? 2.0}
                     faceColor={config.depthText?.faceColor || '#ffffff'}
