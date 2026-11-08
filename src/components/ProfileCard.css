@@ -1,4 +1,4 @@
-.profile-card {
+﻿.profile-card {
   --pc-light-x: 50%;
   --pc-light-y: 50%;
   --pc-pointer-x: 50%;
@@ -168,9 +168,11 @@
 
 .profile-card__photo {
   position: absolute;
-  inset: calc(var(--pc-parallax) * -1);
-  width: calc(100% + var(--pc-parallax) * 2);
-  height: calc(100% + var(--pc-parallax) * 2);
+  top: -32px;
+  left: -32px;
+  width: calc(100% + 64px);
+  height: calc(100% + 64px);
+  max-width: none;
   object-fit: var(--pc-photo-fit, cover);
   object-position: var(--pc-photo-pos, center 20%);
   transform: translate3d(var(--pc-shift-x), var(--pc-shift-y), 0);

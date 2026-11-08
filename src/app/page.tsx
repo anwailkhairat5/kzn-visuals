@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
@@ -316,6 +316,7 @@ export default function Home() {
                   intro={true}
                   showUserInfo={true}
                   theme={((config as any).profileCard?.theme as any) || 'dark'}
+                  backdropColor="#060913"
                   onContactClick={() => {
                     const el = document.getElementById('contact');
                     if (el) el.scrollIntoView({ behavior: 'smooth' });
