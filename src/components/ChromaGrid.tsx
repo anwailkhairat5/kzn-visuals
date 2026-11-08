@@ -9,6 +9,7 @@ export interface ChromaItem {
   image: string;
   title?: string;
   subtitle?: string;
+  badge?: string;
   accent?: string;
   borderColor?: string;
   url?: string;

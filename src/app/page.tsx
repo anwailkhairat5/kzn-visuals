@@ -11,7 +11,6 @@ const DarkVeil = dynamic(() => import('@/components/DarkVeil'), { ssr: false });
 const GooeyNav = dynamic(() => import('@/components/GooeyNav'), { ssr: false });
 const DepthText = dynamic(() => import('@/components/DepthText'), { ssr: false });
 const ProfileCard = dynamic(() => import('@/components/ProfileCard'), { ssr: false });
-const GlowCursor = dynamic(() => import('@/components/GlowCursor'), { ssr: false });
 import ChromaGrid from '@/components/ChromaGrid';
 
 const NAV_ITEMS = [
@@ -30,6 +29,7 @@ export default function Home() {
   const [isMobile, setIsMobile] = useState(false);
   const [activeSection, setActiveSection] = useState('home');
   const [activeMediaProject, setActiveMediaProject] = useState<any>(null);
+  const [activeCertificate, setActiveCertificate] = useState<any>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -113,22 +113,6 @@ export default function Home() {
 
   return (
     <div className="relative min-h-screen text-[#f4f6ff]">
-      {/* ── AMBIENT GLOW CURSOR (REACT BITS WEBGL2) ── */}
-      {mounted && (
-        <div className="fixed inset-0 pointer-events-none z-30 overflow-hidden" aria-hidden="true">
-          <GlowCursor
-            color={config.theme?.primaryColor || '#2f77ff'}
-            secondaryColor={config.theme?.accentCyan || '#18d3ff'}
-            intensity={1.25}
-            trailWidth={3.5}
-            linger={1.3}
-            glow={1.1}
-            clickBurst={true}
-            theme="dark"
-            className="w-full h-full pointer-events-none"
-          />
-        </div>
-      )}
       {/* ── INTERACTIVE DARKVEIL WEBGL BACKGROUND ── */}
       <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
         {mounted && (
@@ -403,119 +387,225 @@ export default function Home() {
         </section>
 
         {/* ── PROJECTS SECTION (CHROMAGRID REACT BITS INTEGRATION) ── */}
-        <section id="projects">
+        <section id="projects" className="py-20">
           <div className="wrap">
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-8">
-              <div>
-                <div className="eyebrow" style={{ textAlign: 'left', marginBottom: '8px' }}>
-                  FEATURED PORTFOLIO
-                </div>
-                <h2>
-                  Creative <span className="g">Projects</span>
-                </h2>
-                <p className="sub" style={{ margin: '6px 0 0', maxWidth: '680px' }}>
-                  Koleksi karya video promosi, commercial reel, film pendek sinematik, dan visual effects (VFX). Arahkan kursor untuk efek spotlight interaktif, dan tekan kartu untuk penjelasan lengkap serta pemutar media!
-                </p>
+            <div className="text-center mb-10 max-w-2xl mx-auto">
+              <div className="eyebrow" style={{ textAlign: 'center', marginBottom: '8px' }}>
+                FEATURED PORTFOLIO
               </div>
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+                Creative <span className="g">Projects</span>
+              </h2>
+              <p className="sub mx-auto" style={{ margin: '8px auto 0', textAlign: 'center' }}>
+                Koleksi video promosi, commercial reel, film pendek sinematik, dan visual effects (VFX). Tekan kartu untuk membuka detail dan pemutar media.
+              </p>
             </div>
 
-            {/* ChromaGrid from React Bits */}
-            <ChromaGrid
-              items={(config.projects || []).map((proj: any) => {
-                return {
+            {/* ChromaGrid with Spacious Modern Layout */}
+            <div className="max-w-6xl mx-auto">
+              <ChromaGrid
+                items={(config.projects || []).map((proj: any) => ({
                   title: proj.title,
                   subtitle: proj.category || 'Portfolio Showcase',
                   image: proj.image || 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=800&q=80&auto=format&fit=crop',
                   accent: proj.accent || '#22d3ee',
                   rawProject: proj,
                   onClick: () => setActiveMediaProject(proj)
-                };
-              })}
-              columns={isMobile ? 2 : 3}
-              minCardWidth={isMobile ? 135 : 200}
-              gap={isMobile ? 10 : 14}
-              radius={240}
-              aspectRatio="3 / 2"
-              cardRadius={18}
-              glow={0.5}
-              borderGlow={1}
-              reveal="spotlight"
-              theme="dark"
-            />
+                }))}
+                columns={isMobile ? 2 : 3}
+                minCardWidth={isMobile ? 140 : 220}
+                gap={isMobile ? 12 : 16}
+                radius={240}
+                aspectRatio="16 / 10"
+                cardRadius={18}
+                glow={0.5}
+                borderGlow={1}
+                reveal="spotlight"
+                theme="dark"
+              />
+            </div>
           </div>
         </section>
 
-        {/* ── EXPERIENCE SECTION ── */}
-        <section id="experience">
+        {/* ── EXPERIENCE & EDUCATION JOURNEY TIMELINE ── */}
+        <section id="experience" className="py-24 relative overflow-hidden">
           <div className="wrap">
-            <h2>
-              Work <span className="g">Experience</span>
-            </h2>
-            <p className="sub">
-              Rekam jejak profesional di production house, creative agency, freelance, dan organisasi kemahasiswaan.
-            </p>
-            <div className="grid">
-              {((config as any).experience || []).map((exp: any) => (
-                <div key={exp.id} className="box">
-                  <div className="flex items-start justify-between gap-2 mb-2">
-                    <h3>{exp.title}</h3>
-                    {exp.tag && <span className="tag text-[10px] mt-0">{exp.tag}</span>}
-                  </div>
-                  <div className="text-xs text-[#38bdf8] font-medium mb-3">
-                    {exp.subtitle ? exp.subtitle : ''} {exp.period ? '• (' + exp.period + ')' : ''}
-                  </div>
-                  <p>{exp.description}</p>
-                </div>
-              ))}
+            <div className="text-center mb-16 max-w-2xl mx-auto">
+              <div className="eyebrow" style={{ textAlign: 'center', marginBottom: '8px' }}>
+                MY PATH SO FAR
+              </div>
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+                Journey <span className="g">Timeline</span>
+              </h2>
+              <p className="sub mx-auto" style={{ margin: '8px auto 0', textAlign: 'center' }}>
+                Perjalanan pendidikan dan pengalaman kerja yang membentuk kemampuan dan dedikasi saya saat ini.
+              </p>
             </div>
 
-            {/* PENDIDIKAN RESMI DARI CV */}
-            {((config as any).education && (config as any).education.length > 0) && (
-              <div className="mt-12 pt-10 border-t border-white/10">
-                <h3 className="text-xl font-black text-white mb-2">
-                  🎓 Riwayat <span className="g">Pendidikan</span>
-                </h3>
-                <div className="grid mt-4">
-                  {((config as any).education || []).map((edu: any) => (
-                    <div key={edu.id} className="box bg-gradient-to-br from-blue-950/20 to-transparent">
-                      <div className="flex items-start justify-between gap-2 mb-2">
-                        <h4 className="text-lg font-bold text-white">{edu.institution}</h4>
-                        <span className="tag text-[10px] mt-0">IPK: {edu.gpa}</span>
+            {/* Timeline Tree */}
+            <div className="relative max-w-4xl mx-auto">
+              {/* Vertical Glowing Line */}
+              <div
+                className="absolute top-2 bottom-6 w-0.5 bg-gradient-to-b from-cyan-400 via-blue-500 to-purple-500 shadow-[0_0_12px_rgba(34,211,238,0.5)] left-6 md:left-1/2 -translate-x-1/2"
+                aria-hidden="true"
+              />
+
+              {/* Milestones */}
+              <div className="space-y-10 sm:space-y-12">
+                {(() => {
+                  const milestones = [
+                    {
+                      id: 'm-unicam',
+                      icon: '✨',
+                      period: 'Aug 2025 – Jan 2026',
+                      title: 'Editor & VFX Artist',
+                      institution: 'Unicam Studio — Yogyakarta',
+                      tag: 'Production House',
+                      description: 'Menggarap digital content perusahaan: company profile, video promosi, dan reels (VFX, motion graphic, color grading, sound design). Terlibat dalam proyek Castrol, YPTI, dan klien lain. Mengintegrasikan teknologi AI dan teknik visual effects.',
+                      tags: ['Production House', 'VFX Compositing', 'Castrol & YPTI', 'After Effects', 'AI Workflow']
+                    },
+                    {
+                      id: 'm-ezran',
+                      icon: '💼',
+                      period: 'Jan 2023 – Sekarang',
+                      title: 'Creative Team (Foto & Video)',
+                      institution: 'Ezran Core — Lhokseumawe',
+                      tag: 'Creative Agency',
+                      description: 'Menyediakan layanan profesional di bidang foto, video, dan editing video. Berkolaborasi menonjolkan visual branding menarik di media sosial untuk memikat klien dan memenangkan berbagai penghargaan kompetisi kreatif.',
+                      tags: ['Creative Agency', 'Branding', 'Videography', 'Social Media']
+                    },
+                    {
+                      id: 'm-kzn',
+                      icon: '🎥',
+                      period: 'Sep 2021 – Sekarang',
+                      title: 'Freelance Videographer & Editor',
+                      institution: 'KzN Visuals — Lhokseumawe',
+                      tag: 'Freelancer',
+                      description: 'Layanan jasa pembuatan dan editing video komersial/kreatif. Menyajikan hasil editing dengan kompleksitas tinggi dengan tingkat kepuasan klien mencapai 95%+ dan pengerjaan tepat waktu.',
+                      tags: ['Freelancer', 'Video Production', 'Color Grading', 'Premiere Pro']
+                    },
+                    {
+                      id: 'm-bem',
+                      icon: '🏛️',
+                      period: 'Aug 2023 – Nov 2024',
+                      title: 'Student Executive Board (Media Sosial & Konten)',
+                      institution: 'BEM Politeknik Negeri Lhokseumawe',
+                      tag: 'Organisasi Kampus',
+                      description: 'Mengelola akun media sosial Instagram organisasi kampus dan bertanggung jawab penuh dalam pembuatan seluruh konten visual (poster kegiatan, feed edukasi, after-movie kegiatan).',
+                      tags: ['Organisasi', 'Social Media', 'After-Movie', 'Graphic Design']
+                    },
+                    {
+                      id: 'm-edu',
+                      icon: '🎓',
+                      period: '2022 – 2026 (IPK: 3.40)',
+                      title: 'Diploma Teknik Rekayasa Multimedia',
+                      institution: 'Politeknik Negeri Lhokseumawe',
+                      tag: 'Pendidikan Resmi',
+                      description: 'Fokus pada produksi konten multimedia digital, videografi sinematik, visual effects, animasi 3D, dan riset perbandingan pemodelan 3D generatif AI (Tripo AI) vs konvensional (Blender).',
+                      tags: ['Multimedia', 'VFX', '3D Blender', 'Tripo AI']
+                    }
+                  ];
+
+                  return milestones.map((item, index) => {
+                    const isLeft = index % 2 === 0;
+
+                    return (
+                      <div key={item.id} className="relative flex flex-col md:flex-row items-start md:items-center">
+                        {/* Timeline Center Node Badge */}
+                        <div className="absolute left-6 md:left-1/2 -translate-x-1/2 w-10 h-10 rounded-full bg-[#080d1a] border-2 border-cyan-400 shadow-[0_0_14px_rgba(34,211,238,0.5)] flex items-center justify-center text-cyan-300 text-sm z-10">
+                          <span>{item.icon}</span>
+                        </div>
+
+                        {/* Card Container */}
+                        <div
+                          className={`w-full pl-14 md:pl-0 md:w-1/2 ${
+                            isLeft ? 'md:pr-12 md:text-left' : 'md:ml-auto md:pl-12 md:text-left'
+                          }`}
+                        >
+                          <div className="p-5 sm:p-6 rounded-2xl bg-[#0c1224]/85 border border-white/10 hover:border-cyan-500/40 transition-all duration-300 shadow-xl group">
+                            {/* Card Header */}
+                            <div className="flex items-center justify-between gap-2 mb-2">
+                              <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                                {item.period}
+                              </span>
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-cyan-500/10 border border-cyan-500/20 text-cyan-300">
+                                {item.tag}
+                              </span>
+                            </div>
+
+                            {/* Title & Subtitle */}
+                            <h3 className="text-base sm:text-lg font-bold text-white group-hover:text-cyan-300 transition-colors">
+                              {item.title}
+                            </h3>
+                            <div className="text-xs font-semibold text-[#38bdf8] mb-3">
+                              {item.institution}
+                            </div>
+
+                            {/* Description */}
+                            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-normal mb-4 text-wrap-pretty">
+                              {item.description}
+                            </p>
+
+                            {/* Tags */}
+                            <div className="flex flex-wrap gap-1.5">
+                              {item.tags.map((t) => (
+                                <span
+                                  key={t}
+                                  className="px-2.5 py-0.5 rounded-md text-[11px] font-medium bg-white/[0.04] border border-white/8 text-slate-300"
+                                >
+                                  {t}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                      <div className="text-xs text-[#38bdf8] font-medium mb-3">
-                        {edu.degree} • {edu.period} • {edu.location}
-                      </div>
-                      <p>{edu.description}</p>
-                    </div>
-                  ))}
-                </div>
+                    );
+                  });
+                })()}
               </div>
-            )}
+            </div>
           </div>
         </section>
 
-        {/* ── CERTIFICATES & AWARDS SECTION ── */}
-        <section id="certificates">
+        {/* ── CERTIFICATES SECTION (CHROMAGRID SPOTLIGHT & MODAL) ── */}
+        <section id="certificates" className="py-20">
           <div className="wrap">
-            <h2>
-              Awards & <span className="g">Achievements</span>
-            </h2>
-            <p className="sub">
-              Daftar kejuaraan kompetisi video kreatif tingkat regional, nasional, dan internasional serta sertifikasi keahlian.
-            </p>
-            <div className="grid">
-              {((config as any).certificates || []).map((cert: any) => (
-                <div key={cert.id} className="box">
-                  <div className="flex items-start justify-between gap-2 mb-2">
-                    <h3>{cert.title}</h3>
-                    {cert.tag && <span className="tag text-[10px] mt-0">{cert.tag}</span>}
-                  </div>
-                  <div className="text-xs text-[#38bdf8] font-medium mb-3">
-                    {cert.issuer ? cert.issuer : ''} {cert.period ? '• ' + cert.period : ''}
-                  </div>
-                  <p>{cert.description}</p>
-                </div>
-              ))}
+            <div className="text-center mb-10 max-w-2xl mx-auto">
+              <div className="eyebrow" style={{ textAlign: 'center', marginBottom: '8px' }}>
+                CREDENTIALS & HONORS
+              </div>
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+                Certificates
+              </h2>
+              <p className="sub mx-auto" style={{ margin: '8px auto 0', textAlign: 'center' }}>
+                Sertifikat pembelajaran yang telah saya selesaikan dari berbagai platform dan institusi.
+              </p>
+            </div>
+
+            {/* ChromaGrid for Certificates with Spotlight Glow */}
+            <div className="max-w-6xl mx-auto">
+              <ChromaGrid
+                items={(config.certificates || []).map((cert: any) => ({
+                  title: cert.title,
+                  subtitle: cert.issuer,
+                  badge: cert.period || '2024',
+                  image: cert.image || '/certificates/cert-qris.svg',
+                  accent: cert.accent || '#38bdf8',
+                  rawProject: cert,
+                  onClick: () => setActiveCertificate(cert)
+                }))}
+                columns={isMobile ? 2 : 3}
+                minCardWidth={isMobile ? 140 : 220}
+                gap={isMobile ? 12 : 16}
+                radius={240}
+                aspectRatio="16 / 10"
+                cardRadius={18}
+                glow={0.5}
+                borderGlow={1}
+                reveal="spotlight"
+                theme="dark"
+              />
             </div>
           </div>
         </section>
@@ -601,65 +691,47 @@ export default function Home() {
         </section>
       </main>
 
-      {/* ── INTERACTIVE PROJECT DETAIL MODAL ("PENJELASAN LENGKAP") ── */}
+      {/* ── MINIMALIST MODAL: CREATIVE PROJECT ── */}
       {activeMediaProject && (() => {
         const parsed = parseMediaUrl(activeMediaProject.link);
         const projectImg = activeMediaProject.image || 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=800&q=80&auto=format&fit=crop';
-        const accentColor = activeMediaProject.accent || '#2f77ff';
-
         const isInstagramProfile = activeMediaProject.link?.includes('instagram.com') && !activeMediaProject.link?.includes('/p/') && !activeMediaProject.link?.includes('/reel/');
 
         let ctaText = 'Buka di Sumber Asli';
         if (parsed.type === 'instagram' || isInstagramProfile) ctaText = 'Tonton di Instagram';
-        else if (parsed.type === 'gdrive') ctaText = 'Buka Google Drive';
+        else if (parsed.type === 'gdrive') ctaText = 'Buka di Google Drive';
         else if (parsed.type === 'youtube') ctaText = 'Tonton di YouTube';
 
         return (
           <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-md transition-all duration-300"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/85 backdrop-blur-md transition-all duration-200"
             onClick={() => setActiveMediaProject(null)}
           >
             <div
-              className="relative w-full max-w-lg sm:max-w-xl max-h-[88vh] bg-[#0b0f19] border border-white/12 rounded-2xl sm:rounded-3xl shadow-[0_30px_90px_-20px_rgba(0,0,0,0.95)] overflow-hidden flex flex-col transition-transform duration-200"
+              className="relative w-full max-w-lg bg-[#0e1424] border border-white/12 rounded-2xl shadow-2xl overflow-hidden flex flex-col"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Media Visual Stage */}
-              <div className="relative w-full bg-black shrink-0 overflow-hidden border-b border-white/10">
+              {/* Media Preview Stage */}
+              <div className="relative w-full aspect-[16/10] bg-black overflow-hidden border-b border-white/10">
                 {(() => {
-                  if (parsed.type === 'instagram' && !isInstagramProfile) {
+                  if (parsed.type === 'gdrive') {
                     return (
-                      <div className="w-full flex flex-col items-center justify-center py-2 bg-gradient-to-b from-[#11162a] to-black max-h-[460px] overflow-hidden">
-                        <iframe
-                          src={parsed.embedUrl}
-                          className="w-full max-w-[420px] h-[440px] border-0 rounded-xl"
-                          scrolling="no"
-                          allowTransparency
-                          title={activeMediaProject.title}
-                        />
-                      </div>
-                    );
-                  } else if (parsed.type === 'gdrive') {
-                    return (
-                      <div className="w-full aspect-video bg-black">
-                        <iframe
-                          src={parsed.embedUrl}
-                          className="w-full h-full border-0"
-                          allow="autoplay; fullscreen"
-                          title={activeMediaProject.title}
-                        />
-                      </div>
+                      <iframe
+                        src={parsed.embedUrl}
+                        className="w-full h-full border-0"
+                        allow="autoplay; fullscreen"
+                        title={activeMediaProject.title}
+                      />
                     );
                   } else if (parsed.type === 'youtube') {
                     return (
-                      <div className="w-full aspect-video bg-black">
-                        <iframe
-                          src={parsed.embedUrl}
-                          className="w-full h-full border-0"
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          allowFullScreen
-                          title={activeMediaProject.title}
-                        />
-                      </div>
+                      <iframe
+                        src={parsed.embedUrl}
+                        className="w-full h-full border-0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                        title={activeMediaProject.title}
+                      />
                     );
                   } else if (parsed.type === 'video') {
                     return (
@@ -667,69 +739,55 @@ export default function Home() {
                         src={parsed.embedUrl}
                         controls
                         autoPlay
-                        className="w-full aspect-video bg-black"
+                        className="w-full h-full object-cover"
                       />
                     );
                   } else {
                     return (
-                      <a
-                        href={parsed.originalUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="relative block w-full aspect-[16/9] overflow-hidden group cursor-pointer"
-                      >
+                      <div className="relative w-full h-full group">
                         <img
                           src={projectImg}
                           alt={activeMediaProject.title}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#0b0f19] via-black/20 to-transparent" />
-                        <div className="absolute bottom-3 right-3 px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-md border border-white/15 text-white/90 text-xs font-medium flex items-center gap-1.5 group-hover:bg-blue-600 transition-colors">
-                          <span>{ctaText}</span>
-                          <span>↗</span>
-                        </div>
-                      </a>
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#0e1424] via-transparent to-transparent opacity-60" />
+                      </div>
                     );
                   }
                 })()}
 
-                {/* Floating Category Badge (Top Left) */}
-                <div className="absolute top-3 left-3 flex items-center gap-2 pointer-events-none z-10">
-                  <span
-                    className="text-[11px] font-semibold px-2.5 py-1 rounded-full backdrop-blur-md border shadow-md"
-                    style={{
-                      borderColor: `${accentColor}40`,
-                      background: 'rgba(11, 15, 25, 0.75)',
-                      color: accentColor
-                    }}
-                  >
-                    {activeMediaProject.category || 'Featured Work'}
-                  </span>
-                </div>
-
-                {/* Floating Close Button (Top Right) */}
+                {/* Close Button at Top Right Corner of Preview */}
                 <button
                   type="button"
                   onClick={() => setActiveMediaProject(null)}
-                  className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/60 hover:bg-black/90 text-white/80 hover:text-white backdrop-blur-md flex items-center justify-center transition-all text-sm font-bold border border-white/15 shadow-md z-10"
+                  className="absolute top-3 right-3 w-7 h-7 rounded-full bg-black/70 hover:bg-black text-white/90 hover:text-white flex items-center justify-center text-xs font-bold transition-all border border-white/15 z-20 shadow-md"
                   aria-label="Tutup"
                 >
                   ✕
                 </button>
               </div>
 
-              {/* Scrollable Content Body */}
-              <div className="overflow-y-auto p-5 sm:p-6 space-y-4 scrollbar-thin scrollbar-thumb-white/20">
-                {/* Project Title */}
-                <div>
-                  <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight leading-snug">
-                    {activeMediaProject.title}
-                  </h3>
+              {/* Minimalist Info Body (Matching User Reference) */}
+              <div className="p-5 sm:p-6 space-y-2.5">
+                <div className="flex items-center gap-1.5 text-xs text-slate-400 font-medium">
+                  <span className="text-pink-400">🎗</span>
+                  <span>{activeMediaProject.category || 'Featured Work'}</span>
                 </div>
 
-                {/* Software / Tags */}
+                <h3 className="text-lg sm:text-xl font-bold text-white tracking-tight leading-snug">
+                  {activeMediaProject.title}
+                </h3>
+
+                <div className="text-xs sm:text-sm font-semibold text-[#38bdf8]">
+                  {activeMediaProject.category || 'Portfolio Showcase'}
+                </div>
+
+                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed text-left text-wrap-pretty font-normal pt-1">
+                  {activeMediaProject.description}
+                </p>
+
                 {activeMediaProject.tags && activeMediaProject.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5">
+                  <div className="flex flex-wrap gap-1.5 pt-2">
                     {activeMediaProject.tags.map((t: string) => (
                       <span
                         key={t}
@@ -741,40 +799,104 @@ export default function Home() {
                   </div>
                 )}
 
-                {/* Penjelasan Lengkap (Clean, Minimalist Card) */}
-                <div className="p-4 rounded-xl bg-white/[0.025] border border-white/8 space-y-2">
-                  <div className="text-[11px] font-bold uppercase tracking-wider text-[#18d3ff] flex items-center gap-1.5">
-                    <span>✦</span> Penjelasan Lengkap
+                {activeMediaProject.link && (
+                  <div className="pt-3 border-t border-white/8 mt-3 flex items-center justify-between">
+                    <a
+                      href={parsed.originalUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-400 hover:text-blue-300 transition-colors"
+                    >
+                      <span>{ctaText}</span>
+                      <span>↗</span>
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => setActiveMediaProject(null)}
+                      className="text-xs text-slate-400 hover:text-white transition-colors"
+                    >
+                      Tutup
+                    </button>
                   </div>
-                  <p className="text-xs sm:text-sm text-slate-200 leading-relaxed text-left text-wrap-pretty font-normal">
-                    {activeMediaProject.description}
-                  </p>
-                </div>
-              </div>
-
-              {/* Fixed Action Footer */}
-              <div className="px-5 py-3.5 border-t border-white/10 bg-[#070a13] flex items-center justify-between gap-3 shrink-0">
-                <button
-                  type="button"
-                  onClick={() => setActiveMediaProject(null)}
-                  className="px-4 py-2 rounded-xl text-slate-400 hover:text-white text-xs sm:text-sm font-medium transition-colors"
-                >
-                  Tutup
-                </button>
-                <a
-                  href={parsed.originalUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs sm:text-sm font-semibold transition-all flex items-center gap-1.5 shadow-lg shadow-blue-500/25"
-                >
-                  <span>{ctaText}</span>
-                  <span>↗</span>
-                </a>
+                )}
               </div>
             </div>
           </div>
         );
       })()}
+
+      {/* ── MINIMALIST MODAL: CERTIFICATE (MATCHING USER REFERENCE) ── */}
+      {activeCertificate && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/85 backdrop-blur-md transition-all duration-200"
+          onClick={() => setActiveCertificate(null)}
+        >
+          <div
+            className="relative w-full max-w-lg bg-[#0e1424] border border-white/12 rounded-2xl shadow-2xl overflow-hidden flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Certificate Preview Stage */}
+            <div className="relative w-full aspect-[16/10] bg-[#f8fafc] overflow-hidden border-b border-white/10">
+              <img
+                src={activeCertificate.image || '/certificates/cert-qris.svg'}
+                alt={activeCertificate.title}
+                className="w-full h-full object-contain p-2"
+              />
+              <button
+                type="button"
+                onClick={() => setActiveCertificate(null)}
+                className="absolute top-3 right-3 w-7 h-7 rounded-full bg-black/70 hover:bg-black text-white/90 hover:text-white flex items-center justify-center text-xs font-bold transition-all border border-white/15 z-20 shadow-md"
+                aria-label="Tutup"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Minimalist Info Body */}
+            <div className="p-5 sm:p-6 space-y-2.5">
+              <div className="flex items-center gap-1.5 text-xs text-slate-400 font-medium">
+                <span className="text-pink-400">🎗</span>
+                <span>{activeCertificate.period || '2024'}</span>
+              </div>
+
+              <h3 className="text-lg sm:text-xl font-bold text-white tracking-tight leading-snug">
+                {activeCertificate.title}
+              </h3>
+
+              <div className="text-xs sm:text-sm font-semibold text-[#38bdf8]">
+                {activeCertificate.issuer}
+              </div>
+
+              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed text-left text-wrap-pretty font-normal pt-1">
+                {activeCertificate.description}
+              </p>
+
+              {activeCertificate.tags && activeCertificate.tags.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 pt-2">
+                  {activeCertificate.tags.map((t: string) => (
+                    <span
+                      key={t}
+                      className="px-2.5 py-0.5 rounded-md text-[11px] font-medium bg-white/[0.04] border border-white/10 text-slate-300"
+                    >
+                      {t}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              <div className="pt-3 border-t border-white/8 mt-3 flex items-center justify-end">
+                <button
+                  type="button"
+                  onClick={() => setActiveCertificate(null)}
+                  className="px-4 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-semibold transition-all"
+                >
+                  Tutup
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── FOOTER ── */}
       <footer>

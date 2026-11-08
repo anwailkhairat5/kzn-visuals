@@ -228,64 +228,128 @@
       "title": "Juara 1 Video Reels QRIS",
       "issuer": "Bank Indonesia",
       "period": "2024",
+      "image": "/certificates/cert-qris.svg",
+      "accent": "#0284c7",
       "description": "Meraih Juara 1 dalam kompetisi Video Reels promosi transaksi digital QRIS tingkat regional.",
-      "tag": "🏆 Juara 1"
+      "tag": "🏆 Juara 1",
+      "tags": [
+        "Bank Indonesia",
+        "QRIS",
+        "Video Reels",
+        "Juara 1"
+      ]
     },
     {
       "id": "award-2",
       "title": "Juara 2 (International) Video Reels",
       "issuer": "Islamic International Award | IQRA USK",
       "period": "2024",
+      "image": "/certificates/cert-iqra.svg",
+      "accent": "#059669",
       "description": "Juara 2 tingkat internasional dalam ajang kompetisi video reels bertema kreativitas islami modern.",
-      "tag": "🌍 Internasional"
+      "tag": "🌍 Internasional",
+      "tags": [
+        "Islamic Award",
+        "Internasional",
+        "IQRA USK",
+        "Video Reels"
+      ]
     },
     {
       "id": "award-3",
       "title": "Juara Favorit Video CIMB Niaga se-Indonesia",
       "issuer": "PT Bank CIMB Niaga Tbk",
-      "period": "Karya: Aku dan Mimpiku",
+      "period": "2024",
+      "image": "/certificates/cert-cimb.svg",
+      "accent": "#be123c",
       "description": "Pemenang kategori Video Favorit se-Indonesia dalam ajang kompetisi video inspiratif nasional.",
-      "tag": "⭐ Favorit Nasional"
+      "tag": "⭐ Favorit Nasional",
+      "tags": [
+        "CIMB Niaga",
+        "Nasional",
+        "Video Favorit",
+        "Inspiratif"
+      ]
     },
     {
       "id": "award-4",
       "title": "Juara 1 Video Reels Kreativitas Milenial",
       "issuer": "GENTAR",
       "period": "2024",
+      "image": "/certificates/cert-gentar.svg",
+      "accent": "#7c3aed",
       "description": "Juara pertama video pendek kreatif bertema inovasi dan potensi generasi milenial.",
-      "tag": "🏆 Juara 1"
+      "tag": "🏆 Juara 1",
+      "tags": [
+        "GENTAR",
+        "Milenial",
+        "Juara 1",
+        "Kreatif"
+      ]
     },
     {
       "id": "award-5",
       "title": "Juara 1 Film Pendek Money Politic",
       "issuer": "KIP ACEH",
       "period": "2024",
+      "image": "/certificates/cert-kip.svg",
+      "accent": "#d97706",
       "description": "Juara 1 pembuatan film pendek edukasi demokrasi dan integritas pemilu oleh KIP Aceh.",
-      "tag": "🎬 Juara 1 Film Pendek"
+      "tag": "🎬 Juara 1 Film Pendek",
+      "tags": [
+        "KIP Aceh",
+        "Film Pendek",
+        "Sinematografi",
+        "Juara 1"
+      ]
     },
     {
       "id": "award-6",
       "title": "Juara 1 Video Reels Pase Fest",
       "issuer": "Bank Indonesia",
       "period": "2024",
+      "image": "/certificates/cert-pase.svg",
+      "accent": "#0284c7",
       "description": "Juara 1 kompetisi video reels promosi dan dokumentasi festival budaya Pase Fest.",
-      "tag": "🏆 Juara 1"
+      "tag": "🏆 Juara 1",
+      "tags": [
+        "Bank Indonesia",
+        "Pase Fest",
+        "Budaya",
+        "Juara 1"
+      ]
     },
     {
       "id": "award-7",
       "title": "Juara 1 Video Duta Content Creator CBP",
       "issuer": "Bank Indonesia",
       "period": "2024",
+      "image": "/certificates/cert-cbp.svg",
+      "accent": "#0891b2",
       "description": "Juara 1 ajang pemilihan Content Creator Cinta Bangga Paham (CBP) Rupiah.",
-      "tag": "🏆 Duta Creator"
+      "tag": "🏆 Duta Creator",
+      "tags": [
+        "Bank Indonesia",
+        "Duta CBP Rupiah",
+        "Content Creator",
+        "Juara 1"
+      ]
     },
     {
       "id": "award-8",
       "title": "TOEFL Score 400",
       "issuer": "Standardized English Proficiency Test",
       "period": "2026",
+      "image": "/certificates/cert-toefl.svg",
+      "accent": "#4f46e5",
       "description": "Pencapaian skor kompetensi bahasa Inggris 400 untuk standar kelulusan dan profesional.",
-      "tag": "📜 English Proficiency"
+      "tag": "📜 English Proficiency",
+      "tags": [
+        "TOEFL",
+        "Score 400",
+        "English Proficiency",
+        "Certified"
+      ]
     }
   ],
   "education": [

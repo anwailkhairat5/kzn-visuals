@@ -2291,7 +2291,7 @@ export default function AdminPage() {
                       <input
                         type="text"
                         value={cert.tag || ''}
-                        placeholder="Badge (BNSP Certified)"
+                        placeholder="Badge (🏆 Juara 1)"
                         onChange={(e) => {
                           const updated = [...(config.certificates || [])];
                           updated[idx] = { ...updated[idx], tag: e.target.value };

@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="800" height="500">
+  <defs>
+    <linearGradient id="bg-award-6" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fbfcfd"/>
+      <stop offset="100%" stop-color="#edf2f7"/>
+    </linearGradient>
+    <linearGradient id="sealGrad-award-6" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#075985"/>
+    </linearGradient>
+    <filter id="shadow-award-6" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-opacity="0.15"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="500" rx="16" fill="url(#bg-award-6)"/>
+  
+  <!-- Outer Border Frame -->
+  <rect x="20" y="20" width="760" height="460" rx="12" fill="none" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="28" y="28" width="744" height="444" rx="8" fill="none" stroke="#075985" stroke-width="2" stroke-opacity="0.35" stroke-dasharray="12 4"/>
+
+  <!-- Top Accent Header Bar -->
+  <path d="M28 36 Q 400 44 772 36" fill="none" stroke="#075985" stroke-width="3" stroke-linecap="round"/>
+
+  <!-- Issuer -->
+  <text x="400" y="80" text-anchor="middle" font-family="'Inter', system-ui, -apple-system, sans-serif" font-size="14" font-weight="800" fill="#075985" letter-spacing="3.5">BANK INDONESIA</text>
+  <text x="400" y="102" text-anchor="middle" font-family="'Inter', system-ui, -apple-system, sans-serif" font-size="10.5" font-weight="600" fill="#64748b" letter-spacing="1.5">PASE FESTIVAL VIDEO COMPETITION</text>
+
+  <!-- Certificate Heading -->
+  <text x="400" y="148" text-anchor="middle" font-family="'Georgia', serif" font-size="24" font-weight="bold" fill="#0f172a" letter-spacing="2">CERTIFICATE OF ACHIEVEMENT</text>
+  <line x1="280" y1="162" x2="520" y2="162" stroke="#38bdf8" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- Recipient Lead -->
+  <text x="400" y="194" text-anchor="middle" font-family="'Inter', system-ui, -apple-system, sans-serif" font-size="11.5" font-style="italic" fill="#64748b">Diberikan Dengan Bangga Kepada :</text>
+
+  <!-- Recipient Name -->
+  <text x="400" y="240" text-anchor="middle" font-family="'Georgia', serif" font-size="32" font-weight="bold" fill="#0284c7" letter-spacing="1">Anwail Khairat</text>
+  <line x1="220" y1="254" x2="580" y2="254" stroke="#94a3b8" stroke-width="1"/>
+
+  <!-- Title Award -->
+  <text x="400" y="288" text-anchor="middle" font-family="'Inter', system-ui, -apple-system, sans-serif" font-size="13" font-style="italic" fill="#475569">Atas Prestasi Membanggakan Sebagai :</text>
+  <text x="400" y="320" text-anchor="middle" font-family="'Inter', system-ui, -apple-system, sans-serif" font-size="18" font-weight="800" fill="#0f172a" letter-spacing="0.5">JUARA 1 — VIDEO REELS PASE FEST</text>
+
+  <!-- Date / Period -->
+  <text x="400" y="348" text-anchor="middle" font-family="'Inter', system-ui, -apple-system, sans-serif" font-size="11" font-weight="600" fill="#64748b" letter-spacing="1">TAHUN / PERIODE: 2024</text>
+
+  <!-- Gold / Rosette Seal (Right Side) -->
+  <g transform="translate(640, 375)" filter="url(#shadow-award-6)">
+    <!-- Ribbon tails -->
+    <path d="M-12 18 L-22 68 L-2 56 L12 68 L2 18 Z" fill="#075985" opacity="0.9"/>
+    <path d="M2 18 L-8 68 L12 56 L26 68 L16 18 Z" fill="#38bdf8" opacity="0.9"/>
+    <!-- Seal Medallion -->
+    <circle cx="0" cy="0" r="38" fill="url(#sealGrad-award-6)"/>
+    <circle cx="0" cy="0" r="32" fill="none" stroke="#ffffff" stroke-width="2" stroke-dasharray="4 2"/>
+    <text x="0" y="-4" text-anchor="middle" font-family="'Inter', system-ui, -apple-system, sans-serif" font-size="9" font-weight="800" fill="#ffffff" letter-spacing="1">JUARA 1</text>
+    <text x="0" y="12" text-anchor="middle" font-family="'Inter', system-ui, -apple-system, sans-serif" font-size="8" font-weight="700" fill="#ffffff" letter-spacing="0.5">OFFICIAL</text>
+  </g>
+
+  <!-- Signature Lines (Left Side) -->
+  <g transform="translate(120, 395)">
+    <path d="M 0 -15 Q 30 -35 50 -10 T 110 -25" fill="none" stroke="#1e293b" stroke-width="1.8" stroke-linecap="round"/>
+    <line x1="-10" y1="5" x2="130" y2="5" stroke="#94a3b8" stroke-width="1"/>
+    <text x="60" y="20" text-anchor="middle" font-family="'Inter', system-ui, -apple-system, sans-serif" font-size="9.5" font-weight="700" fill="#334155">KOMITE PENYELENGGARA</text>
+    <text x="60" y="32" text-anchor="middle" font-family="'Inter', system-ui, -apple-system, sans-serif" font-size="8.5" fill="#64748b">Tanda Tangan &amp; Cap Sah</text>
+  </g>
+</svg>
