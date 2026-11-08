@@ -5,6 +5,12 @@ import path from 'path';
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN || process.env.NEXT_PUBLIC_GITHUB_TOKEN || '';
 const GITHUB_REPO = process.env.GITHUB_REPO || 'anwailkhairat5/kzn-visuals';
 
+const NO_CACHE_HEADERS = {
+  'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+  Pragma: 'no-cache',
+  Expires: '0'
+};
+
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
@@ -13,7 +19,7 @@ export async function POST(req: NextRequest) {
     if (!file) {
       return NextResponse.json(
         { success: false, error: 'Tidak ada file yang diunggah.' },
-        { status: 400 }
+        { status: 400, headers: NO_CACHE_HEADERS }
       );
     }
 
@@ -25,7 +31,6 @@ export async function POST(req: NextRequest) {
     const cleanName = path.basename(file.name, ext).replace(/[^a-zA-Z0-9_-]/g, '_');
     const fileName = `${cleanName}_${Date.now()}${ext}`;
 
-    // Base64 data URL ensures 100% immediate rendering in Three.js and on the page
     const mimeType = file.type || 'image/png';
     const dataUrl = `data:${mimeType};base64,${buffer.toString('base64')}`;
 
@@ -41,7 +46,8 @@ export async function POST(req: NextRequest) {
       console.warn('Local file write failed (expected on Vercel):', fsErr.message);
     }
 
-    // 2. If GITHUB_TOKEN is available, commit file to GitHub repo
+    // 2. If GITHUB_TOKEN is available, commit file directly to GitHub repo!
+    let githubUrl: string | null = null;
     if (GITHUB_TOKEN) {
       try {
         const base64Content = buffer.toString('base64');
@@ -64,32 +70,35 @@ export async function POST(req: NextRequest) {
         );
 
         if (uploadRes.ok) {
-          const githubRawUrl = `https://raw.githubusercontent.com/${GITHUB_REPO}/main/public/uploads/${fileName}`;
-          return NextResponse.json({
-            success: true,
-            message: 'File berhasil diunggah dan disinkronkan ke GitHub!',
-            url: dataUrl,
-            githubUrl: githubRawUrl,
-            fileName
-          });
+          githubUrl = `https://raw.githubusercontent.com/${GITHUB_REPO}/main/public/uploads/${fileName}`;
+        } else {
+          console.warn('GitHub image upload non-ok status:', uploadRes.status);
         }
       } catch (ghErr) {
         console.warn('GitHub upload error:', ghErr);
       }
     }
 
-    // Return dataUrl
+    // Return the best available URL:
+    // Prefer githubUrl (globally accessible CDN), then localUrl (if localhost), then dataUrl
+    const chosenUrl = githubUrl || (localSaved ? localUrl : dataUrl);
+
     return NextResponse.json({
       success: true,
-      message: 'File berhasil diunggah!',
-      url: localSaved ? localUrl : dataUrl,
+      message: githubUrl
+        ? 'File berhasil diunggah & disinkronkan ke Cloud (GitHub)!'
+        : (localSaved ? 'File tersimpan secara lokal.' : 'File diproses.'),
+      url: chosenUrl,
+      githubUrl: githubUrl || undefined,
+      localUrl: localSaved ? localUrl : undefined,
+      dataUrl: dataUrl,
       fileName
-    });
+    }, { headers: NO_CACHE_HEADERS });
   } catch (error: any) {
     console.error('Error uploading file:', error);
     return NextResponse.json(
       { success: false, error: error.message || 'Terjadi kesalahan saat mengunggah file.' },
-      { status: 500 }
+      { status: 500, headers: NO_CACHE_HEADERS }
     );
   }
 }

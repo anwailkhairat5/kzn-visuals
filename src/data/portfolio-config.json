@@ -9,7 +9,7 @@
     "githubUrl": "https://github.com/anwailkhairat5",
     "linkedinUrl": "https://linkedin.com",
     "contactEmail": "anwailkhairat5@gmail.com",
-    "footerText": "� 2026 Anwail Khairat. All rights reserved."
+    "footerText": "© 2026 Anwail Khairat. All rights reserved."
   },
   "depthText": {
     "text": "Anwail Khairat",
@@ -56,6 +56,25 @@
     "gooeyness": 0.55,
     "spread": 48
   },
+  "profileCard": {
+    "avatarUrl": "/uploads/Cinematic_Blue_Gimbal_Portrait_1793902850583.png",
+    "miniAvatarUrl": "/uploads/Professional_Passport_Portrait_1793902304602.png",
+    "name": "Anwail Khairat",
+    "title": "Multimedia Engineering Student",
+    "handle": "anwailkhairat5",
+    "status": "Open to Work",
+    "statusColor": "#22c55e",
+    "contactText": "Email Me",
+    "theme": "dark",
+    "holo": 0.85,
+    "glare": 0.55,
+    "tiltStrength": 14,
+    "parallax": 10,
+    "radius": 20,
+    "photoFit": "cover",
+    "photoPosition": "center 20%",
+    "scrimOpacity": 0.35
+  },
   "about": {
     "heading": "About Me",
     "lead": "Mahasiswa Teknologi Rekayasa Multimedia di Politeknik Negeri Lhokseumawe. Skripsi membandingkan pemodelan 3D berbasis AI (Tripo AI) dengan pemodelan konvensional (Blender) dalam produksi film pendek.",
@@ -67,8 +86,24 @@
       "Adobe Premiere Pro",
       "After Effects",
       "DaVinci Resolve",
-      "Photoshop",
       "Substance Painter"
+    ],
+    "stats": [
+      {
+        "id": "stat-1",
+        "number": "3D",
+        "label": "Modeling & VFX"
+      },
+      {
+        "id": "stat-2",
+        "number": "AI",
+        "label": "Gen Workflow"
+      },
+      {
+        "id": "stat-3",
+        "number": "Film",
+        "label": "Direction & Edit"
+      }
     ]
   },
   "projects": [
@@ -105,6 +140,44 @@
         "Unreal Engine",
         "DaVinci Resolve"
       ],
+      "link": "#"
+    }
+  ],
+  "experience": [
+    {
+      "id": "exp-1",
+      "title": "3D & Multimedia Production",
+      "subtitle": "Politeknik Negeri Lhokseumawe",
+      "period": "2024 — Sekarang",
+      "description": "Terlibat dalam proyek produksi film pendek, eksplorasi AI-generated 3D modeling workflow, dan animasi.",
+      "tag": "Campus Project"
+    },
+    {
+      "id": "exp-2",
+      "title": "Freelance Video Editor & 3D Artist",
+      "subtitle": "Remote / Self-Employed",
+      "period": "2022 — Sekarang",
+      "description": "Mengerjakan editing video komersial, motion graphic, dan aset visual 3D untuk berbagai kebutuhan klien kreatif.",
+      "tag": "Freelance"
+    }
+  ],
+  "certificates": [
+    {
+      "id": "cert-1",
+      "title": "Sertifikasi Kompetensi Multimedia",
+      "issuer": "BNSP & Politeknik Negeri Lhokseumawe",
+      "period": "2025",
+      "description": "Terverifikasi dalam bidang produksi multimedia, editing, dan teknologi grafis berstandar nasional.",
+      "tag": "BNSP Certified",
+      "link": "#"
+    },
+    {
+      "id": "cert-2",
+      "title": "Pelatihan 3D Animation & Visual Effects",
+      "issuer": "Creative Media Academy",
+      "period": "2024",
+      "description": "Program peningkatan kompetensi multimedia kreatif, workflow animasi 3D, dan compositing visual.",
+      "tag": "Professional Course",
       "link": "#"
     }
   ]

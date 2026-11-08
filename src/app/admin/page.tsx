@@ -6,18 +6,33 @@ import React, { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import ImageCropperModal from '@/components/ImageCropperModal';
 
-type TabType = 'general' | 'depth' | 'theme' | 'lanyard' | 'nav' | 'content';
+type TabType =
+  | 'general'
+  | 'profile'
+  | 'lanyard'
+  | 'depth'
+  | 'theme'
+  | 'nav'
+  | 'skills'
+  | 'projects'
+  | 'experience';
 
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [pinInput, setPinInput] = useState('');
   const [pinError, setPinError] = useState('');
 
-  const [activeTab, setActiveTab] = useState<TabType>('general');
+  const [activeTab, setActiveTab] = useState<TabType>('profile');
   const [config, setConfig] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+
+  // Live Preview States
+  const [showPreview, setShowPreview] = useState(true);
+  const [previewDevice, setPreviewDevice] = useState<'desktop' | 'mobile'>('desktop');
+  const [previewKey, setPreviewKey] = useState(0);
+  const previewIframeRef = useRef<HTMLIFrameElement>(null);
 
   // File upload & crop states
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -28,7 +43,7 @@ export default function AdminPage() {
   const [cropDefaultAspect, setCropDefaultAspect] = useState<'idcard' | 'strap' | 'square' | 'wide' | 'free'>('idcard');
   const [isUploading, setIsUploading] = useState(false);
 
-  // New skill tag input
+  // Inputs for new items
   const [newSkillInput, setNewSkillInput] = useState('');
 
   // Check saved session PIN
@@ -52,7 +67,7 @@ export default function AdminPage() {
           }
         } catch {}
 
-        const res = await fetch('/api/admin/config');
+        const res = await fetch(`/api/admin/config?t=${Date.now()}`, { cache: 'no-store' });
         const json = await res.json();
         if (json.success && json.data) {
           setConfig(json.data);
@@ -68,6 +83,24 @@ export default function AdminPage() {
     }
     loadConfig();
   }, []);
+
+  // Broadcast config to live preview iframe whenever config changes
+  useEffect(() => {
+    if (!config) return;
+    try {
+      localStorage.setItem('kzn_portfolio_config', JSON.stringify(config));
+    } catch {}
+
+    if (previewIframeRef.current?.contentWindow) {
+      previewIframeRef.current.contentWindow.postMessage(
+        {
+          type: 'KZN_PREVIEW_CONFIG',
+          config: config
+        },
+        '*'
+      );
+    }
+  }, [config]);
 
   // Keyboard shortcut Ctrl+S
   useEffect(() => {
@@ -110,7 +143,10 @@ export default function AdminPage() {
       });
       const json = await res.json();
       if (json.success) {
-        setSaveMessage({ text: '✓ ' + (json.message || 'Semua perubahan berhasil disimpan & disinkronkan ke Cloud!'), type: 'success' });
+        setSaveMessage({
+          text: '✓ ' + (json.message || 'Semua perubahan berhasil disimpan & disinkronkan ke Cloud!'),
+          type: 'success'
+        });
       } else {
         setSaveMessage({ text: `Gagal menyimpan: ${json.error}`, type: 'error' });
       }
@@ -118,17 +154,17 @@ export default function AdminPage() {
       setSaveMessage({ text: `Terjadi error: ${err.message}`, type: 'error' });
     } finally {
       setSaving(false);
-      setTimeout(() => setSaveMessage(null), 5000);
+      setTimeout(() => setSaveMessage(null), 6000);
     }
   };
 
-  const updateConfigValue = (path: string, value: any) => {
-    const parts = path.split('.');
+  const updateConfigValue = (pathStr: string, value: any) => {
+    const parts = pathStr.split('.');
     setConfig((prev: any) => {
       const next = { ...prev };
       let curr = next;
       for (let i = 0; i < parts.length - 1; i++) {
-        curr[parts[i]] = { ...curr[parts[i]] };
+        curr[parts[i]] = { ...(curr[parts[i]] || {}) };
         curr = curr[parts[i]];
       }
       curr[parts[parts.length - 1]] = value;
@@ -137,7 +173,7 @@ export default function AdminPage() {
   };
 
   // Trigger file picker for cropping
-  const triggerImagePicker = (fieldPath: string, title: string, aspect: 'idcard' | 'strap' | 'square' | 'wide' | 'free') => {
+  const triggerCropUpload = (fieldPath: string, title: string, aspect: 'idcard' | 'strap' | 'square' | 'wide' | 'free' = 'idcard') => {
     setCurrentUploadField(fieldPath);
     setCropTargetTitle(title);
     setCropDefaultAspect(aspect);
@@ -148,7 +184,6 @@ export default function AdminPage() {
   const onFileSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     const reader = new FileReader();
     reader.onload = (event) => {
       setRawImageForCrop(event.target?.result as string);
@@ -159,7 +194,7 @@ export default function AdminPage() {
   };
 
   // Crop directly from existing image
-  const triggerCropExisting = (fieldPath: string, currentImgUrl: string, title: string, aspect: 'idcard' | 'strap' | 'square' | 'wide' | 'free') => {
+  const triggerCropExisting = (fieldPath: string, currentImgUrl: string, title: string, aspect: 'idcard' | 'strap' | 'square' | 'wide' | 'free' = 'idcard') => {
     setCurrentUploadField(fieldPath);
     setCropTargetTitle(title);
     setCropDefaultAspect(aspect);
@@ -191,7 +226,7 @@ export default function AdminPage() {
       const json = await res.json();
 
       if (json.success && (json.url || json.githubUrl)) {
-        const finalUrl = json.url || json.githubUrl || croppedDataUrl;
+        const finalUrl = json.githubUrl || json.url || croppedDataUrl;
         updateConfigValue(currentUploadField, finalUrl);
         setSaveMessage({
           text: `✓ Gambar berhasil dipotong & diunggah! Klik "Simpan Perubahan" untuk sinkronisasi cloud.`,
@@ -211,10 +246,10 @@ export default function AdminPage() {
     }
   };
 
-  // Add new skill
+  // Add skill
   const handleAddSkill = () => {
     if (!newSkillInput.trim()) return;
-    const currentSkills = config.about.skills || [];
+    const currentSkills = config.about?.skills || [];
     if (!currentSkills.includes(newSkillInput.trim())) {
       updateConfigValue('about.skills', [...currentSkills, newSkillInput.trim()]);
     }
@@ -223,7 +258,7 @@ export default function AdminPage() {
 
   // Remove skill
   const handleRemoveSkill = (skillToRemove: string) => {
-    const currentSkills = config.about.skills || [];
+    const currentSkills = config.about?.skills || [];
     updateConfigValue(
       'about.skills',
       currentSkills.filter((s: string) => s !== skillToRemove)
@@ -242,7 +277,7 @@ export default function AdminPage() {
     };
     setConfig((prev: any) => ({
       ...prev,
-      projects: [newProj, ...prev.projects]
+      projects: [newProj, ...(prev.projects || [])]
     }));
   };
 
@@ -253,6 +288,74 @@ export default function AdminPage() {
       ...prev,
       projects: prev.projects.filter((_: any, i: number) => i !== index)
     }));
+  };
+
+  // Add Experience
+  const handleAddExperience = () => {
+    const newExp = {
+      id: `exp-${Date.now()}`,
+      title: 'Posisi / Proyek Baru',
+      subtitle: 'Instansi / Organisasi',
+      period: '2025 — Sekarang',
+      description: 'Deskripsi tanggung jawab, proses kerja, dan pencapaian.',
+      tag: 'New Role'
+    };
+    setConfig((prev: any) => ({
+      ...prev,
+      experience: [newExp, ...(prev.experience || [])]
+    }));
+  };
+
+  // Delete Experience
+  const handleDeleteExperience = (index: number) => {
+    if (!confirm('Hapus pengalaman ini?')) return;
+    setConfig((prev: any) => ({
+      ...prev,
+      experience: prev.experience.filter((_: any, i: number) => i !== index)
+    }));
+  };
+
+  // Add Certificate
+  const handleAddCertificate = () => {
+    const newCert = {
+      id: `cert-${Date.now()}`,
+      title: 'Nama Sertifikat Baru',
+      issuer: 'Lembaga Penerbit Sertifikasi',
+      period: '2025',
+      description: 'Deskripsi kompetensi yang diverifikasi dalam sertifikasi.',
+      tag: 'Certified',
+      link: '#'
+    };
+    setConfig((prev: any) => ({
+      ...prev,
+      certificates: [newCert, ...(prev.certificates || [])]
+    }));
+  };
+
+  // Delete Certificate
+  const handleDeleteCertificate = (index: number) => {
+    if (!confirm('Hapus sertifikat ini?')) return;
+    setConfig((prev: any) => ({
+      ...prev,
+      certificates: prev.certificates.filter((_: any, i: number) => i !== index)
+    }));
+  };
+
+  // Add About Stat Badge
+  const handleAddAboutStat = () => {
+    const newStat = {
+      id: `stat-${Date.now()}`,
+      number: '10+',
+      label: 'Kategori Keahlian'
+    };
+    const currentStats = config.about?.stats || [];
+    updateConfigValue('about.stats', [...currentStats, newStat]);
+  };
+
+  // Delete About Stat Badge
+  const handleDeleteAboutStat = (index: number) => {
+    const currentStats = config.about?.stats || [];
+    updateConfigValue('about.stats', currentStats.filter((_: any, i: number) => i !== index));
   };
 
   // Login Gate
@@ -269,7 +372,7 @@ export default function AdminPage() {
               </svg>
             </div>
             <h1 className="text-2xl font-black tracking-tight text-white">KZN Visuals Studio</h1>
-            <p className="text-xs text-white/50 mt-1 font-medium">Panel Admin CMS & Visual Configurator</p>
+            <p className="text-xs text-white/50 mt-1 font-medium">Panel Admin CMS & Live Visual Configurator</p>
           </div>
 
           <form onSubmit={handleLogin} className="flex flex-col gap-4 relative">
@@ -321,7 +424,7 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#07090e] text-[#f4f6ff] selection:bg-[#2f77ff]/30">
+    <div className="min-h-screen bg-[#07090e] text-[#f4f6ff] selection:bg-[#2f77ff]/30 flex flex-col">
       {/* Hidden File Picker for Crop / Upload */}
       <input
         ref={fileInputRef}
@@ -345,8 +448,8 @@ export default function AdminPage() {
       />
 
       {/* ── TOP STICKY COMMAND BAR ── */}
-      <header className="sticky top-0 z-40 bg-[#0d101c]/95 backdrop-blur-xl border-b border-white/10 px-6 py-3.5 shadow-xl">
-        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+      <header className="sticky top-0 z-40 bg-[#0d101c]/95 backdrop-blur-xl border-b border-white/10 px-4 lg:px-6 py-3 shadow-xl">
+        <div className="w-full flex flex-wrap items-center justify-between gap-3">
           {/* Logo & Status Badge */}
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#2f77ff] to-[#18d3ff] flex items-center justify-center font-black text-black shadow-md shadow-blue-500/20">
@@ -354,969 +457,1593 @@ export default function AdminPage() {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-sm font-black tracking-tight text-white">KZN Visuals Studio</h1>
+                <h1 className="text-sm font-black tracking-tight text-white">KZN Studio CMS</h1>
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  Cloud Synced
+                  Live Sync
                 </span>
               </div>
-              <p className="text-[11px] text-white/40 font-medium">Live Visual Editor & Asset Manager</p>
+              <p className="text-[11px] text-white/40 font-medium">Visual Configurator & Asset Manager</p>
             </div>
           </div>
 
           {/* Action Toolbar */}
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center flex-wrap gap-2">
+            {/* Live Preview Toggle */}
+            <button
+              type="button"
+              onClick={() => setShowPreview(!showPreview)}
+              className={`text-xs font-bold px-3.5 py-2 rounded-xl border transition-all flex items-center gap-2 ${
+                showPreview
+                  ? 'bg-[#18d3ff]/20 text-[#18d3ff] border-[#18d3ff]/40 shadow-lg shadow-cyan-500/20'
+                  : 'bg-white/5 text-white/70 border-white/10 hover:bg-white/10 hover:text-white'
+              }`}
+              title="Tampilkan atau sembunyikan preview langsung"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+              <span>{showPreview ? 'Tutup Preview' : 'Buka Preview'}</span>
+            </button>
+
+            {/* Link to Main Site */}
             <Link
               href="/"
               target="_blank"
-              className="text-xs font-semibold px-3.5 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all flex items-center gap-1.5 text-white/80 hover:text-white"
+              className="text-xs font-semibold px-3 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all flex items-center gap-1.5 text-white/80 hover:text-white"
             >
-              <span>Lihat Website</span>
+              <span>Website</span>
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
               </svg>
             </Link>
 
+            {/* Save Button */}
             <button
               onClick={handleSave}
-              disabled={saving || isUploading}
-              className="bg-gradient-to-r from-[#2f77ff] to-[#18d3ff] text-white font-bold text-xs px-5 py-2 rounded-xl shadow-lg shadow-blue-500/25 hover:opacity-90 active:scale-95 transition-all flex items-center gap-2 disabled:opacity-50"
-              title="Shortcut: Tekan Ctrl + S untuk menyimpan"
+              disabled={saving}
+              className="bg-gradient-to-r from-[#2f77ff] to-[#18d3ff] text-white text-xs font-bold px-4 py-2 rounded-xl hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-blue-500/25 flex items-center gap-1.5 disabled:opacity-50"
             >
-              {saving || isUploading ? (
+              {saving ? (
                 <>
                   <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  <span>Menyimpan ke Cloud...</span>
+                  <span>Menyimpan...</span>
                 </>
               ) : (
                 <>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
                   </svg>
                   <span>Simpan Perubahan</span>
-                  <span className="hidden sm:inline-block text-[10px] px-1.5 py-0.5 rounded bg-black/25 text-white/80 font-mono">
-                    Ctrl+S
-                  </span>
                 </>
               )}
             </button>
           </div>
         </div>
 
-        {/* Save feedback toast */}
+        {/* Global Save Notification Banner */}
         {saveMessage && (
           <div
-            className={`max-w-7xl mx-auto mt-2.5 py-2 px-4 rounded-xl text-xs font-semibold border flex items-center gap-2 animate-in fade-in slide-in-from-top-1 ${
+            className={`mt-2.5 px-4 py-2 rounded-xl text-xs font-medium border flex items-center justify-between transition-all ${
               saveMessage.type === 'success'
                 ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300'
                 : 'bg-rose-500/15 border-rose-500/30 text-rose-300'
             }`}
           >
             <span>{saveMessage.text}</span>
+            <button onClick={() => setSaveMessage(null)} className="text-white/40 hover:text-white ml-2 text-sm">
+              ✕
+            </button>
           </div>
         )}
       </header>
 
-      {/* ── MAIN CONTENT ── */}
-      <div className="max-w-7xl mx-auto p-6 flex flex-col gap-6">
-        {/* Navigation Tabs Bar */}
-        <div className="flex flex-wrap items-center gap-2 bg-[#0e1220]/80 border border-white/10 p-1.5 rounded-2xl backdrop-blur-md">
-          {[
-            { id: 'general', label: 'Identitas & Profil', icon: '👤' },
-            { id: 'depth', label: 'Judul 3D DepthText', icon: '💎' },
-            { id: 'theme', label: 'Warna & DarkVeil', icon: '🎨' },
-            { id: 'lanyard', label: '3D Lanyard & Crop Gambar', icon: '🪪' },
-            { id: 'nav', label: 'GooeyNav Liquid Bar', icon: '🧭' },
-            { id: 'content', label: 'Tentang & Proyek', icon: '📁' },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as TabType)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                activeTab === tab.id
-                  ? 'bg-gradient-to-r from-[#2f77ff] to-[#18d3ff] text-white shadow-md shadow-blue-500/20'
-                  : 'text-white/60 hover:text-white hover:bg-white/5'
-              }`}
-            >
-              <span>{tab.icon}</span>
-              <span>{tab.label}</span>
-            </button>
-          ))}
-        </div>
+      {/* ── NAVIGATION TABS BAR ── */}
+      <nav className="bg-[#090b14] border-b border-white/10 px-4 lg:px-6 py-2 overflow-x-auto scrollbar-none flex gap-1.5 z-30">
+        {[
+          { id: 'profile', label: '🪪 About & ProfileCard', desc: 'Kartu 3D, foto & bio' },
+          { id: 'lanyard', label: '🪢 3D Lanyard Card', desc: 'Kartu gantung 3D' },
+          { id: 'depth', label: '💎 3D DepthText', desc: 'Judul berkedalaman 3D' },
+          { id: 'general', label: '👤 Identitas & Umum', desc: 'Nama, kontak & sosial' },
+          { id: 'theme', label: '🌌 Warna & DarkVeil', desc: 'Warna tema & background' },
+          { id: 'nav', label: '🔘 GooeyNav', desc: 'Navigasi menu utama' },
+          { id: 'skills', label: '🛠 Skills', desc: 'Daftar keahlian' },
+          { id: 'projects', label: '🚀 Projects', desc: 'Portofolio karya' },
+          { id: 'experience', label: '💼 Pengalaman & Sertifikat', desc: 'Pengalaman & sertifikasi' },
+        ].map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id as TabType)}
+            className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex flex-col items-start gap-0.5 ${
+              activeTab === tab.id
+                ? 'bg-gradient-to-r from-[#2f77ff]/20 to-[#18d3ff]/20 text-[#18d3ff] border border-[#18d3ff]/40 shadow-sm'
+                : 'text-white/60 hover:text-white hover:bg-white/5 border border-transparent'
+            }`}
+          >
+            <span>{tab.label}</span>
+            <span className="text-[10px] font-normal opacity-50">{tab.desc}</span>
+          </button>
+        ))}
+      </nav>
 
-        {/* ── TAB 1: IDENTITAS & PROFIL ── */}
-        {activeTab === 'general' && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Profil Card */}
-            <div className="bg-[#0f1424]/70 border border-white/10 rounded-3xl p-6 backdrop-blur-xl flex flex-col gap-4 shadow-xl">
-              <div className="flex items-center gap-2.5 pb-2 border-b border-white/10">
-                <div className="w-7 h-7 rounded-lg bg-[#2f77ff]/20 text-[#18d3ff] flex items-center justify-center text-xs font-bold">
-                  01
-                </div>
-                <div>
-                  <h2 className="text-sm font-bold text-white tracking-wide">Profil & Identitas Utama</h2>
-                  <p className="text-[11px] text-white/40">Teks yang tampil di banner utama (Hero)</p>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-white/70 mb-1.5">Nama Lengkap</label>
-                <input
-                  type="text"
-                  value={config.general.fullName}
-                  onChange={(e) => updateConfigValue('general.fullName', e.target.value)}
-                  className="w-full bg-[#080b14] border border-white/15 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#18d3ff] transition-colors"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-white/70 mb-1.5">Teks Brand / Logo Navigasi</label>
-                <input
-                  type="text"
-                  value={config.general.brandLogo}
-                  onChange={(e) => updateConfigValue('general.brandLogo', e.target.value)}
-                  className="w-full bg-[#080b14] border border-white/15 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#18d3ff] transition-colors"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-white/70 mb-1.5">Eyebrow Hero (Teks Kecil di Atas Judul)</label>
-                <input
-                  type="text"
-                  value={config.general.eyebrow}
-                  onChange={(e) => updateConfigValue('general.eyebrow', e.target.value)}
-                  className="w-full bg-[#080b14] border border-white/15 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#18d3ff] transition-colors"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-white/70 mb-1.5">Role / Headline Profesi</label>
-                <input
-                  type="text"
-                  value={config.general.role}
-                  onChange={(e) => updateConfigValue('general.role', e.target.value)}
-                  className="w-full bg-[#080b14] border border-white/15 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#18d3ff] transition-colors"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-white/70 mb-1.5">Bio Singkat (Paragraf Hero)</label>
-                <textarea
-                  rows={4}
-                  value={config.general.lead}
-                  onChange={(e) => updateConfigValue('general.lead', e.target.value)}
-                  className="w-full bg-[#080b14] border border-white/15 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#18d3ff] transition-colors resize-none leading-relaxed"
-                />
-              </div>
-            </div>
-
-            {/* Kontak & Social Media */}
-            <div className="bg-[#0f1424]/70 border border-white/10 rounded-3xl p-6 backdrop-blur-xl flex flex-col gap-4 shadow-xl">
-              <div className="flex items-center gap-2.5 pb-2 border-b border-white/10">
-                <div className="w-7 h-7 rounded-lg bg-[#18d3ff]/20 text-[#18d3ff] flex items-center justify-center text-xs font-bold">
-                  02
-                </div>
-                <div>
-                  <h2 className="text-sm font-bold text-white tracking-wide">Kontak, Tautan, & Footer</h2>
-                  <p className="text-[11px] text-white/40">Alamat email dan profil sosial media</p>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-white/70 mb-1.5">Email Kontak Resmi</label>
-                <input
-                  type="email"
-                  value={config.general.contactEmail}
-                  onChange={(e) => updateConfigValue('general.contactEmail', e.target.value)}
-                  className="w-full bg-[#080b14] border border-white/15 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#18d3ff] transition-colors font-mono"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-white/70 mb-1.5">Link Download CV (URL atau Berkas)</label>
-                <input
-                  type="text"
-                  value={config.general.cvUrl}
-                  onChange={(e) => updateConfigValue('general.cvUrl', e.target.value)}
-                  className="w-full bg-[#080b14] border border-white/15 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#18d3ff] transition-colors font-mono"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-white/70 mb-1.5">URL Profil GitHub</label>
-                <input
-                  type="text"
-                  value={config.general.githubUrl}
-                  onChange={(e) => updateConfigValue('general.githubUrl', e.target.value)}
-                  className="w-full bg-[#080b14] border border-white/15 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#18d3ff] transition-colors font-mono"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-white/70 mb-1.5">URL Profil LinkedIn</label>
-                <input
-                  type="text"
-                  value={config.general.linkedinUrl}
-                  onChange={(e) => updateConfigValue('general.linkedinUrl', e.target.value)}
-                  className="w-full bg-[#080b14] border border-white/15 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#18d3ff] transition-colors font-mono"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-white/70 mb-1.5">Teks Copyright Footer</label>
-                <input
-                  type="text"
-                  value={config.general.footerText}
-                  onChange={(e) => updateConfigValue('general.footerText', e.target.value)}
-                  className="w-full bg-[#080b14] border border-white/15 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#18d3ff] transition-colors"
-                />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ── TAB 2: 3D DEPTHTEXT ── */}
-        {activeTab === 'depth' && (
-          <div className="flex flex-col gap-6">
-            {/* Live Visual Preview of DepthText */}
-            <div className="bg-[#0f1424]/70 border border-white/10 rounded-3xl p-6 backdrop-blur-xl shadow-xl flex flex-col items-center justify-center min-h-[160px] relative overflow-hidden">
-              <div className="text-[10px] font-bold uppercase tracking-widest text-white/30 absolute top-4 left-6">
-                Live Preview Visual Teks 3D
-              </div>
-              <div
-                className="text-4xl md:text-5xl font-black tracking-tight select-none mt-4 transition-all"
-                style={{
-                  color: config.depthText.faceColor,
-                  textShadow: `0 1px 0 ${config.depthText.depthColor}, 0 2px 0 ${config.depthText.depthColor}, 0 3px 0 ${config.depthText.depthColor}, 0 4px 0 ${config.depthText.depthColor}, 0 6px 12px rgba(0,0,0,0.6)`
-                }}
-              >
-                {config.depthText.text || 'Anwail Khairat'}
-              </div>
-              <div className="text-[11px] text-white/40 mt-3 font-mono">
-                Face: {config.depthText.faceColor} • Depth: {config.depthText.depthColor} • {config.depthText.layers} Layers
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Parameter Teks */}
-              <div className="bg-[#0f1424]/70 border border-white/10 rounded-3xl p-6 backdrop-blur-xl flex flex-col gap-4 shadow-xl">
-                <div className="flex items-center gap-2.5 pb-2 border-b border-white/10">
-                  <div className="w-7 h-7 rounded-lg bg-[#2f77ff]/20 text-[#18d3ff] flex items-center justify-center text-xs font-bold">
-                    💎
-                  </div>
-                  <h3 className="text-sm font-bold text-white tracking-wide">Teks & Warna Ekstrusi</h3>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-white/70 mb-1.5">Kata / Kalimat Judul 3D</label>
-                  <input
-                    type="text"
-                    value={config.depthText.text}
-                    onChange={(e) => updateConfigValue('depthText.text', e.target.value)}
-                    className="w-full bg-[#080b14] border border-white/15 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#18d3ff]"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
+      {/* ── MAIN WORKSPACE: SPLIT VIEW (EDITOR + LIVE PREVIEW) ── */}
+      <div className="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
+        {/* LEFT PANE: CONFIGURATION EDITOR */}
+        <div
+          className={`flex-1 overflow-y-auto p-4 lg:p-6 transition-all ${
+            showPreview ? 'lg:max-w-[55%] xl:max-w-[50%]' : 'w-full max-w-6xl mx-auto'
+          }`}
+        >
+          {/* TAB 1: ABOUT ME & 3D PROFILECARD */}
+          {activeTab === 'profile' && (
+            <div className="space-y-6">
+              <div className="bg-[#101422] border border-white/10 rounded-2xl p-5">
+                <div className="flex items-center justify-between mb-4 pb-3 border-b border-white/10">
                   <div>
-                    <label className="block text-xs font-semibold text-white/70 mb-1.5">Warna Depan (Face)</label>
-                    <div className="flex items-center gap-2 bg-[#080b14] p-1.5 rounded-xl border border-white/15">
-                      <input
-                        type="color"
-                        value={config.depthText.faceColor}
-                        onChange={(e) => updateConfigValue('depthText.faceColor', e.target.value)}
-                        className="w-8 h-8 rounded-lg cursor-pointer bg-transparent border-0"
+                    <h2 className="text-base font-black text-white flex items-center gap-2">
+                      <span>🪪 Foto Utama ProfileCard</span>
+                    </h2>
+                    <p className="text-xs text-white/50 mt-0.5">
+                      Ubah foto potret, atur posisi fokus, dan hilangkan bayangan hitam bawah jika foto tampak terpotong setengah.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-start">
+                  {/* Photo Preview & Upload Buttons */}
+                  <div className="flex flex-col items-center p-4 bg-[#080a12] border border-white/10 rounded-xl">
+                    <div className="w-44 h-56 rounded-xl overflow-hidden border-2 border-white/20 bg-[#161a29] relative mb-3 shadow-xl">
+                      {config.profileCard?.avatarUrl ? (
+                        <img
+                          src={config.profileCard.avatarUrl}
+                          alt="Profile Portrait"
+                          className="w-full h-full"
+                          style={{
+                            objectFit: config.profileCard.photoFit || 'cover',
+                            objectPosition: config.profileCard.photoPosition || 'center 20%'
+                          }}
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-xs text-white/40">
+                          Belum ada foto
+                        </div>
+                      )}
+                      {/* Simulated bottom scrim preview */}
+                      <div
+                        className="absolute inset-0 pointer-events-none"
+                        style={{
+                          background: `linear-gradient(to top, rgba(0,0,0,${config.profileCard?.scrimOpacity ?? 0.35}) 0%, transparent 60%)`
+                        }}
                       />
-                      <input
-                        type="text"
-                        value={config.depthText.faceColor}
-                        onChange={(e) => updateConfigValue('depthText.faceColor', e.target.value)}
-                        className="w-full bg-transparent text-xs text-white font-mono focus:outline-none"
-                      />
+                    </div>
+
+                    <div className="flex flex-wrap gap-2 justify-center w-full">
+                      <button
+                        type="button"
+                        onClick={() => triggerCropUpload('profileCard.avatarUrl', 'Potong Foto ProfileCard', 'free')}
+                        disabled={isUploading}
+                        className="text-xs font-bold px-3 py-2 rounded-lg bg-[#2f77ff] hover:bg-[#3d82ff] text-white flex items-center gap-1.5 transition-all shadow-md shadow-blue-500/20"
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <span>Ganti & Potong Foto</span>
+                      </button>
+
+                      {config.profileCard?.avatarUrl && (
+                        <button
+                          type="button"
+                          onClick={() => triggerCropExisting('profileCard.avatarUrl', config.profileCard.avatarUrl, 'Sesuaikan Ulang Foto ProfileCard', 'free')}
+                          className="text-xs font-semibold px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center gap-1.5 transition-all"
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879M12 12L9.121 9.121m0 5.758a3 3 0 10-4.243-4.243 3 3 0 004.243 4.243z" />
+                          </svg>
+                          <span>Potong Ulang</span>
+                        </button>
+                      )}
                     </div>
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-semibold text-white/70 mb-1.5">Warna Samping (Depth)</label>
-                    <div className="flex items-center gap-2 bg-[#080b14] p-1.5 rounded-xl border border-white/15">
+                  {/* Fitting & Scrim Adjustments */}
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-[11px] font-bold uppercase tracking-wider text-white/70 block mb-1.5">
+                        Kerapian Tampilan Foto (Photo Fit)
+                      </label>
+                      <select
+                        value={config.profileCard?.photoFit || 'cover'}
+                        onChange={(e) => updateConfigValue('profileCard.photoFit', e.target.value)}
+                        className="w-full bg-[#080a12] border border-white/15 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-[#18d3ff]"
+                      >
+                        <option value="cover">Cover (Penuh memenuhi kartu — Rekomendasi)</option>
+                        <option value="contain">Contain (Utuh semua terlihat tanpa terpotong)</option>
+                        <option value="fill">Fill (Regang mengikuti kartu)</option>
+                      </select>
+                      <p className="text-[10px] text-white/40 mt-1">
+                        Pilih &quot;Contain&quot; jika kamu ingin seluruh foto terlihat utuh tanpa ada bagian yang terpotong.
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="text-[11px] font-bold uppercase tracking-wider text-white/70 block mb-1.5">
+                        Posisi Fokus Foto (Photo Position)
+                      </label>
+                      <select
+                        value={config.profileCard?.photoPosition || 'center 20%'}
+                        onChange={(e) => updateConfigValue('profileCard.photoPosition', e.target.value)}
+                        className="w-full bg-[#080a12] border border-white/15 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-[#18d3ff]"
+                      >
+                        <option value="center top">Atas (Fokus wajah / kepala)</option>
+                        <option value="center 15%">Atas Halus (15% dari atas — Ideal)</option>
+                        <option value="center 25%">Sedikit ke Atas (25%)</option>
+                        <option value="center center">Tengah-tengah (Center)</option>
+                        <option value="center bottom">Bawah (Fokus bawah)</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <div className="flex justify-between items-center mb-1">
+                        <label className="text-[11px] font-bold uppercase tracking-wider text-white/70">
+                          Kegelapan Bayangan Bawah (Scrim Opacity)
+                        </label>
+                        <span className="text-xs font-mono text-[#18d3ff]">
+                          {Math.round((config.profileCard?.scrimOpacity ?? 0.35) * 100)}%
+                        </span>
+                      </div>
                       <input
-                        type="color"
-                        value={config.depthText.depthColor}
-                        onChange={(e) => updateConfigValue('depthText.depthColor', e.target.value)}
-                        className="w-8 h-8 rounded-lg cursor-pointer bg-transparent border-0"
+                        type="range"
+                        min="0"
+                        max="1"
+                        step="0.05"
+                        value={config.profileCard?.scrimOpacity ?? 0.35}
+                        onChange={(e) => updateConfigValue('profileCard.scrimOpacity', parseFloat(e.target.value))}
+                        className="w-full accent-[#18d3ff]"
                       />
-                      <input
-                        type="text"
-                        value={config.depthText.depthColor}
-                        onChange={(e) => updateConfigValue('depthText.depthColor', e.target.value)}
-                        className="w-full bg-transparent text-xs text-white font-mono focus:outline-none"
-                      />
+                      <p className="text-[10px] text-emerald-400 mt-1">
+                        💡 Turunkan slider ini ke 0% atau 15% jika kamu merasa bagian bawah gambar terlalu gelap / tertutup bayangan hitam.
+                      </p>
+                    </div>
+
+                    {/* Mini Avatar Upload */}
+                    <div className="pt-2 border-t border-white/10">
+                      <label className="text-[11px] font-bold uppercase tracking-wider text-white/70 block mb-1.5">
+                        Foto Mini Avatar (Bulat di Footer Kartu)
+                      </label>
+                      <div className="flex items-center gap-3">
+                        <div className="w-11 h-11 rounded-full overflow-hidden border border-white/20 bg-black flex-shrink-0">
+                          {config.profileCard?.miniAvatarUrl ? (
+                            <img src={config.profileCard.miniAvatarUrl} alt="Mini avatar" className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-[10px] text-white/40">1:1</div>
+                          )}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => triggerCropUpload('profileCard.miniAvatarUrl', 'Potong Mini Avatar Bulat', 'square')}
+                          className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-all"
+                        >
+                          Ganti Mini Avatar (1:1)
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
-
-                <div>
-                  <div className="flex justify-between text-xs font-semibold text-white/70 mb-1.5">
-                    <span>Jumlah Lapisan Ekstrusi</span>
-                    <span className="text-[#18d3ff] font-mono">{config.depthText.layers} layers</span>
-                  </div>
-                  <input
-                    type="range"
-                    min="12"
-                    max="45"
-                    value={config.depthText.layers}
-                    onChange={(e) => updateConfigValue('depthText.layers', Number(e.target.value))}
-                    className="w-full accent-[#2f77ff] h-1.5 bg-white/10 rounded-lg cursor-pointer"
-                  />
-                </div>
-
-                <div>
-                  <div className="flex justify-between text-xs font-semibold text-white/70 mb-1.5">
-                    <span>Ketebalan Jarak Antar Layer</span>
-                    <span className="text-[#18d3ff] font-mono">{config.depthText.depth}px</span>
-                  </div>
-                  <input
-                    type="range"
-                    min="0.8"
-                    max="4.0"
-                    step="0.1"
-                    value={config.depthText.depth}
-                    onChange={(e) => updateConfigValue('depthText.depth', Number(e.target.value))}
-                    className="w-full accent-[#2f77ff] h-1.5 bg-white/10 rounded-lg cursor-pointer"
-                  />
-                </div>
               </div>
 
-              {/* Fisika & Gerakan */}
-              <div className="bg-[#0f1424]/70 border border-white/10 rounded-3xl p-6 backdrop-blur-xl flex flex-col gap-4 shadow-xl">
-                <div className="flex items-center gap-2.5 pb-2 border-b border-white/10">
-                  <div className="w-7 h-7 rounded-lg bg-[#18d3ff]/20 text-[#18d3ff] flex items-center justify-center text-xs font-bold">
-                    🕹️
-                  </div>
-                  <h3 className="text-sm font-bold text-white tracking-wide">Fisika & Gerakan Parallax</h3>
-                </div>
-
-                <div>
-                  <div className="flex justify-between text-xs font-semibold text-white/70 mb-1.5">
-                    <span>Sudut Kemiringan Maksimal (Tilt)</span>
-                    <span className="text-[#18d3ff] font-mono">{config.depthText.tilt}°</span>
-                  </div>
-                  <input
-                    type="range"
-                    min="0"
-                    max="15"
-                    step="0.5"
-                    value={config.depthText.tilt}
-                    onChange={(e) => updateConfigValue('depthText.tilt', Number(e.target.value))}
-                    className="w-full accent-[#2f77ff] h-1.5 bg-white/10 rounded-lg cursor-pointer"
-                  />
-                </div>
-
-                <div>
-                  <div className="flex justify-between text-xs font-semibold text-white/70 mb-1.5">
-                    <span>Sensasi Pegas saat Ditekan (HoverPush)</span>
-                    <span className="text-[#18d3ff] font-mono">{config.depthText.hoverPush}</span>
-                  </div>
-                  <input
-                    type="range"
-                    min="0"
-                    max="1.0"
-                    step="0.05"
-                    value={config.depthText.hoverPush}
-                    onChange={(e) => updateConfigValue('depthText.hoverPush', Number(e.target.value))}
-                    className="w-full accent-[#2f77ff] h-1.5 bg-white/10 rounded-lg cursor-pointer"
-                  />
-                </div>
-
-                <div className="pt-2 flex flex-col gap-3">
-                  {[
-                    { key: 'depthText.float', label: 'Efek Mengayun Halus (Float Motion)', checked: config.depthText.float },
-                    { key: 'depthText.autoOrbit', label: 'Auto Orbit saat Kursor Mouse Diam', checked: config.depthText.autoOrbit },
-                    { key: 'depthText.shadow', label: 'Bayangan 3D Lembut (Text Shadow)', checked: config.depthText.shadow },
-                  ].map((item) => (
-                    <label key={item.key} className="flex items-center justify-between p-3 rounded-2xl bg-[#080b14] border border-white/10 cursor-pointer hover:border-white/20 transition-all">
-                      <span className="text-xs font-semibold text-white/80">{item.label}</span>
-                      <input
-                        type="checkbox"
-                        checked={item.checked}
-                        onChange={(e) => updateConfigValue(item.key, e.target.checked)}
-                        className="w-4 h-4 rounded accent-[#18d3ff] cursor-pointer"
-                      />
+              {/* Data Identitas ProfileCard */}
+              <div className="bg-[#101422] border border-white/10 rounded-2xl p-5">
+                <h3 className="text-sm font-black text-white mb-4 pb-2 border-b border-white/10">
+                  Data Identitas & Footer ProfileCard
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-white/70 block mb-1">
+                      Nama di Kartu
                     </label>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+                    <input
+                      type="text"
+                      value={config.profileCard?.name || ''}
+                      onChange={(e) => updateConfigValue('profileCard.name', e.target.value)}
+                      placeholder="Anwail Khairat"
+                      className="w-full bg-[#080a12] border border-white/15 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#18d3ff]"
+                    />
+                  </div>
 
-        {/* ── TAB 3: WARNA & DARKVEIL ── */}
-        {activeTab === 'theme' && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-[#0f1424]/70 border border-white/10 rounded-3xl p-6 backdrop-blur-xl flex flex-col gap-4 shadow-xl">
-              <div className="flex items-center gap-2.5 pb-2 border-b border-white/10">
-                <div className="w-7 h-7 rounded-lg bg-[#2f77ff]/20 text-[#18d3ff] flex items-center justify-center text-xs font-bold">
-                  🎨
-                </div>
-                <h3 className="text-sm font-bold text-white tracking-wide">Palet Warna Utama Studio</h3>
-              </div>
+                  <div>
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-white/70 block mb-1">
+                      Jabatan / Role di Kartu
+                    </label>
+                    <input
+                      type="text"
+                      value={config.profileCard?.title || ''}
+                      onChange={(e) => updateConfigValue('profileCard.title', e.target.value)}
+                      placeholder="Multimedia Engineering Student"
+                      className="w-full bg-[#080a12] border border-white/15 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#18d3ff]"
+                    />
+                  </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-white/70 mb-1.5">Warna Aksen Primer (Sapphire Blue)</label>
-                <div className="flex items-center gap-2 bg-[#080b14] p-2 rounded-xl border border-white/15">
-                  <input
-                    type="color"
-                    value={config.theme.primaryColor}
-                    onChange={(e) => updateConfigValue('theme.primaryColor', e.target.value)}
-                    className="w-9 h-9 rounded-lg cursor-pointer bg-transparent border-0"
-                  />
-                  <input
-                    type="text"
-                    value={config.theme.primaryColor}
-                    onChange={(e) => updateConfigValue('theme.primaryColor', e.target.value)}
-                    className="w-full bg-transparent text-sm text-white font-mono focus:outline-none"
-                  />
-                </div>
-              </div>
+                  <div>
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-white/70 block mb-1">
+                      Handle Username (tanpa @)
+                    </label>
+                    <input
+                      type="text"
+                      value={config.profileCard?.handle || ''}
+                      onChange={(e) => updateConfigValue('profileCard.handle', e.target.value)}
+                      placeholder="anwailkhairat5"
+                      className="w-full bg-[#080a12] border border-white/15 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#18d3ff]"
+                    />
+                  </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-white/70 mb-1.5">Warna Aksen Sekunder (Cyan Glow)</label>
-                <div className="flex items-center gap-2 bg-[#080b14] p-2 rounded-xl border border-white/15">
-                  <input
-                    type="color"
-                    value={config.theme.accentCyan}
-                    onChange={(e) => updateConfigValue('theme.accentCyan', e.target.value)}
-                    className="w-9 h-9 rounded-lg cursor-pointer bg-transparent border-0"
-                  />
-                  <input
-                    type="text"
-                    value={config.theme.accentCyan}
-                    onChange={(e) => updateConfigValue('theme.accentCyan', e.target.value)}
-                    className="w-full bg-transparent text-sm text-white font-mono focus:outline-none"
-                  />
-                </div>
-              </div>
+                  <div>
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-white/70 block mb-1">
+                      Status Badge (cth: Open to Work, Online)
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={config.profileCard?.status || ''}
+                        onChange={(e) => updateConfigValue('profileCard.status', e.target.value)}
+                        placeholder="Open to Work"
+                        className="flex-1 bg-[#080a12] border border-white/15 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#18d3ff]"
+                      />
+                      <input
+                        type="color"
+                        value={config.profileCard?.statusColor || '#22c55e'}
+                        onChange={(e) => updateConfigValue('profileCard.statusColor', e.target.value)}
+                        className="w-9 h-9 rounded-xl bg-transparent border border-white/20 cursor-pointer"
+                        title="Pilih warna titik status"
+                      />
+                    </div>
+                  </div>
 
-              {/* Preset Palettes */}
-              <div className="pt-2">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-white/40 block mb-2">Preset Palet Cepat:</span>
-                <div className="flex flex-wrap gap-2">
-                  {[
-                    { name: 'Sapphire & Cyan', primary: '#2f77ff', accent: '#18d3ff' },
-                    { name: 'Cyberpunk Violet', primary: '#8b5cf6', accent: '#ec4899' },
-                    { name: 'Emerald Nebula', primary: '#10b981', accent: '#34d399' },
-                    { name: 'Solar Amber', primary: '#f59e0b', accent: '#fbbf24' },
-                  ].map((preset) => (
-                    <button
-                      key={preset.name}
-                      type="button"
-                      onClick={() => {
-                        updateConfigValue('theme.primaryColor', preset.primary);
-                        updateConfigValue('theme.accentCyan', preset.accent);
-                      }}
-                      className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-white/80 flex items-center gap-2 transition-colors"
+                  <div>
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-white/70 block mb-1">
+                      Teks Tombol Kontak di Kartu
+                    </label>
+                    <input
+                      type="text"
+                      value={config.profileCard?.contactText || ''}
+                      onChange={(e) => updateConfigValue('profileCard.contactText', e.target.value)}
+                      placeholder="Email Me"
+                      className="w-full bg-[#080a12] border border-white/15 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#18d3ff]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-white/70 block mb-1">
+                      Tema Kartu
+                    </label>
+                    <select
+                      value={config.profileCard?.theme || 'dark'}
+                      onChange={(e) => updateConfigValue('profileCard.theme', e.target.value)}
+                      className="w-full bg-[#080a12] border border-white/15 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#18d3ff]"
                     >
-                      <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: preset.primary }} />
-                      <span>{preset.name}</span>
-                    </button>
-                  ))}
+                      <option value="dark">Dark Theme (Futuristik Gelap)</option>
+                      <option value="light">Light Theme (Terang)</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* 3D Hologram Sliders */}
+                <div className="mt-5 pt-4 border-t border-white/10 grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <div className="flex justify-between text-xs mb-1">
+                      <span className="text-white/70 font-semibold">Efek Hologram Foil</span>
+                      <span className="text-[#18d3ff] font-mono">{config.profileCard?.holo ?? 0.85}</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.05"
+                      value={config.profileCard?.holo ?? 0.85}
+                      onChange={(e) => updateConfigValue('profileCard.holo', parseFloat(e.target.value))}
+                      className="w-full accent-[#18d3ff]"
+                    />
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between text-xs mb-1">
+                      <span className="text-white/70 font-semibold">Pantulan Glare</span>
+                      <span className="text-[#18d3ff] font-mono">{config.profileCard?.glare ?? 0.55}</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.05"
+                      value={config.profileCard?.glare ?? 0.55}
+                      onChange={(e) => updateConfigValue('profileCard.glare', parseFloat(e.target.value))}
+                      className="w-full accent-[#18d3ff]"
+                    />
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between text-xs mb-1">
+                      <span className="text-white/70 font-semibold">Sudut Miring (Tilt)</span>
+                      <span className="text-[#18d3ff] font-mono">{config.profileCard?.tiltStrength ?? 14}°</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="25"
+                      step="1"
+                      value={config.profileCard?.tiltStrength ?? 14}
+                      onChange={(e) => updateConfigValue('profileCard.tiltStrength', parseInt(e.target.value))}
+                      className="w-full accent-[#18d3ff]"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Teks Deskripsi About Me */}
+              <div className="bg-[#101422] border border-white/10 rounded-2xl p-5">
+                <h3 className="text-sm font-black text-white mb-4 pb-2 border-b border-white/10">
+                  Teks Deskripsi Bagian About Me
+                </h3>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-[11px] font-bold uppercase tracking-wider text-white/70 block mb-1">
+                        Eyebrow (Teks Kecil di Atas Judul)
+                      </label>
+                      <input
+                        type="text"
+                        value={config.about?.eyebrow || 'ABOUT THE CREATOR'}
+                        onChange={(e) => updateConfigValue('about.eyebrow', e.target.value)}
+                        className="w-full bg-[#080a12] border border-white/15 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#18d3ff]"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-[11px] font-bold uppercase tracking-wider text-white/70 block mb-1">
+                        Judul Heading (cth: About Me)
+                      </label>
+                      <input
+                        type="text"
+                        value={config.about?.heading || 'About Me'}
+                        onChange={(e) => updateConfigValue('about.heading', e.target.value)}
+                        className="w-full bg-[#080a12] border border-white/15 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#18d3ff]"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-white/70 block mb-1">
+                      Paragraf Utama (Lead Bio)
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={config.about?.lead || ''}
+                      onChange={(e) => updateConfigValue('about.lead', e.target.value)}
+                      className="w-full bg-[#080a12] border border-white/15 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#18d3ff]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-white/70 block mb-1">
+                      Paragraf Penjelas (Subtext Bio)
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={config.about?.sub || ''}
+                      onChange={(e) => updateConfigValue('about.sub', e.target.value)}
+                      className="w-full bg-[#080a12] border border-white/15 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#18d3ff]"
+                    />
+                  </div>
+
+                  {/* Badges Statistik Singkat */}
+                  <div className="pt-3 border-t border-white/10">
+                    <div className="flex items-center justify-between mb-3">
+                      <label className="text-[11px] font-bold uppercase tracking-wider text-white/70">
+                        Kartu Statistik Singkat (Stats Badges)
+                      </label>
+                      <button
+                        type="button"
+                        onClick={handleAddAboutStat}
+                        className="text-[11px] font-bold px-2.5 py-1 rounded-lg bg-[#2f77ff]/30 text-[#18d3ff] hover:bg-[#2f77ff]/50 transition-all"
+                      >
+                        + Tambah Statistik
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      {(config.about?.stats || []).map((stat: any, idx: number) => (
+                        <div key={stat.id || idx} className="p-3 bg-[#080a12] border border-white/10 rounded-xl relative group">
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteAboutStat(idx)}
+                            className="absolute top-2 right-2 text-white/30 hover:text-rose-400 text-xs font-bold"
+                            title="Hapus statistik ini"
+                          >
+                            ✕
+                          </button>
+                          <input
+                            type="text"
+                            value={stat.number || ''}
+                            onChange={(e) => {
+                              const updated = [...(config.about?.stats || [])];
+                              updated[idx] = { ...updated[idx], number: e.target.value };
+                              updateConfigValue('about.stats', updated);
+                            }}
+                            placeholder="3D / AI / Film"
+                            className="w-full font-black text-sm text-[#18d3ff] bg-transparent border-b border-white/15 focus:outline-none focus:border-[#18d3ff] pb-1 mb-1"
+                          />
+                          <input
+                            type="text"
+                            value={stat.label || ''}
+                            onChange={(e) => {
+                              const updated = [...(config.about?.stats || [])];
+                              updated[idx] = { ...updated[idx], label: e.target.value };
+                              updateConfigValue('about.stats', updated);
+                            }}
+                            placeholder="Kategori / Label"
+                            className="w-full text-[11px] text-white/70 bg-transparent border-b border-transparent focus:border-white/20 focus:outline-none"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
+          )}
 
-            <div className="bg-[#0f1424]/70 border border-white/10 rounded-3xl p-6 backdrop-blur-xl flex flex-col gap-4 shadow-xl">
-              <div className="flex items-center gap-2.5 pb-2 border-b border-white/10">
-                <div className="w-7 h-7 rounded-lg bg-[#18d3ff]/20 text-[#18d3ff] flex items-center justify-center text-xs font-bold">
-                  🌌
+          {/* TAB 2: 3D LANYARD CARD */}
+          {activeTab === 'lanyard' && (
+            <div className="space-y-6">
+              <div className="bg-[#101422] border border-white/10 rounded-2xl p-5">
+                <h2 className="text-base font-black text-white mb-2">🪢 Gambar & Tampilan 3D Lanyard Card</h2>
+                <p className="text-xs text-white/50 mb-5">
+                  Ganti gambar depan, belakang, dan pita lanyard dengan alat pemotong gambar (crop) bawaan.
+                </p>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* Front Image */}
+                  <div className="p-4 bg-[#080a12] border border-white/10 rounded-xl flex flex-col items-center">
+                    <span className="text-[11px] font-bold text-white/70 mb-2">Sisi Depan Kartu (Front)</span>
+                    <div className="w-28 h-40 rounded-lg overflow-hidden border border-white/20 bg-black mb-3">
+                      <img src={config.lanyard?.frontImage || '/card-front.png'} alt="Front" className="w-full h-full object-cover" />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => triggerCropUpload('lanyard.frontImage', 'Potong Gambar Depan Lanyard', 'idcard')}
+                      className="w-full text-xs font-bold py-2 px-3 rounded-lg bg-[#2f77ff] hover:bg-[#3d82ff] text-white transition-all shadow-md shadow-blue-500/20"
+                    >
+                      Upload & Potong
+                    </button>
+                  </div>
+
+                  {/* Back Image */}
+                  <div className="p-4 bg-[#080a12] border border-white/10 rounded-xl flex flex-col items-center">
+                    <span className="text-[11px] font-bold text-white/70 mb-2">Sisi Belakang Kartu (Back)</span>
+                    <div className="w-28 h-40 rounded-lg overflow-hidden border border-white/20 bg-black mb-3">
+                      <img src={config.lanyard?.backImage || '/card-back.png'} alt="Back" className="w-full h-full object-cover" />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => triggerCropUpload('lanyard.backImage', 'Potong Gambar Belakang Lanyard', 'idcard')}
+                      className="w-full text-xs font-bold py-2 px-3 rounded-lg bg-[#2f77ff] hover:bg-[#3d82ff] text-white transition-all shadow-md shadow-blue-500/20"
+                    >
+                      Upload & Potong
+                    </button>
+                  </div>
+
+                  {/* Strap Image */}
+                  <div className="p-4 bg-[#080a12] border border-white/10 rounded-xl flex flex-col items-center">
+                    <span className="text-[11px] font-bold text-white/70 mb-2">Tekstur Tali Strap</span>
+                    <div className="w-28 h-40 rounded-lg overflow-hidden border border-white/20 bg-black mb-3 flex items-center justify-center p-2">
+                      <img src={config.lanyard?.strapImage || '/band.png'} alt="Strap" className="w-12 h-full object-cover" />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => triggerCropUpload('lanyard.strapImage', 'Potong Tekstur Tali Lanyard', 'strap')}
+                      className="w-full text-xs font-bold py-2 px-3 rounded-lg bg-[#2f77ff] hover:bg-[#3d82ff] text-white transition-all shadow-md shadow-blue-500/20"
+                    >
+                      Upload & Potong
+                    </button>
+                  </div>
                 </div>
-                <h3 className="text-sm font-bold text-white tracking-wide">DarkVeil WebGL Aurora Fluid</h3>
+
+                {/* Colors & Physics */}
+                <div className="mt-6 pt-5 border-t border-white/10 grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-white/70 block mb-1">
+                      Warna Pinggiran Kartu
+                    </label>
+                    <div className="flex gap-2 items-center">
+                      <input
+                        type="color"
+                        value={config.lanyard?.cardColor || '#0d6f9d'}
+                        onChange={(e) => updateConfigValue('lanyard.cardColor', e.target.value)}
+                        className="w-10 h-10 rounded-xl bg-transparent border border-white/20 cursor-pointer"
+                      />
+                      <input
+                        type="text"
+                        value={config.lanyard?.cardColor || '#0d6f9d'}
+                        onChange={(e) => updateConfigValue('lanyard.cardColor', e.target.value)}
+                        className="flex-1 bg-[#080a12] border border-white/15 rounded-xl px-3 py-2 text-xs font-mono text-white"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-white/70 block mb-1">
+                      Warna Dasar Pita Tali (Strap)
+                    </label>
+                    <div className="flex gap-2 items-center">
+                      <input
+                        type="color"
+                        value={config.lanyard?.strapColor || '#04050d'}
+                        onChange={(e) => updateConfigValue('lanyard.strapColor', e.target.value)}
+                        className="w-10 h-10 rounded-xl bg-transparent border border-white/20 cursor-pointer"
+                      />
+                      <input
+                        type="text"
+                        value={config.lanyard?.strapColor || '#04050d'}
+                        onChange={(e) => updateConfigValue('lanyard.strapColor', e.target.value)}
+                        className="flex-1 bg-[#080a12] border border-white/15 rounded-xl px-3 py-2 text-xs font-mono text-white"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-5 pt-4 border-t border-white/10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div>
+                    <div className="flex justify-between text-xs mb-1">
+                      <span className="text-white/70">Gravitasi Kartu</span>
+                      <span className="text-[#18d3ff] font-mono">{config.lanyard?.gravity ?? 1}</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0.2"
+                      max="2.5"
+                      step="0.1"
+                      value={config.lanyard?.gravity ?? 1}
+                      onChange={(e) => updateConfigValue('lanyard.gravity', parseFloat(e.target.value))}
+                      className="w-full accent-[#18d3ff]"
+                    />
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between text-xs mb-1">
+                      <span className="text-white/70">Redaman (Damping)</span>
+                      <span className="text-[#18d3ff] font-mono">{config.lanyard?.damping ?? 0.5}</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0.1"
+                      max="1"
+                      step="0.05"
+                      value={config.lanyard?.damping ?? 0.5}
+                      onChange={(e) => updateConfigValue('lanyard.damping', parseFloat(e.target.value))}
+                      className="w-full accent-[#18d3ff]"
+                    />
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between text-xs mb-1">
+                      <span className="text-white/70">Kelenturan (Elasticity)</span>
+                      <span className="text-[#18d3ff] font-mono">{config.lanyard?.elasticity ?? 0.5}</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.05"
+                      value={config.lanyard?.elasticity ?? 0.5}
+                      onChange={(e) => updateConfigValue('lanyard.elasticity', parseFloat(e.target.value))}
+                      className="w-full accent-[#18d3ff]"
+                    />
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between text-xs mb-1">
+                      <span className="text-white/70">Hembusan Angin (Breeze)</span>
+                      <span className="text-[#18d3ff] font-mono">{config.lanyard?.breeze ?? 0.4}</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.05"
+                      value={config.lanyard?.breeze ?? 0.4}
+                      onChange={(e) => updateConfigValue('lanyard.breeze', parseFloat(e.target.value))}
+                      className="w-full accent-[#18d3ff]"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 3: 3D DEPTHTEXT */}
+          {activeTab === 'depth' && (
+            <div className="bg-[#101422] border border-white/10 rounded-2xl p-5 space-y-5">
+              <div>
+                <h2 className="text-base font-black text-white">💎 3D DepthText (Judul Berkedalaman 3D)</h2>
+                <p className="text-xs text-white/50 mt-0.5">
+                  Atur teks judul 3D pada halaman hero, warna gradasi ekstrusi, dan efek interaksi kursor.
+                </p>
               </div>
 
               <div>
-                <div className="flex justify-between text-xs font-semibold text-white/70 mb-1.5">
-                  <span>Kecepatan Aliran Aurora Nebula</span>
-                  <span className="text-[#18d3ff] font-mono">{config.theme.veilSpeed}x</span>
-                </div>
+                <label className="text-[11px] font-bold uppercase tracking-wider text-white/70 block mb-1">
+                  Teks Judul 3D
+                </label>
                 <input
-                  type="range"
-                  min="0.1"
-                  max="1.0"
-                  step="0.05"
-                  value={config.theme.veilSpeed}
-                  onChange={(e) => updateConfigValue('theme.veilSpeed', Number(e.target.value))}
-                  className="w-full accent-[#2f77ff] h-1.5 bg-white/10 rounded-lg cursor-pointer"
+                  type="text"
+                  value={config.depthText?.text || ''}
+                  onChange={(e) => updateConfigValue('depthText.text', e.target.value)}
+                  placeholder="Anwail Khairat"
+                  className="w-full bg-[#080a12] border border-white/15 rounded-xl px-4 py-2.5 text-sm font-black text-white focus:outline-none focus:border-[#18d3ff]"
                 />
               </div>
 
-              <div>
-                <div className="flex justify-between text-xs font-semibold text-white/70 mb-1.5">
-                  <span>Intensitas Kecerahan (Brightness)</span>
-                  <span className="text-[#18d3ff] font-mono">{config.theme.veilBrightness}x</span>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-white/70 block mb-1">
+                    Warna Depan (Face Color)
+                  </label>
+                  <div className="flex gap-2 items-center">
+                    <input
+                      type="color"
+                      value={config.depthText?.faceColor || '#00e1ff'}
+                      onChange={(e) => updateConfigValue('depthText.faceColor', e.target.value)}
+                      className="w-10 h-10 rounded-xl bg-transparent border border-white/20 cursor-pointer"
+                    />
+                    <input
+                      type="text"
+                      value={config.depthText?.faceColor || '#00e1ff'}
+                      onChange={(e) => updateConfigValue('depthText.faceColor', e.target.value)}
+                      className="flex-1 bg-[#080a12] border border-white/15 rounded-xl px-3 py-2 text-xs font-mono text-white"
+                    />
+                  </div>
                 </div>
-                <input
-                  type="range"
-                  min="0.6"
-                  max="1.6"
-                  step="0.05"
-                  value={config.theme.veilBrightness}
-                  onChange={(e) => updateConfigValue('theme.veilBrightness', Number(e.target.value))}
-                  className="w-full accent-[#2f77ff] h-1.5 bg-white/10 rounded-lg cursor-pointer"
-                />
+
+                <div>
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-white/70 block mb-1">
+                    Warna Kedalaman (Depth Color)
+                  </label>
+                  <div className="flex gap-2 items-center">
+                    <input
+                      type="color"
+                      value={config.depthText?.depthColor || '#822eff'}
+                      onChange={(e) => updateConfigValue('depthText.depthColor', e.target.value)}
+                      className="w-10 h-10 rounded-xl bg-transparent border border-white/20 cursor-pointer"
+                    />
+                    <input
+                      type="text"
+                      value={config.depthText?.depthColor || '#822eff'}
+                      onChange={(e) => updateConfigValue('depthText.depthColor', e.target.value)}
+                      className="flex-1 bg-[#080a12] border border-white/15 rounded-xl px-3 py-2 text-xs font-mono text-white"
+                    />
+                  </div>
+                </div>
               </div>
 
-              <div className="pt-2">
-                <label className="flex items-center justify-between p-3 rounded-2xl bg-[#080b14] border border-white/10 cursor-pointer hover:border-white/20 transition-all">
-                  <span className="text-xs font-semibold text-white/80">Reaksi Gelombang Ripple saat Kursor Bergerak</span>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-white/10">
+                <div>
+                  <div className="flex justify-between text-xs mb-1">
+                    <span className="text-white/70">Jumlah Layer Ekstrusi</span>
+                    <span className="text-[#18d3ff] font-mono">{config.depthText?.layers ?? 30}</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="10"
+                    max="50"
+                    step="2"
+                    value={config.depthText?.layers ?? 30}
+                    onChange={(e) => updateConfigValue('depthText.layers', parseInt(e.target.value))}
+                    className="w-full accent-[#18d3ff]"
+                  />
+                </div>
+
+                <div>
+                  <div className="flex justify-between text-xs mb-1">
+                    <span className="text-white/70">Ketebalan Kedalaman</span>
+                    <span className="text-[#18d3ff] font-mono">{config.depthText?.depth ?? 2}px</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0.5"
+                    max="4.0"
+                    step="0.25"
+                    value={config.depthText?.depth ?? 2}
+                    onChange={(e) => updateConfigValue('depthText.depth', parseFloat(e.target.value))}
+                    className="w-full accent-[#18d3ff]"
+                  />
+                </div>
+
+                <div>
+                  <div className="flex justify-between text-xs mb-1">
+                    <span className="text-white/70">Sudut Miring (Tilt)</span>
+                    <span className="text-[#18d3ff] font-mono">{config.depthText?.tilt ?? 7.5}°</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="20"
+                    step="0.5"
+                    value={config.depthText?.tilt ?? 7.5}
+                    onChange={(e) => updateConfigValue('depthText.tilt', parseFloat(e.target.value))}
+                    className="w-full accent-[#18d3ff]"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-3 border-t border-white/10 flex flex-wrap gap-4">
+                <label className="flex items-center gap-2 cursor-pointer text-xs text-white/80">
                   <input
                     type="checkbox"
-                    checked={config.theme.mouseInteraction}
-                    onChange={(e) => updateConfigValue('theme.mouseInteraction', e.target.checked)}
-                    className="w-4 h-4 rounded accent-[#18d3ff] cursor-pointer"
+                    checked={config.depthText?.float ?? true}
+                    onChange={(e) => updateConfigValue('depthText.float', e.target.checked)}
+                    className="w-4 h-4 rounded accent-[#18d3ff]"
                   />
+                  <span>Aktifkan Efek Mengayun Halus (Float Motion)</span>
+                </label>
+
+                <label className="flex items-center gap-2 cursor-pointer text-xs text-white/80">
+                  <input
+                    type="checkbox"
+                    checked={config.depthText?.autoOrbit ?? true}
+                    onChange={(e) => updateConfigValue('depthText.autoOrbit', e.target.checked)}
+                    className="w-4 h-4 rounded accent-[#18d3ff]"
+                  />
+                  <span>Aktifkan Auto Orbit saat Mouse Diam</span>
                 </label>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* ── TAB 4: 3D LANYARD & CROP GAMBAR ── */}
-        {activeTab === 'lanyard' && (
-          <div className="flex flex-col gap-6">
-            {/* Kartu Gambar dengan Alat Crop */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Gambar Depan */}
-              <div className="bg-[#0f1424]/70 border border-white/10 rounded-3xl p-6 backdrop-blur-xl flex flex-col justify-between shadow-xl group">
+          {/* TAB 4: IDENTITAS & UMUM */}
+          {activeTab === 'general' && (
+            <div className="bg-[#101422] border border-white/10 rounded-2xl p-5 space-y-4">
+              <h2 className="text-base font-black text-white pb-2 border-b border-white/10">
+                👤 Identitas Pribadi & Informasi Umum
+              </h2>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-xs font-bold text-white tracking-wide uppercase">Kartu ID (Sisi Depan)</h3>
-                    <span className="text-[10px] font-mono text-white/40">Rasio 2:3</span>
-                  </div>
-                  <p className="text-[11px] text-white/50 mb-4">Tekstur foto depan kartu tanda pengenal 3D</p>
-
-                  <div className="w-full aspect-[2/3] bg-[#080b14] rounded-2xl border border-white/15 overflow-hidden flex items-center justify-center relative mb-4 shadow-inner">
-                    {config.lanyard.frontImage ? (
-                      <img
-                        src={config.lanyard.frontImage}
-                        alt="Card Front"
-                        className="w-full h-full object-contain p-2"
-                      />
-                    ) : (
-                      <span className="text-xs text-white/30">Belum ada gambar</span>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-2">
-                  <button
-                    type="button"
-                    onClick={() => triggerImagePicker('lanyard.frontImage', 'Potong Gambar Kartu Depan (2:3)', 'idcard')}
-                    className="w-full bg-gradient-to-r from-[#2f77ff] to-[#18d3ff] text-white font-bold text-xs py-2.5 rounded-xl shadow-md shadow-blue-500/20 hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-1.5"
-                  >
-                    <span>📁 Upload Foto Baru & Crop</span>
-                  </button>
-
-                  {config.lanyard.frontImage && (
-                    <button
-                      type="button"
-                      onClick={() => triggerCropExisting('lanyard.frontImage', config.lanyard.frontImage, 'Sesuaikan Ulang Crop Kartu Depan', 'idcard')}
-                      className="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white/80 text-xs py-2 rounded-xl transition-colors flex items-center justify-center gap-1.5"
-                    >
-                      <span>✂️ Crop Ulang Gambar Ini</span>
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {/* Gambar Belakang */}
-              <div className="bg-[#0f1424]/70 border border-white/10 rounded-3xl p-6 backdrop-blur-xl flex flex-col justify-between shadow-xl group">
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-xs font-bold text-white tracking-wide uppercase">Kartu ID (Sisi Belakang)</h3>
-                    <span className="text-[10px] font-mono text-white/40">Rasio 2:3</span>
-                  </div>
-                  <p className="text-[11px] text-white/50 mb-4">Tekstur foto belakang kartu tanda pengenal 3D</p>
-
-                  <div className="w-full aspect-[2/3] bg-[#080b14] rounded-2xl border border-white/15 overflow-hidden flex items-center justify-center relative mb-4 shadow-inner">
-                    {config.lanyard.backImage ? (
-                      <img
-                        src={config.lanyard.backImage}
-                        alt="Card Back"
-                        className="w-full h-full object-contain p-2"
-                      />
-                    ) : (
-                      <span className="text-xs text-white/30">Belum ada gambar</span>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-2">
-                  <button
-                    type="button"
-                    onClick={() => triggerImagePicker('lanyard.backImage', 'Potong Gambar Kartu Belakang (2:3)', 'idcard')}
-                    className="w-full bg-gradient-to-r from-[#2f77ff] to-[#18d3ff] text-white font-bold text-xs py-2.5 rounded-xl shadow-md shadow-blue-500/20 hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-1.5"
-                  >
-                    <span>📁 Upload Foto Baru & Crop</span>
-                  </button>
-
-                  {config.lanyard.backImage && (
-                    <button
-                      type="button"
-                      onClick={() => triggerCropExisting('lanyard.backImage', config.lanyard.backImage, 'Sesuaikan Ulang Crop Kartu Belakang', 'idcard')}
-                      className="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white/80 text-xs py-2 rounded-xl transition-colors flex items-center justify-center gap-1.5"
-                    >
-                      <span>✂️ Crop Ulang Gambar Ini</span>
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {/* Gambar Pita / Strap */}
-              <div className="bg-[#0f1424]/70 border border-white/10 rounded-3xl p-6 backdrop-blur-xl flex flex-col justify-between shadow-xl group">
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-xs font-bold text-white tracking-wide uppercase">Pita Tali Lanyard (Strap)</h3>
-                    <span className="text-[10px] font-mono text-white/40">Rasio 1:4</span>
-                  </div>
-                  <p className="text-[11px] text-white/50 mb-4">Tekstur pola pita tali gantungan lanyard</p>
-
-                  <div className="w-full aspect-[2/3] bg-[#080b14] rounded-2xl border border-white/15 overflow-hidden flex items-center justify-center relative mb-4 shadow-inner">
-                    {config.lanyard.strapImage ? (
-                      <img
-                        src={config.lanyard.strapImage}
-                        alt="Strap Band"
-                        className="w-full h-full object-contain p-2"
-                      />
-                    ) : (
-                      <span className="text-xs text-white/30">Belum ada gambar</span>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-2">
-                  <button
-                    type="button"
-                    onClick={() => triggerImagePicker('lanyard.strapImage', 'Potong Pita Tali Strap (1:4)', 'strap')}
-                    className="w-full bg-gradient-to-r from-[#2f77ff] to-[#18d3ff] text-white font-bold text-xs py-2.5 rounded-xl shadow-md shadow-blue-500/20 hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-1.5"
-                  >
-                    <span>📁 Upload Pita Baru & Crop</span>
-                  </button>
-
-                  {config.lanyard.strapImage && (
-                    <button
-                      type="button"
-                      onClick={() => triggerCropExisting('lanyard.strapImage', config.lanyard.strapImage, 'Sesuaikan Ulang Crop Tali Strap', 'strap')}
-                      className="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white/80 text-xs py-2 rounded-xl transition-colors flex items-center justify-center gap-1.5"
-                    >
-                      <span>✂️ Crop Ulang Gambar Ini</span>
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Warna & Fisika Lanyard */}
-            <div className="bg-[#0f1424]/70 border border-white/10 rounded-3xl p-6 backdrop-blur-xl shadow-xl">
-              <div className="flex items-center gap-2.5 pb-2 mb-4 border-b border-white/10">
-                <div className="w-7 h-7 rounded-lg bg-[#2f77ff]/20 text-[#18d3ff] flex items-center justify-center text-xs font-bold">
-                  ⚙️
-                </div>
-                <h3 className="text-sm font-bold text-white tracking-wide">Finishing & Karakteristik Fisika Lanyard</h3>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div>
-                  <label className="block text-xs font-semibold text-white/70 mb-1.5">Warna Pinggiran Kartu</label>
-                  <div className="flex items-center gap-2 bg-[#080b14] p-2 rounded-xl border border-white/15">
-                    <input
-                      type="color"
-                      value={config.lanyard.cardColor}
-                      onChange={(e) => updateConfigValue('lanyard.cardColor', e.target.value)}
-                      className="w-8 h-8 rounded-lg cursor-pointer bg-transparent border-0"
-                    />
-                    <input
-                      type="text"
-                      value={config.lanyard.cardColor}
-                      onChange={(e) => updateConfigValue('lanyard.cardColor', e.target.value)}
-                      className="w-full bg-transparent text-xs text-white font-mono focus:outline-none"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-white/70 mb-1.5">Warna Dasar Tali Lanyard</label>
-                  <div className="flex items-center gap-2 bg-[#080b14] p-2 rounded-xl border border-white/15">
-                    <input
-                      type="color"
-                      value={config.lanyard.strapColor}
-                      onChange={(e) => updateConfigValue('lanyard.strapColor', e.target.value)}
-                      className="w-8 h-8 rounded-lg cursor-pointer bg-transparent border-0"
-                    />
-                    <input
-                      type="text"
-                      value={config.lanyard.strapColor}
-                      onChange={(e) => updateConfigValue('lanyard.strapColor', e.target.value)}
-                      className="w-full bg-transparent text-xs text-white font-mono focus:outline-none"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-white/70 mb-1.5">Tekstur Finishing</label>
-                  <select
-                    value={config.lanyard.finish}
-                    onChange={(e) => updateConfigValue('lanyard.finish', e.target.value)}
-                    className="w-full bg-[#080b14] border border-white/15 rounded-xl px-4 py-2.5 text-xs text-white font-semibold focus:outline-none focus:border-[#18d3ff]"
-                  >
-                    <option value="glossy">Glossy (Kilap Reflektif Mewah)</option>
-                    <option value="matte">Matte (Doff Halus Minimalis)</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ── TAB 5: GOOEYNAV LIQUID BAR ── */}
-        {activeTab === 'nav' && (
-          <div className="max-w-3xl bg-[#0f1424]/70 border border-white/10 rounded-3xl p-6 backdrop-blur-xl flex flex-col gap-6 shadow-xl">
-            <div className="flex items-center gap-2.5 pb-2 border-b border-white/10">
-              <div className="w-7 h-7 rounded-lg bg-[#2f77ff]/20 text-[#18d3ff] flex items-center justify-center text-xs font-bold">
-                🧭
-              </div>
-              <div>
-                <h3 className="text-sm font-bold text-white tracking-wide">Navigasi Cairan WebGL (GooeyNav)</h3>
-                <p className="text-[11px] text-white/40">Menu header mengambang dengan efek lelehan cairan</p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-semibold text-white/70 mb-1.5">Warna Pill Navigasi Aktif</label>
-                <div className="flex items-center gap-2 bg-[#080b14] p-2 rounded-xl border border-white/15">
-                  <input
-                    type="color"
-                    value={config.gooeyNav.color}
-                    onChange={(e) => updateConfigValue('gooeyNav.color', e.target.value)}
-                    className="w-8 h-8 rounded-lg cursor-pointer bg-transparent border-0"
-                  />
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-white/70 block mb-1">
+                    Nama Lengkap
+                  </label>
                   <input
                     type="text"
-                    value={config.gooeyNav.color}
-                    onChange={(e) => updateConfigValue('gooeyNav.color', e.target.value)}
-                    className="w-full bg-transparent text-xs text-white font-mono focus:outline-none"
+                    value={config.general?.fullName || ''}
+                    onChange={(e) => updateConfigValue('general.fullName', e.target.value)}
+                    className="w-full bg-[#080a12] border border-white/15 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#18d3ff]"
                   />
                 </div>
-              </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-white/70 mb-1.5">Warna Teks di dalam Pill Aktif</label>
-                <div className="flex items-center gap-2 bg-[#080b14] p-2 rounded-xl border border-white/15">
-                  <input
-                    type="color"
-                    value={config.gooeyNav.activeTextColor || '#ffffff'}
-                    onChange={(e) => updateConfigValue('gooeyNav.activeTextColor', e.target.value)}
-                    className="w-8 h-8 rounded-lg cursor-pointer bg-transparent border-0"
-                  />
+                <div>
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-white/70 block mb-1">
+                    Logo / Brand Name (di Navbar)
+                  </label>
                   <input
                     type="text"
-                    value={config.gooeyNav.activeTextColor || '#ffffff'}
-                    onChange={(e) => updateConfigValue('gooeyNav.activeTextColor', e.target.value)}
-                    className="w-full bg-transparent text-xs text-white font-mono focus:outline-none"
+                    value={config.general?.brandLogo || ''}
+                    onChange={(e) => updateConfigValue('general.brandLogo', e.target.value)}
+                    className="w-full bg-[#080a12] border border-white/15 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#18d3ff]"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-white/70 block mb-1">
+                    Teks Sambutan Atas (Eyebrow)
+                  </label>
+                  <input
+                    type="text"
+                    value={config.general?.eyebrow || ''}
+                    onChange={(e) => updateConfigValue('general.eyebrow', e.target.value)}
+                    className="w-full bg-[#080a12] border border-white/15 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#18d3ff]"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-white/70 block mb-1">
+                    Peran / Status Utama (Hero Role)
+                  </label>
+                  <input
+                    type="text"
+                    value={config.general?.role || ''}
+                    onChange={(e) => updateConfigValue('general.role', e.target.value)}
+                    className="w-full bg-[#080a12] border border-white/15 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#18d3ff]"
                   />
                 </div>
               </div>
-            </div>
-
-            <div>
-              <div className="flex justify-between text-xs font-semibold text-white/70 mb-1.5">
-                <span>Kelenturan Lelehan Cairan (Gooeyness)</span>
-                <span className="text-[#18d3ff] font-mono">{config.gooeyNav.gooeyness}</span>
-              </div>
-              <input
-                type="range"
-                min="0.2"
-                max="0.8"
-                step="0.05"
-                value={config.gooeyNav.gooeyness}
-                onChange={(e) => updateConfigValue('gooeyNav.gooeyness', Number(e.target.value))}
-                className="w-full accent-[#2f77ff] h-1.5 bg-white/10 rounded-lg cursor-pointer"
-              />
-            </div>
-          </div>
-        )}
-
-        {/* ── TAB 6: ABOUT & PROYEK ── */}
-        {activeTab === 'content' && (
-          <div className="flex flex-col gap-6">
-            {/* Bagian About Me */}
-            <div className="bg-[#0f1424]/70 border border-white/10 rounded-3xl p-6 backdrop-blur-xl flex flex-col gap-4 shadow-xl">
-              <div className="flex items-center gap-2.5 pb-2 border-b border-white/10">
-                <div className="w-7 h-7 rounded-lg bg-[#2f77ff]/20 text-[#18d3ff] flex items-center justify-center text-xs font-bold">
-                  📖
-                </div>
-                <h3 className="text-sm font-bold text-white tracking-wide">Bagian Tentang Saya (About Section)</h3>
-              </div>
 
               <div>
-                <label className="block text-xs font-semibold text-white/70 mb-1.5">Judul Heading</label>
-                <input
-                  type="text"
-                  value={config.about.heading}
-                  onChange={(e) => updateConfigValue('about.heading', e.target.value)}
-                  className="w-full bg-[#080b14] border border-white/15 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#18d3ff]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-white/70 mb-1.5">Paragraf Deskripsi Utama</label>
+                <label className="text-[11px] font-bold uppercase tracking-wider text-white/70 block mb-1">
+                  Paragraf Pengantar Utama (Hero Lead)
+                </label>
                 <textarea
                   rows={3}
-                  value={config.about.lead}
-                  onChange={(e) => updateConfigValue('about.lead', e.target.value)}
-                  className="w-full bg-[#080b14] border border-white/15 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#18d3ff] resize-none leading-relaxed"
+                  value={config.general?.lead || ''}
+                  onChange={(e) => updateConfigValue('general.lead', e.target.value)}
+                  className="w-full bg-[#080a12] border border-white/15 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#18d3ff]"
                 />
               </div>
 
-              {/* Skills Tags Manager */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3 border-t border-white/10">
+                <div>
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-white/70 block mb-1">
+                    Email Kontak
+                  </label>
+                  <input
+                    type="email"
+                    value={config.general?.contactEmail || ''}
+                    onChange={(e) => updateConfigValue('general.contactEmail', e.target.value)}
+                    className="w-full bg-[#080a12] border border-white/15 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#18d3ff]"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-white/70 block mb-1">
+                    Link Download CV
+                  </label>
+                  <input
+                    type="text"
+                    value={config.general?.cvUrl || ''}
+                    onChange={(e) => updateConfigValue('general.cvUrl', e.target.value)}
+                    className="w-full bg-[#080a12] border border-white/15 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#18d3ff]"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-white/70 block mb-1">
+                    Link Profil GitHub
+                  </label>
+                  <input
+                    type="text"
+                    value={config.general?.githubUrl || ''}
+                    onChange={(e) => updateConfigValue('general.githubUrl', e.target.value)}
+                    className="w-full bg-[#080a12] border border-white/15 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#18d3ff]"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-white/70 block mb-1">
+                    Link Profil LinkedIn
+                  </label>
+                  <input
+                    type="text"
+                    value={config.general?.linkedinUrl || ''}
+                    onChange={(e) => updateConfigValue('general.linkedinUrl', e.target.value)}
+                    className="w-full bg-[#080a12] border border-white/15 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#18d3ff]"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[11px] font-bold uppercase tracking-wider text-white/70 block mb-1">
+                  Teks Hak Cipta Footer
+                </label>
+                <input
+                  type="text"
+                  value={config.general?.footerText || ''}
+                  onChange={(e) => updateConfigValue('general.footerText', e.target.value)}
+                  className="w-full bg-[#080a12] border border-white/15 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#18d3ff]"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* TAB 5: WARNA & DARKVEIL */}
+          {activeTab === 'theme' && (
+            <div className="bg-[#101422] border border-white/10 rounded-2xl p-5 space-y-4">
+              <h2 className="text-base font-black text-white pb-2 border-b border-white/10">
+                🌌 Warna Tema & DarkVeil WebGL Background
+              </h2>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-white/70 block mb-1">
+                    Warna Primer Website (Primary Theme)
+                  </label>
+                  <div className="flex gap-2 items-center">
+                    <input
+                      type="color"
+                      value={config.theme?.primaryColor || '#2f77ff'}
+                      onChange={(e) => updateConfigValue('theme.primaryColor', e.target.value)}
+                      className="w-10 h-10 rounded-xl bg-transparent border border-white/20 cursor-pointer"
+                    />
+                    <input
+                      type="text"
+                      value={config.theme?.primaryColor || '#2f77ff'}
+                      onChange={(e) => updateConfigValue('theme.primaryColor', e.target.value)}
+                      className="flex-1 bg-[#080a12] border border-white/15 rounded-xl px-3 py-2 text-xs font-mono text-white"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-white/70 block mb-1">
+                    Warna Aksen Neon (Cyan Glow)
+                  </label>
+                  <div className="flex gap-2 items-center">
+                    <input
+                      type="color"
+                      value={config.theme?.accentCyan || '#18d3ff'}
+                      onChange={(e) => updateConfigValue('theme.accentCyan', e.target.value)}
+                      className="w-10 h-10 rounded-xl bg-transparent border border-white/20 cursor-pointer"
+                    />
+                    <input
+                      type="text"
+                      value={config.theme?.accentCyan || '#18d3ff'}
+                      onChange={(e) => updateConfigValue('theme.accentCyan', e.target.value)}
+                      className="flex-1 bg-[#080a12] border border-white/15 rounded-xl px-3 py-2 text-xs font-mono text-white"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-3 border-t border-white/10">
+                <div>
+                  <div className="flex justify-between text-xs mb-1">
+                    <span className="text-white/70">Kecepatan Aliran Veil</span>
+                    <span className="text-[#18d3ff] font-mono">{config.theme?.veilSpeed ?? 0.45}</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0.1"
+                    max="1.5"
+                    step="0.05"
+                    value={config.theme?.veilSpeed ?? 0.45}
+                    onChange={(e) => updateConfigValue('theme.veilSpeed', parseFloat(e.target.value))}
+                    className="w-full accent-[#18d3ff]"
+                  />
+                </div>
+
+                <div>
+                  <div className="flex justify-between text-xs mb-1">
+                    <span className="text-white/70">Intensitas Kilau (Glow)</span>
+                    <span className="text-[#18d3ff] font-mono">{config.theme?.veilGlow ?? 0.55}</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0.1"
+                    max="1.5"
+                    step="0.05"
+                    value={config.theme?.veilGlow ?? 0.55}
+                    onChange={(e) => updateConfigValue('theme.veilGlow', parseFloat(e.target.value))}
+                    className="w-full accent-[#18d3ff]"
+                  />
+                </div>
+
+                <div>
+                  <div className="flex justify-between text-xs mb-1">
+                    <span className="text-white/70">Tingkat Kecerahan</span>
+                    <span className="text-[#18d3ff] font-mono">{config.theme?.veilBrightness ?? 1.15}</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0.5"
+                    max="2.0"
+                    step="0.05"
+                    value={config.theme?.veilBrightness ?? 1.15}
+                    onChange={(e) => updateConfigValue('theme.veilBrightness', parseFloat(e.target.value))}
+                    className="w-full accent-[#18d3ff]"
+                  />
+                </div>
+              </div>
+
               <div className="pt-2">
-                <label className="block text-xs font-semibold text-white/70 mb-2">Daftar Software & Skill Keahlian</label>
-                <div className="flex flex-wrap gap-2 mb-3">
-                  {config.about.skills?.map((skill: string) => (
+                <label className="flex items-center gap-2 cursor-pointer text-xs text-white/80">
+                  <input
+                    type="checkbox"
+                    checked={config.theme?.mouseInteraction ?? true}
+                    onChange={(e) => updateConfigValue('theme.mouseInteraction', e.target.checked)}
+                    className="w-4 h-4 rounded accent-[#18d3ff]"
+                  />
+                  <span>Interaksi Gelombang Reaktif terhadap Gerakan Mouse</span>
+                </label>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 6: GOOEYNAV */}
+          {activeTab === 'nav' && (
+            <div className="bg-[#101422] border border-white/10 rounded-2xl p-5 space-y-4">
+              <h2 className="text-base font-black text-white pb-2 border-b border-white/10">
+                🔘 Pengaturan Navigasi GooeyNav
+              </h2>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-white/70 block mb-1">
+                    Warna Tombol Aktif
+                  </label>
+                  <div className="flex gap-2 items-center">
+                    <input
+                      type="color"
+                      value={config.gooeyNav?.color || '#2f77ff'}
+                      onChange={(e) => updateConfigValue('gooeyNav.color', e.target.value)}
+                      className="w-10 h-10 rounded-xl bg-transparent border border-white/20 cursor-pointer"
+                    />
+                    <input
+                      type="text"
+                      value={config.gooeyNav?.color || '#2f77ff'}
+                      onChange={(e) => updateConfigValue('gooeyNav.color', e.target.value)}
+                      className="flex-1 bg-[#080a12] border border-white/15 rounded-xl px-3 py-2 text-xs font-mono text-white"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-white/70 block mb-1">
+                    Warna Teks Tombol Aktif
+                  </label>
+                  <div className="flex gap-2 items-center">
+                    <input
+                      type="color"
+                      value={config.gooeyNav?.activeTextColor || '#ffffff'}
+                      onChange={(e) => updateConfigValue('gooeyNav.activeTextColor', e.target.value)}
+                      className="w-10 h-10 rounded-xl bg-transparent border border-white/20 cursor-pointer"
+                    />
+                    <input
+                      type="text"
+                      value={config.gooeyNav?.activeTextColor || '#ffffff'}
+                      onChange={(e) => updateConfigValue('gooeyNav.activeTextColor', e.target.value)}
+                      className="flex-1 bg-[#080a12] border border-white/15 rounded-xl px-3 py-2 text-xs font-mono text-white"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3 border-t border-white/10">
+                <div>
+                  <div className="flex justify-between text-xs mb-1">
+                    <span className="text-white/70">Efek Gelombang (Gooeyness)</span>
+                    <span className="text-[#18d3ff] font-mono">{config.gooeyNav?.gooeyness ?? 0.55}</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0.2"
+                    max="0.9"
+                    step="0.05"
+                    value={config.gooeyNav?.gooeyness ?? 0.55}
+                    onChange={(e) => updateConfigValue('gooeyNav.gooeyness', parseFloat(e.target.value))}
+                    className="w-full accent-[#18d3ff]"
+                  />
+                </div>
+
+                <div>
+                  <div className="flex justify-between text-xs mb-1">
+                    <span className="text-white/70">Jarak Sebaran Partikel (Spread)</span>
+                    <span className="text-[#18d3ff] font-mono">{config.gooeyNav?.spread ?? 48}px</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="20"
+                    max="80"
+                    step="2"
+                    value={config.gooeyNav?.spread ?? 48}
+                    onChange={(e) => updateConfigValue('gooeyNav.spread', parseInt(e.target.value))}
+                    className="w-full accent-[#18d3ff]"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 7: SKILLS */}
+          {activeTab === 'skills' && (
+            <div className="bg-[#101422] border border-white/10 rounded-2xl p-5 space-y-4">
+              <h2 className="text-base font-black text-white pb-2 border-b border-white/10">
+                🛠 Daftar Skills & Software Kreatif
+              </h2>
+
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Ketik skill baru (cth: Blender, Unreal Engine, Tripo AI)"
+                  value={newSkillInput}
+                  onChange={(e) => setNewSkillInput(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleAddSkill()}
+                  className="flex-1 bg-[#080a12] border border-white/15 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-[#18d3ff]"
+                />
+                <button
+                  type="button"
+                  onClick={handleAddSkill}
+                  className="bg-[#2f77ff] hover:bg-[#3d82ff] text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-all shadow-md shadow-blue-500/20"
+                >
+                  + Tambah Skill
+                </button>
+              </div>
+
+              <div className="pt-2">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-white/50 block mb-2">
+                  Skill yang ditampilkan saat ini ({config.about?.skills?.length || 0}):
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  {(config.about?.skills || []).map((skill: string) => (
                     <span
                       key={skill}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-[#2f77ff]/15 text-[#18d3ff] border border-[#2f77ff]/30"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-white/5 border border-white/10 text-white group hover:border-rose-400/40 transition-all"
                     >
                       <span>{skill}</span>
                       <button
                         type="button"
                         onClick={() => handleRemoveSkill(skill)}
-                        className="hover:text-rose-400 transition-colors text-sm leading-none"
+                        className="text-white/40 hover:text-rose-400 font-bold text-xs"
+                        title="Hapus skill"
                       >
-                        ×
+                        ✕
                       </button>
                     </span>
                   ))}
                 </div>
-
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    placeholder="Tambah keahlian (misal: Houdini, Cinema 4D)..."
-                    value={newSkillInput}
-                    onChange={(e) => setNewSkillInput(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddSkill())}
-                    className="flex-1 bg-[#080b14] border border-white/15 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-[#18d3ff]"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleAddSkill}
-                    className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-bold text-white transition-colors border border-white/10"
-                  >
-                    + Tambah
-                  </button>
-                </div>
               </div>
             </div>
+          )}
 
-            {/* Proyek Portofolio */}
-            <div className="bg-[#0f1424]/70 border border-white/10 rounded-3xl p-6 backdrop-blur-xl flex flex-col gap-4 shadow-xl">
-              <div className="flex items-center justify-between pb-2 border-b border-white/10">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-7 h-7 rounded-lg bg-[#18d3ff]/20 text-[#18d3ff] flex items-center justify-center text-xs font-bold">
-                    💼
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-bold text-white tracking-wide">Daftar Karya & Proyek Unggulan</h3>
-                    <p className="text-[11px] text-white/40">Kelola portofolio karya 3D, film pendek, dan riset</p>
-                  </div>
+          {/* TAB 8: PROJECTS */}
+          {activeTab === 'projects' && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-base font-black text-white">🚀 Portofolio Projects</h2>
+                  <p className="text-xs text-white/50">Kelola daftar karya dan proyek unggulan kamu.</p>
                 </div>
-
                 <button
                   type="button"
                   onClick={handleAddProject}
-                  className="bg-gradient-to-r from-[#2f77ff] to-[#18d3ff] text-white text-xs font-bold px-4 py-2 rounded-xl shadow-md shadow-blue-500/20 hover:opacity-90 active:scale-95 transition-all"
+                  className="text-xs font-bold px-3.5 py-2 rounded-xl bg-[#2f77ff] hover:bg-[#3d82ff] text-white flex items-center gap-1.5 transition-all shadow-md shadow-blue-500/25"
                 >
-                  + Tambah Proyek Baru
+                  + Tambah Project Baru
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
-                {config.projects?.map((proj: any, idx: number) => (
-                  <div
-                    key={proj.id}
-                    className="bg-[#080b14] border border-white/10 rounded-2xl p-5 flex flex-col gap-3 relative group hover:border-[#18d3ff]/40 transition-all shadow-lg"
+              {(config.projects || []).map((proj: any, idx: number) => (
+                <div key={proj.id || idx} className="bg-[#101422] border border-white/10 rounded-2xl p-4 space-y-3">
+                  <div className="flex items-center justify-between pb-2 border-b border-white/10">
+                    <span className="text-xs font-bold text-[#18d3ff]">Project #{idx + 1}</span>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteProject(idx)}
+                      className="text-xs text-rose-400 hover:text-rose-300 font-medium"
+                    >
+                      Hapus Project
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-[10px] font-bold uppercase text-white/60 block mb-1">Judul Project</label>
+                      <input
+                        type="text"
+                        value={proj.title || ''}
+                        onChange={(e) => {
+                          const updated = [...(config.projects || [])];
+                          updated[idx] = { ...updated[idx], title: e.target.value };
+                          updateConfigValue('projects', updated);
+                        }}
+                        className="w-full bg-[#080a12] border border-white/15 rounded-xl px-3 py-1.5 text-xs text-white"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-[10px] font-bold uppercase text-white/60 block mb-1">Kategori</label>
+                      <input
+                        type="text"
+                        value={proj.category || ''}
+                        onChange={(e) => {
+                          const updated = [...(config.projects || [])];
+                          updated[idx] = { ...updated[idx], category: e.target.value };
+                          updateConfigValue('projects', updated);
+                        }}
+                        className="w-full bg-[#080a12] border border-white/15 rounded-xl px-3 py-1.5 text-xs text-white"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-bold uppercase text-white/60 block mb-1">Deskripsi Singkat</label>
+                    <textarea
+                      rows={2}
+                      value={proj.description || ''}
+                      onChange={(e) => {
+                        const updated = [...(config.projects || [])];
+                        updated[idx] = { ...updated[idx], description: e.target.value };
+                        updateConfigValue('projects', updated);
+                      }}
+                      className="w-full bg-[#080a12] border border-white/15 rounded-xl px-3 py-1.5 text-xs text-white"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-[10px] font-bold uppercase text-white/60 block mb-1">
+                        Tags (Pisahkan dengan koma)
+                      </label>
+                      <input
+                        type="text"
+                        value={(proj.tags || []).join(', ')}
+                        onChange={(e) => {
+                          const updated = [...(config.projects || [])];
+                          updated[idx] = {
+                            ...updated[idx],
+                            tags: e.target.value.split(',').map((t) => t.trim()).filter(Boolean)
+                          };
+                          updateConfigValue('projects', updated);
+                        }}
+                        className="w-full bg-[#080a12] border border-white/15 rounded-xl px-3 py-1.5 text-xs text-white"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-[10px] font-bold uppercase text-white/60 block mb-1">Link Target</label>
+                      <input
+                        type="text"
+                        value={proj.link || '#'}
+                        onChange={(e) => {
+                          const updated = [...(config.projects || [])];
+                          updated[idx] = { ...updated[idx], link: e.target.value };
+                          updateConfigValue('projects', updated);
+                        }}
+                        className="w-full bg-[#080a12] border border-white/15 rounded-xl px-3 py-1.5 text-xs text-white"
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* TAB 9: PENGALAMAN & SERTIFIKAT */}
+          {activeTab === 'experience' && (
+            <div className="space-y-6">
+              {/* Experience Items */}
+              <div className="bg-[#101422] border border-white/10 rounded-2xl p-5 space-y-4">
+                <div className="flex items-center justify-between pb-2 border-b border-white/10">
+                  <h3 className="text-sm font-black text-white">💼 Pengalaman Kerja & Produksi</h3>
+                  <button
+                    type="button"
+                    onClick={handleAddExperience}
+                    className="text-xs font-bold px-3 py-1.5 rounded-lg bg-[#2f77ff] hover:bg-[#3d82ff] text-white"
                   >
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-white/5 text-white/50">
-                        Proyek #{idx + 1}
-                      </span>
+                    + Tambah Pengalaman
+                  </button>
+                </div>
+
+                {(config.experience || []).map((exp: any, idx: number) => (
+                  <div key={exp.id || idx} className="p-3 bg-[#080a12] border border-white/10 rounded-xl space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs font-bold text-[#18d3ff]">Pengalaman #{idx + 1}</span>
                       <button
                         type="button"
-                        onClick={() => handleDeleteProject(idx)}
-                        className="text-white/30 hover:text-rose-400 p-1 text-xs transition-colors"
-                        title="Hapus Proyek"
+                        onClick={() => handleDeleteExperience(idx)}
+                        className="text-xs text-rose-400 hover:text-rose-300"
                       >
-                        🗑️ Hapus
+                        Hapus
                       </button>
                     </div>
 
-                    <div>
-                      <label className="text-[10px] uppercase font-bold text-white/50 block mb-1">Judul Proyek</label>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                       <input
                         type="text"
-                        value={proj.title}
+                        value={exp.title || ''}
+                        placeholder="Posisi / Judul"
                         onChange={(e) => {
-                          const updated = [...config.projects];
-                          updated[idx].title = e.target.value;
-                          setConfig({ ...config, projects: updated });
+                          const updated = [...(config.experience || [])];
+                          updated[idx] = { ...updated[idx], title: e.target.value };
+                          updateConfigValue('experience', updated);
                         }}
-                        className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white font-semibold focus:outline-none focus:border-[#18d3ff]"
+                        className="bg-[#121625] border border-white/15 rounded-lg px-2.5 py-1.5 text-xs text-white"
+                      />
+                      <input
+                        type="text"
+                        value={exp.subtitle || ''}
+                        placeholder="Instansi / Tempat"
+                        onChange={(e) => {
+                          const updated = [...(config.experience || [])];
+                          updated[idx] = { ...updated[idx], subtitle: e.target.value };
+                          updateConfigValue('experience', updated);
+                        }}
+                        className="bg-[#121625] border border-white/15 rounded-lg px-2.5 py-1.5 text-xs text-white"
+                      />
+                      <input
+                        type="text"
+                        value={exp.period || ''}
+                        placeholder="Tahun (2024 — Sekarang)"
+                        onChange={(e) => {
+                          const updated = [...(config.experience || [])];
+                          updated[idx] = { ...updated[idx], period: e.target.value };
+                          updateConfigValue('experience', updated);
+                        }}
+                        className="bg-[#121625] border border-white/15 rounded-lg px-2.5 py-1.5 text-xs text-white"
                       />
                     </div>
 
-                    <div>
-                      <label className="text-[10px] uppercase font-bold text-white/50 block mb-1">Kategori</label>
-                      <input
-                        type="text"
-                        value={proj.category}
-                        onChange={(e) => {
-                          const updated = [...config.projects];
-                          updated[idx].category = e.target.value;
-                          setConfig({ ...config, projects: updated });
-                        }}
-                        className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-[#18d3ff]"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="text-[10px] uppercase font-bold text-white/50 block mb-1">Deskripsi Singkat</label>
+                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">
                       <textarea
                         rows={2}
-                        value={proj.description}
+                        value={exp.description || ''}
+                        placeholder="Deskripsi pekerjaan"
                         onChange={(e) => {
-                          const updated = [...config.projects];
-                          updated[idx].description = e.target.value;
-                          setConfig({ ...config, projects: updated });
+                          const updated = [...(config.experience || [])];
+                          updated[idx] = { ...updated[idx], description: e.target.value };
+                          updateConfigValue('experience', updated);
                         }}
-                        className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-[#18d3ff] resize-none"
+                        className="sm:col-span-3 bg-[#121625] border border-white/15 rounded-lg px-2.5 py-1.5 text-xs text-white"
                       />
-                    </div>
-
-                    <div>
-                      <label className="text-[10px] uppercase font-bold text-white/50 block mb-1">Tags (Dipisah Koma)</label>
                       <input
                         type="text"
-                        value={proj.tags?.join(', ') || ''}
+                        value={exp.tag || ''}
+                        placeholder="Badge / Tag"
                         onChange={(e) => {
-                          const updated = [...config.projects];
-                          updated[idx].tags = e.target.value.split(',').map((t) => t.trim()).filter(Boolean);
-                          setConfig({ ...config, projects: updated });
+                          const updated = [...(config.experience || [])];
+                          updated[idx] = { ...updated[idx], tag: e.target.value };
+                          updateConfigValue('experience', updated);
                         }}
-                        className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-[#18d3ff]"
+                        className="bg-[#121625] border border-white/15 rounded-lg px-2.5 py-1.5 text-xs text-white self-start"
                       />
                     </div>
                   </div>
                 ))}
+              </div>
+
+              {/* Certificates Items */}
+              <div className="bg-[#101422] border border-white/10 rounded-2xl p-5 space-y-4">
+                <div className="flex items-center justify-between pb-2 border-b border-white/10">
+                  <h3 className="text-sm font-black text-white">📜 Sertifikasi & Lisensi</h3>
+                  <button
+                    type="button"
+                    onClick={handleAddCertificate}
+                    className="text-xs font-bold px-3 py-1.5 rounded-lg bg-[#2f77ff] hover:bg-[#3d82ff] text-white"
+                  >
+                    + Tambah Sertifikat
+                  </button>
+                </div>
+
+                {(config.certificates || []).map((cert: any, idx: number) => (
+                  <div key={cert.id || idx} className="p-3 bg-[#080a12] border border-white/10 rounded-xl space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs font-bold text-[#18d3ff]">Sertifikat #{idx + 1}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteCertificate(idx)}
+                        className="text-xs text-rose-400 hover:text-rose-300"
+                      >
+                        Hapus
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      <input
+                        type="text"
+                        value={cert.title || ''}
+                        placeholder="Nama Sertifikasi"
+                        onChange={(e) => {
+                          const updated = [...(config.certificates || [])];
+                          updated[idx] = { ...updated[idx], title: e.target.value };
+                          updateConfigValue('certificates', updated);
+                        }}
+                        className="bg-[#121625] border border-white/15 rounded-lg px-2.5 py-1.5 text-xs text-white"
+                      />
+                      <input
+                        type="text"
+                        value={cert.issuer || ''}
+                        placeholder="Lembaga Penerbit (BNSP, dsb)"
+                        onChange={(e) => {
+                          const updated = [...(config.certificates || [])];
+                          updated[idx] = { ...updated[idx], issuer: e.target.value };
+                          updateConfigValue('certificates', updated);
+                        }}
+                        className="bg-[#121625] border border-white/15 rounded-lg px-2.5 py-1.5 text-xs text-white"
+                      />
+                      <input
+                        type="text"
+                        value={cert.period || ''}
+                        placeholder="Tahun (2025)"
+                        onChange={(e) => {
+                          const updated = [...(config.certificates || [])];
+                          updated[idx] = { ...updated[idx], period: e.target.value };
+                          updateConfigValue('certificates', updated);
+                        }}
+                        className="bg-[#121625] border border-white/15 rounded-lg px-2.5 py-1.5 text-xs text-white"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">
+                      <textarea
+                        rows={2}
+                        value={cert.description || ''}
+                        placeholder="Deskripsi sertifikasi"
+                        onChange={(e) => {
+                          const updated = [...(config.certificates || [])];
+                          updated[idx] = { ...updated[idx], description: e.target.value };
+                          updateConfigValue('certificates', updated);
+                        }}
+                        className="sm:col-span-3 bg-[#121625] border border-white/15 rounded-lg px-2.5 py-1.5 text-xs text-white"
+                      />
+                      <input
+                        type="text"
+                        value={cert.tag || ''}
+                        placeholder="Badge (BNSP Certified)"
+                        onChange={(e) => {
+                          const updated = [...(config.certificates || [])];
+                          updated[idx] = { ...updated[idx], tag: e.target.value };
+                          updateConfigValue('certificates', updated);
+                        }}
+                        className="bg-[#121625] border border-white/15 rounded-lg px-2.5 py-1.5 text-xs text-white self-start"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* RIGHT PANE: REALTIME LIVE PREVIEW (0MS DELAY) */}
+        {showPreview && (
+          <div className="flex-1 lg:flex flex-col bg-[#05060b] border-t lg:border-t-0 lg:border-l border-white/10 h-[600px] lg:h-auto overflow-hidden">
+            {/* Preview Toolbar */}
+            <div className="bg-[#0b0e19] px-4 py-2 border-b border-white/10 flex items-center justify-between text-xs">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="font-bold text-white">Live Website Preview</span>
+                <span className="text-[10px] text-white/40">(Update Otomatis saat diedit)</span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                {/* Device Switcher */}
+                <div className="bg-white/5 rounded-lg p-0.5 flex border border-white/10">
+                  <button
+                    type="button"
+                    onClick={() => setPreviewDevice('desktop')}
+                    className={`px-2 py-1 rounded text-[11px] font-bold transition-all ${
+                      previewDevice === 'desktop' ? 'bg-[#2f77ff] text-white' : 'text-white/50 hover:text-white'
+                    }`}
+                  >
+                    🖥️ Desktop
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPreviewDevice('mobile')}
+                    className={`px-2 py-1 rounded text-[11px] font-bold transition-all ${
+                      previewDevice === 'mobile' ? 'bg-[#2f77ff] text-white' : 'text-white/50 hover:text-white'
+                    }`}
+                  >
+                    📱 Mobile
+                  </button>
+                </div>
+
+                {/* Refresh Preview */}
+                <button
+                  type="button"
+                  onClick={() => setPreviewKey((k) => k + 1)}
+                  className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/70 hover:text-white border border-white/10"
+                  title="Muat ulang preview"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            {/* Iframe Viewport Container */}
+            <div className="flex-1 bg-[#04050d] p-3 flex items-center justify-center overflow-auto relative">
+              <div
+                className={`transition-all duration-300 relative shadow-2xl overflow-hidden ${
+                  previewDevice === 'desktop'
+                    ? 'w-full h-full rounded-xl border border-white/10'
+                    : 'w-[390px] h-[720px] max-h-full rounded-[40px] border-[8px] border-[#22283a] shadow-2xl shadow-blue-500/10'
+                }`}
+              >
+                <iframe
+                  ref={previewIframeRef}
+                  key={previewKey}
+                  src={`/?preview=true&k=${previewKey}`}
+                  className="w-full h-full border-none bg-[#04050d]"
+                  title="Live Website Preview"
+                />
               </div>
             </div>
           </div>

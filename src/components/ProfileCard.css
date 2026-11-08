@@ -171,8 +171,8 @@
   inset: calc(var(--pc-parallax) * -1);
   width: calc(100% + var(--pc-parallax) * 2);
   height: calc(100% + var(--pc-parallax) * 2);
-  object-fit: cover;
-  object-position: center bottom;
+  object-fit: var(--pc-photo-fit, cover);
+  object-position: var(--pc-photo-pos, center 20%);
   transform: translate3d(var(--pc-shift-x), var(--pc-shift-y), 0);
   pointer-events: none;
   user-select: none;
@@ -180,17 +180,12 @@
 }
 
 .profile-card__scrim {
+  opacity: var(--pc-scrim-opacity, 0.35);
   background: linear-gradient(
     to top,
-    rgba(0, 0, 0, 0.6) 0%,
-    rgba(0, 0, 0, 0.57) 6%,
-    rgba(0, 0, 0, 0.5) 12%,
-    rgba(0, 0, 0, 0.4) 19%,
-    rgba(0, 0, 0, 0.28) 26%,
-    rgba(0, 0, 0, 0.16) 33%,
-    rgba(0, 0, 0, 0.07) 40%,
-    rgba(0, 0, 0, 0.02) 46%,
-    rgba(0, 0, 0, 0) 52%
+    rgba(0, 0, 0, 0.8) 0%,
+    rgba(0, 0, 0, 0.45) 20%,
+    rgba(0, 0, 0, 0) 55%
   );
 }
 

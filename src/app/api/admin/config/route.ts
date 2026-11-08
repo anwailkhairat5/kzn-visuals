@@ -7,9 +7,15 @@ const configFilePath = path.join(process.cwd(), 'src', 'data', 'portfolio-config
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN || process.env.NEXT_PUBLIC_GITHUB_TOKEN || '';
 const GITHUB_REPO = process.env.GITHUB_REPO || 'anwailkhairat5/kzn-visuals';
 
+const NO_CACHE_HEADERS = {
+  'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+  Pragma: 'no-cache',
+  Expires: '0'
+};
+
 export async function GET() {
   try {
-    // 1. If GITHUB_TOKEN is present, fetch the latest cloud state from GitHub API
+    // 1. If GITHUB_TOKEN is present, fetch the latest live state from GitHub API
     if (GITHUB_TOKEN) {
       try {
         const ghRes = await fetch(
@@ -28,7 +34,10 @@ export async function GET() {
           if (ghData.content) {
             const decoded = Buffer.from(ghData.content, 'base64').toString('utf-8');
             const parsed = JSON.parse(decoded);
-            return NextResponse.json({ success: true, data: parsed });
+            return NextResponse.json(
+              { success: true, data: parsed, source: 'github' },
+              { headers: NO_CACHE_HEADERS }
+            );
           }
         }
       } catch (ghErr) {
@@ -39,12 +48,15 @@ export async function GET() {
     // 2. Fallback to bundled local file
     const fileContent = await fs.readFile(configFilePath, 'utf-8');
     const data = JSON.parse(fileContent);
-    return NextResponse.json({ success: true, data });
+    return NextResponse.json(
+      { success: true, data, source: 'local' },
+      { headers: NO_CACHE_HEADERS }
+    );
   } catch (error) {
     console.error('Error reading config file:', error);
     return NextResponse.json(
       { success: false, error: 'Gagal membaca file konfigurasi.' },
-      { status: 500 }
+      { status: 500, headers: NO_CACHE_HEADERS }
     );
   }
 }
@@ -55,7 +67,7 @@ export async function POST(req: NextRequest) {
     if (!updatedConfig || typeof updatedConfig !== 'object') {
       return NextResponse.json(
         { success: false, error: 'Data konfigurasi tidak valid.' },
-        { status: 400 }
+        { status: 400, headers: NO_CACHE_HEADERS }
       );
     }
 
@@ -71,6 +83,8 @@ export async function POST(req: NextRequest) {
     }
 
     // 2. If GITHUB_TOKEN exists, commit directly to GitHub repository!
+    let githubSaved = false;
+    let githubError: string | null = null;
     if (GITHUB_TOKEN) {
       try {
         // Fetch current file SHA
@@ -112,44 +126,50 @@ export async function POST(req: NextRequest) {
           }
         );
 
-        if (!putRes.ok) {
-          const errBody = await putRes.text();
-          console.error('GitHub API commit error:', putRes.status, errBody);
-          // Don't throw — fall through to localSaved check below
+        if (putRes.ok) {
+          githubSaved = true;
         } else {
-          return NextResponse.json({
-            success: true,
-            message: 'Konfigurasi berhasil disimpan dan disinkronkan ke GitHub!',
-            data: updatedConfig
-          });
+          const errBody = await putRes.text();
+          githubError = `GitHub HTTP ${putRes.status}: ${errBody}`;
+          console.error('GitHub API commit error:', putRes.status, errBody);
         }
       } catch (ghErr: any) {
+        githubError = ghErr.message;
         console.error('Failed to commit config to GitHub:', ghErr);
-        // Fall through to localSaved check
       }
+    }
+
+    if (githubSaved) {
+      return NextResponse.json({
+        success: true,
+        message: 'Konfigurasi berhasil disimpan dan disinkronkan ke Cloud (GitHub)!',
+        data: updatedConfig,
+        synced: { github: true, local: localSaved }
+      }, { headers: NO_CACHE_HEADERS });
     }
 
     if (localSaved) {
       return NextResponse.json({
         success: true,
-        message: 'Konfigurasi berhasil disimpan secara lokal!',
-        data: updatedConfig
-      });
+        message: 'Konfigurasi berhasil disimpan secara lokal!' + (githubError ? ` (Cloud sync pending: ${githubError})` : ''),
+        data: updatedConfig,
+        synced: { github: false, local: true }
+      }, { headers: NO_CACHE_HEADERS });
     }
 
-    // On Vercel: neither local nor GitHub worked — still return success so the
-    // admin UI can cache the config in localStorage on the client side.
+    // Client-side cache fallback
     return NextResponse.json({
       success: true,
-      message: 'Konfigurasi disimpan di sesi ini (sinkronisasi cloud tertunda).',
+      message: 'Konfigurasi disimpan di sesi ini (browser cache aktif).',
       data: updatedConfig,
-      warning: 'GitHub sync failed. Config is cached client-side only.'
-    });
+      warning: githubError || 'Cloud token belum terhubung.',
+      synced: { github: false, local: false }
+    }, { headers: NO_CACHE_HEADERS });
   } catch (error: any) {
     console.error('Error writing config file:', error);
     return NextResponse.json(
       { success: false, error: error.message || 'Gagal menyimpan konfigurasi.' },
-      { status: 500 }
+      { status: 500, headers: NO_CACHE_HEADERS }
     );
   }
 }

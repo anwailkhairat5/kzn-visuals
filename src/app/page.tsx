@@ -42,15 +42,35 @@ export default function Home() {
       }
     } catch {}
 
-    // Fetch live config from cloud/admin
-    fetch('/api/admin/config')
+    // Fetch live config from cloud/admin with cache-busting
+    fetch('/api/admin/config?t=' + Date.now(), { cache: 'no-store' })
       .then((res) => res.json())
       .then((json) => {
         if (json.success && json.data) {
           setConfig(json.data);
+          try {
+            localStorage.setItem('kzn_portfolio_config', JSON.stringify(json.data));
+          } catch {}
         }
       })
       .catch(() => {});
+
+    // Listen for real-time config updates from Admin preview
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data?.type === 'KZN_PREVIEW_CONFIG' && event.data?.config) {
+        setConfig(event.data.config);
+      }
+    };
+    window.addEventListener('message', handleMessage);
+
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === 'kzn_portfolio_config' && e.newValue) {
+        try {
+          setConfig(JSON.parse(e.newValue));
+        } catch {}
+      }
+    };
+    window.addEventListener('storage', handleStorage);
 
     const sections = document.querySelectorAll('header[id], section[id]');
     const observer = new IntersectionObserver(
@@ -68,6 +88,8 @@ export default function Home() {
 
     return () => {
       window.removeEventListener('resize', checkMobile);
+      window.removeEventListener('message', handleMessage);
+      window.removeEventListener('storage', handleStorage);
       sections.forEach((s) => observer.unobserve(s));
     };
   }, []);
@@ -273,24 +295,27 @@ export default function Home() {
               {/* ProfileCard: Di samping About Me pada Desktop, di atas About Me pada Mobile */}
               <div className="about-card-col">
                 <ProfileCard
-                  name={config.general?.fullName || 'Anwail Khairat'}
-                  title={config.general?.role || 'Multimedia Engineering Student'}
-                  handle="anwailkhairat5"
-                  status="Open to Work"
-                  statusColor="#22c55e"
-                  contactText="Email Me"
-                  avatarUrl="/uploads/Cinematic_Blue_Gimbal_Portrait_1793902850583.png"
-                  miniAvatarUrl="/uploads/Professional_Passport_Portrait_1793902304602.png"
-                  holo={0.85}
-                  glare={0.55}
-                  tiltStrength={14}
-                  parallax={10}
-                  radius={20}
+                  name={(config as any).profileCard?.name || config.general?.fullName || 'Anwail Khairat'}
+                  title={(config as any).profileCard?.title || config.general?.role || 'Multimedia Engineering Student'}
+                  handle={(config as any).profileCard?.handle || 'anwailkhairat5'}
+                  status={(config as any).profileCard?.status || 'Open to Work'}
+                  statusColor={(config as any).profileCard?.statusColor || '#22c55e'}
+                  contactText={(config as any).profileCard?.contactText || 'Email Me'}
+                  avatarUrl={(config as any).profileCard?.avatarUrl || '/uploads/Cinematic_Blue_Gimbal_Portrait_1793902850583.png'}
+                  miniAvatarUrl={(config as any).profileCard?.miniAvatarUrl || '/uploads/Professional_Passport_Portrait_1793902304602.png'}
+                  holo={(config as any).profileCard?.holo ?? 0.85}
+                  glare={(config as any).profileCard?.glare ?? 0.55}
+                  tiltStrength={(config as any).profileCard?.tiltStrength ?? 14}
+                  parallax={(config as any).profileCard?.parallax ?? 10}
+                  radius={(config as any).profileCard?.radius ?? 20}
+                  photoFit={((config as any).profileCard?.photoFit as any) || 'cover'}
+                  photoPosition={(config as any).profileCard?.photoPosition || 'center 20%'}
+                  scrimOpacity={(config as any).profileCard?.scrimOpacity ?? 0.35}
                   enableTilt={true}
                   enableMobileTilt={false}
                   intro={true}
                   showUserInfo={true}
-                  theme="dark"
+                  theme={((config as any).profileCard?.theme as any) || 'dark'}
                   onContactClick={() => {
                     const el = document.getElementById('contact');
                     if (el) el.scrollIntoView({ behavior: 'smooth' });
@@ -300,7 +325,9 @@ export default function Home() {
 
               {/* Teks Deskripsi About Me */}
               <div className="about-text-col">
-                <div className="eyebrow" style={{ textAlign: 'inherit', marginBottom: '10px' }}>ABOUT THE CREATOR</div>
+                <div className="eyebrow" style={{ textAlign: 'inherit', marginBottom: '10px' }}>
+                  {(config.about as any)?.eyebrow || 'ABOUT THE CREATOR'}
+                </div>
                 <h2>
                   {config.about?.heading ? config.about.heading.split(' ')[0] : 'About'}{' '}
                   <span className="g">{config.about?.heading ? config.about.heading.split(' ').slice(1).join(' ') : 'Me'}</span>
@@ -312,18 +339,16 @@ export default function Home() {
                 
                 {/* Highlights / Quick stats badges */}
                 <div className="about-stats-row">
-                  <div className="about-stat-item">
-                    <span className="about-stat-number">3D</span>
-                    <span className="about-stat-label">Modeling & VFX</span>
-                  </div>
-                  <div className="about-stat-item">
-                    <span className="about-stat-number">AI</span>
-                    <span className="about-stat-label">Gen Workflow</span>
-                  </div>
-                  <div className="about-stat-item">
-                    <span className="about-stat-number">Film</span>
-                    <span className="about-stat-label">Direction & Edit</span>
-                  </div>
+                  {((config.about as any)?.stats || [
+                    { id: '1', number: '3D', label: 'Modeling & VFX' },
+                    { id: '2', number: 'AI', label: 'Gen Workflow' },
+                    { id: '3', number: 'Film', label: 'Direction & Edit' }
+                  ]).map((stat: any, idx: number) => (
+                    <div key={stat.id || idx} className="about-stat-item">
+                      <span className="about-stat-number">{stat.number}</span>
+                      <span className="about-stat-label">{stat.label}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -377,20 +402,15 @@ export default function Home() {
               My <span className="g">Experience</span>
             </h2>
             <div className="grid">
-              <div className="box">
-                <h3>3D &amp; Multimedia Production</h3>
-                <p>
-                  Politeknik Negeri Lhokseumawe (2024 — Sekarang) • Terlibat dalam proyek produksi film pendek, eksplorasi AI-generated 3D modeling workflow, dan animasi.
-                </p>
-                <span className="tag">Campus Project</span>
-              </div>
-              <div className="box">
-                <h3>Freelance Video Editor &amp; 3D Artist</h3>
-                <p>
-                  Remote (2022 — Sekarang) • Mengerjakan editing video komersial, motion graphic, dan aset visual 3D untuk berbagai kebutuhan klien kreatif.
-                </p>
-                <span className="tag">Freelance</span>
-              </div>
+              {((config as any).experience || []).map((exp: any) => (
+                <div key={exp.id} className="box">
+                  <h3>{exp.title}</h3>
+                  <p>
+                    {exp.subtitle ? exp.subtitle + ' (' + (exp.period || '') + ') • ' : ''}{exp.description}
+                  </p>
+                  {exp.tag && <span className="tag">{exp.tag}</span>}
+                </div>
+              ))}
             </div>
           </div>
         </section>
@@ -402,20 +422,15 @@ export default function Home() {
               My <span className="g">Certificates</span>
             </h2>
             <div className="grid">
-              <div className="box">
-                <h3>Sertifikasi Kompetensi Multimedia</h3>
-                <p>
-                  BNSP &amp; Politeknik Negeri Lhokseumawe — Terverifikasi dalam bidang produksi multimedia, editing, dan teknologi grafis (2025).
-                </p>
-                <span className="tag">BNSP Certified</span>
-              </div>
-              <div className="box">
-                <h3>Pelatihan 3D Animation &amp; Visual Effects</h3>
-                <p>
-                  Program peningkatan kompetensi multimedia kreatif dan workflow animasi 3D (2024).
-                </p>
-                <span className="tag">Professional Course</span>
-              </div>
+              {((config as any).certificates || []).map((cert: any) => (
+                <div key={cert.id} className="box">
+                  <h3>{cert.title}</h3>
+                  <p>
+                    {cert.issuer ? cert.issuer + ' — ' : ''}{cert.description} {cert.period ? '(' + cert.period + ')' : ''}
+                  </p>
+                  {cert.tag && <span className="tag">{cert.tag}</span>}
+                </div>
+              ))}
             </div>
           </div>
         </section>

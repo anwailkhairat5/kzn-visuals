@@ -89,6 +89,9 @@ export interface ProfileCardProps {
   enableMobileTilt?: boolean;
   mobileTiltSensitivity?: number;
   intro?: boolean;
+  photoFit?: 'cover' | 'contain' | 'fill';
+  photoPosition?: string;
+  scrimOpacity?: number;
   className?: string;
 }
 
@@ -115,6 +118,9 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
   enableMobileTilt = false,
   mobileTiltSensitivity = 5,
   intro = true,
+  photoFit = 'cover',
+  photoPosition = 'center 20%',
+  scrimOpacity = 0.35,
   className = ''
 }) => {
   const rootRef = useRef<HTMLDivElement | null>(null);
@@ -331,6 +337,9 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
         '--pc-glare': clamp(glare, 0, 1),
         '--pc-parallax': `${Math.max(0, parallax)}px`,
         '--pc-status': statusColor,
+        '--pc-photo-fit': photoFit,
+        '--pc-photo-pos': photoPosition,
+        '--pc-scrim-opacity': scrimOpacity,
         '--pc-grain': GRAIN,
         '--pc-pattern': iconUrl ? `url("${iconUrl}")` : 'linear-gradient(#000, #000)',
         '--pc-pattern-size': iconUrl ? '180% auto' : '100% 100%',
