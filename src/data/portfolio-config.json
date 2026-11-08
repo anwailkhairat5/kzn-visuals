@@ -81,7 +81,7 @@
     "parallax": 10,
     "radius": 20,
     "photoFit": "cover",
-    "photoPosition": "center 20%",
+    "photoPosition": "center 25%",
     "scrimOpacity": 0.35
   },
   "about": {
