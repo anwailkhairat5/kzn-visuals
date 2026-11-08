@@ -210,11 +210,13 @@ nav.site-nav a.l.on {
 }
 
 .lead {
-  max-width: 640px;
-  color: #e3e8fb;
-  font-size: 1.15rem;
-  margin: 0 0 40px;
-  line-height: 1.75;
+  font-size: 1.05rem;
+  line-height: 1.85;
+  color: #cbd5e1;
+  margin: 0 0 36px;
+  text-align: justify;
+  text-justify: inter-word;
+  hyphens: auto;
 }
 
 .btns {
@@ -366,6 +368,10 @@ a.box:hover {
   margin: 0;
   color: var(--mu);
   font-size: 0.97rem;
+  line-height: 1.68;
+  text-align: justify;
+  text-justify: inter-word;
+  hyphens: auto;
 }
 
 .tag {
@@ -558,12 +564,14 @@ footer {
   }
 
   .lead {
-    font-size: 1.05rem;
-    line-height: 1.85;
+    font-size: 1.02rem;
+    line-height: 1.8;
     color: #cbd5e1;
     margin: 0 0 36px;
-    text-align: center;
-    padding-inline: 8px;
+    text-align: justify;
+    text-justify: inter-word;
+    hyphens: auto;
+    padding-inline: 4px;
   }
 
   .btns {
@@ -869,10 +877,15 @@ body.grabbing {
     text-align: center !important;
   }
   .about-text-col h2,
-  .about-text-col .eyebrow,
+  .about-text-col .eyebrow {
+    text-align: center !important;
+  }
   .about-text-col .sub,
   .about-text-col .about-subtext {
-    text-align: center !important;
+    text-align: justify !important;
+    text-justify: inter-word;
+    hyphens: auto;
+    line-height: 1.8;
   }
   .about-stats-row {
     justify-content: center;
@@ -880,4 +893,25 @@ body.grabbing {
   .about-section {
     padding: 60px 0 80px;
   }
+}
+
+
+/* ── PROJECT MEDIA & MODAL STYLES ── */
+.project-card-interactive {
+  position: relative;
+  cursor: pointer;
+}
+.project-card-interactive:hover .project-play-badge {
+  transform: scale(1.05);
+  box-shadow: 0 0 20px rgba(47, 119, 255, 0.4);
+}
+.project-play-badge {
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.modal-fade-enter {
+  animation: modalFadeIn 0.25s ease-out forwards;
+}
+@keyframes modalFadeIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
 }

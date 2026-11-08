@@ -5,6 +5,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import ImageCropperModal from '@/components/ImageCropperModal';
+import { parseMediaUrl } from '@/utils/mediaParser';
 
 type TabType =
   | 'general'
@@ -1574,13 +1575,66 @@ export default function AdminPage() {
                 </div>
 
                 <div>
-                  <label className="text-[11px] font-bold uppercase tracking-wider text-white/70 block mb-1">
-                    Link Profil GitHub
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-emerald-400 block mb-1">
+                    WhatsApp URL (Pesan Otomatis)
                   </label>
                   <input
                     type="text"
-                    value={config.general?.githubUrl || ''}
-                    onChange={(e) => updateConfigValue('general.githubUrl', e.target.value)}
+                    value={config.general?.whatsappUrl || ''}
+                    placeholder="https://wa.me/6285136304385?text=Halo..."
+                    onChange={(e) => updateConfigValue('general.whatsappUrl', e.target.value)}
+                    className="w-full bg-[#080a12] border border-emerald-500/30 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-400"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-pink-400 block mb-1">
+                    Instagram URL (@kzn.visuals)
+                  </label>
+                  <input
+                    type="text"
+                    value={config.general?.instagramUrl || ''}
+                    placeholder="https://www.instagram.com/kzn.visuals"
+                    onChange={(e) => updateConfigValue('general.instagramUrl', e.target.value)}
+                    className="w-full bg-[#080a12] border border-pink-500/30 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-pink-400"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-[#18d3ff] block mb-1">
+                    Lynk.id / Linktree URL
+                  </label>
+                  <input
+                    type="text"
+                    value={config.general?.lynkUrl || ''}
+                    placeholder="https://lynk.id/kznvisuals"
+                    onChange={(e) => updateConfigValue('general.lynkUrl', e.target.value)}
+                    className="w-full bg-[#080a12] border border-white/15 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#18d3ff]"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-white/70 block mb-1">
+                    Nomor Telepon / WhatsApp
+                  </label>
+                  <input
+                    type="text"
+                    value={config.general?.phone || ''}
+                    placeholder="085136304385"
+                    onChange={(e) => updateConfigValue('general.phone', e.target.value)}
+                    className="w-full bg-[#080a12] border border-white/15 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#18d3ff]"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-white/70 block mb-1">
+                    Kota / Domisili
+                  </label>
+                  <input
+                    type="text"
+                    value={config.general?.location || ''}
+                    placeholder="Lhokseumawe, Aceh"
+                    onChange={(e) => updateConfigValue('general.location', e.target.value)}
                     className="w-full bg-[#080a12] border border-white/15 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#18d3ff]"
                   />
                 </div>
@@ -1955,18 +2009,38 @@ export default function AdminPage() {
                       />
                     </div>
 
-                    <div>
-                      <label className="text-[10px] font-bold uppercase text-white/60 block mb-1">Link Target</label>
+                    <div className="md:col-span-2 bg-[#080a12] p-3 rounded-xl border border-white/10 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <label className="text-[11px] font-bold uppercase text-[#18d3ff] flex items-center gap-1.5">
+                          <span>🔗 Link Video / Media (Instagram Reel/Post, Google Drive, YouTube)</span>
+                        </label>
+                        {proj.link && (
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${parseMediaUrl(proj.link).badgeColor}`}>
+                            {parseMediaUrl(proj.link).badgeText}
+                          </span>
+                        )}
+                      </div>
                       <input
                         type="text"
-                        value={proj.link || '#'}
+                        placeholder="Paste link: https://www.instagram.com/reel/XXXX/ atau https://drive.google.com/file/d/XXXX/view"
+                        value={proj.link || ''}
                         onChange={(e) => {
                           const updated = [...(config.projects || [])];
-                          updated[idx] = { ...updated[idx], link: e.target.value };
+                          const val = e.target.value;
+                          const parsed = parseMediaUrl(val);
+                          updated[idx] = { 
+                            ...updated[idx], 
+                            link: val,
+                            mediaType: parsed.type,
+                            embedUrl: parsed.embedUrl
+                          };
                           updateConfigValue('projects', updated);
                         }}
-                        className="w-full bg-[#080a12] border border-white/15 rounded-xl px-3 py-1.5 text-xs text-white"
+                        className="w-full bg-black/60 border border-white/20 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-[#18d3ff] font-mono"
                       />
+                      <p className="text-[10px] text-white/40">
+                        ⚡ Cukup paste link Instagram atau Google Drive, video otomatis ter-embed dan pengunjung dapat menonton langsung di website atau membukanya di aplikasi.
+                      </p>
                     </div>
                   </div>
                 </div>
