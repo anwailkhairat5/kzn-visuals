@@ -72,6 +72,15 @@ export default function Home() {
     };
     window.addEventListener('storage', handleStorage);
 
+    // Shortcut: Ctrl+Shift+A or Alt+A to jump straight to Admin
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey && e.shiftKey && (e.key === 'a' || e.key === 'A')) || (e.altKey && (e.key === 'a' || e.key === 'A'))) {
+        e.preventDefault();
+        window.location.href = '/admin';
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+
     const sections = document.querySelectorAll('header[id], section[id]');
     const observer = new IntersectionObserver(
       (entries) => {
@@ -454,11 +463,20 @@ export default function Home() {
 
       {/* ── FOOTER ── */}
       <footer>
-        <div className="flex flex-col items-center gap-2">
+        <div className="flex flex-col items-center gap-3">
           <span>{config.general?.footerText || '© 2026 Anwail Khairat. All rights reserved.'}</span>
-          <Link href="/admin" className="text-xs text-white/30 hover:text-[#18d3ff] transition-colors">
-            ⚙ Panel Admin
-          </Link>
+          <div className="flex items-center gap-3 text-xs text-white/40">
+            <Link
+              href="/admin"
+              className="px-3.5 py-1.5 rounded-full bg-white/5 hover:bg-[#2f77ff]/20 hover:text-[#18d3ff] border border-white/10 hover:border-[#18d3ff]/40 transition-all flex items-center gap-2 shadow-sm"
+              title="Buka Panel Admin CMS (Shortcut: Ctrl + Shift + A)"
+            >
+              <span>⚙️ Panel Admin</span>
+              <kbd className="hidden sm:inline text-[10px] px-1.5 py-0.5 rounded bg-white/10 text-white/60 font-mono">
+                Ctrl+Shift+A
+              </kbd>
+            </Link>
+          </div>
         </div>
       </footer>
     </div>
