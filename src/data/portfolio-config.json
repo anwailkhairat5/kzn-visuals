@@ -73,7 +73,7 @@
     "handle": "kzn.visuals",
     "status": "Open to Work",
     "statusColor": "#22c55e",
-    "contactText": "WhatsApp Me",
+    "contactText": "Contact Me",
     "theme": "dark",
     "holo": 0.85,
     "glare": 0.55,
@@ -113,12 +113,12 @@
       {
         "id": "stat-2",
         "number": "7+",
-        "label": "Juara Penghargaan"
+        "label": "Awards"
       },
       {
-        "id": "stat-3",
-        "number": "3.40",
-        "label": "IPK Rekayasa Multimedia"
+        "id": "stat-1794164108259",
+        "number": "10+",
+        "label": "Work Experience"
       }
     ]
   },
