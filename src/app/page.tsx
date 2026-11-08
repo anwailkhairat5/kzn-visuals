@@ -28,8 +28,40 @@ export default function Home() {
   const [mounted, setMounted] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [activeSection, setActiveSection] = useState('home');
-  const [activeMediaProject, setActiveMediaProject] = useState<any>(null);
-  const [activeCertificate, setActiveCertificate] = useState<any>(null);
+  const [activeProjectIndex, setActiveProjectIndex] = useState<number | null>(null);
+  const [activeCertificateIndex, setActiveCertificateIndex] = useState<number | null>(null);
+  const handlePrevProject = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    const total = (config.projects || []).length;
+    if (total > 0 && activeProjectIndex !== null) {
+      setActiveProjectIndex((activeProjectIndex - 1 + total) % total);
+    }
+  };
+
+  const handleNextProject = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    const total = (config.projects || []).length;
+    if (total > 0 && activeProjectIndex !== null) {
+      setActiveProjectIndex((activeProjectIndex + 1) % total);
+    }
+  };
+
+  const handlePrevCert = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    const total = (config.certificates || []).length;
+    if (total > 0 && activeCertificateIndex !== null) {
+      setActiveCertificateIndex((activeCertificateIndex - 1 + total) % total);
+    }
+  };
+
+  const handleNextCert = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    const total = (config.certificates || []).length;
+    if (total > 0 && activeCertificateIndex !== null) {
+      setActiveCertificateIndex((activeCertificateIndex + 1) % total);
+    }
+  };
+
 
   useEffect(() => {
     setMounted(true);
@@ -83,7 +115,8 @@ export default function Home() {
         window.location.href = '/admin';
       }
       if (e.key === 'Escape') {
-        setActiveMediaProject(null);
+        setActiveProjectIndex(null);
+        setActiveCertificateIndex(null);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -387,226 +420,133 @@ export default function Home() {
         </section>
 
         {/* ── PROJECTS SECTION (CHROMAGRID REACT BITS INTEGRATION) ── */}
-        <section id="projects" className="py-20">
+        <section id="projects">
           <div className="wrap">
-            <div className="text-center mb-10 max-w-2xl mx-auto">
-              <div className="eyebrow" style={{ textAlign: 'center', marginBottom: '8px' }}>
+            <div className="mb-8">
+              <div className="eyebrow" style={{ textAlign: 'left', marginBottom: '8px' }}>
                 FEATURED PORTFOLIO
               </div>
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+              <h2>
                 Creative <span className="g">Projects</span>
               </h2>
-              <p className="sub mx-auto" style={{ margin: '8px auto 0', textAlign: 'center' }}>
+              <p className="sub" style={{ margin: '6px 0 0', maxWidth: '680px', textAlign: 'left' }}>
                 Koleksi video promosi, commercial reel, film pendek sinematik, dan visual effects (VFX). Tekan kartu untuk membuka detail dan pemutar media.
               </p>
             </div>
 
             {/* ChromaGrid with Spacious Modern Layout */}
-            <div className="max-w-6xl mx-auto">
-              <ChromaGrid
-                items={(config.projects || []).map((proj: any) => ({
-                  title: proj.title,
-                  subtitle: proj.category || 'Portfolio Showcase',
-                  image: proj.image || 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=800&q=80&auto=format&fit=crop',
-                  accent: proj.accent || '#22d3ee',
-                  rawProject: proj,
-                  onClick: () => setActiveMediaProject(proj)
-                }))}
-                columns={isMobile ? 2 : 3}
-                minCardWidth={isMobile ? 140 : 220}
-                gap={isMobile ? 12 : 16}
-                radius={240}
-                aspectRatio="16 / 10"
-                cardRadius={18}
-                glow={0.5}
-                borderGlow={1}
-                reveal="spotlight"
-                theme="dark"
-              />
-            </div>
+            <ChromaGrid
+              items={(config.projects || []).map((proj: any, idx: number) => ({
+                title: proj.title,
+                subtitle: proj.category || 'Portfolio Showcase',
+                image: proj.image || 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=800&q=80&auto=format&fit=crop',
+                accent: proj.accent || '#22d3ee',
+                rawProject: proj,
+                onClick: () => setActiveProjectIndex(idx)
+              }))}
+              columns={isMobile ? 2 : 3}
+              minCardWidth={isMobile ? 140 : 220}
+              gap={isMobile ? 12 : 16}
+              radius={240}
+              aspectRatio="16 / 10"
+              cardRadius={18}
+              glow={0.5}
+              borderGlow={1}
+              reveal="spotlight"
+              theme="dark"
+            />
           </div>
         </section>
 
-        {/* ── EXPERIENCE & EDUCATION JOURNEY TIMELINE ── */}
-        <section id="experience" className="py-24 relative overflow-hidden">
+        {/* ── WORK EXPERIENCE SECTION (REVERTED ORIGINAL CLEAN GRID) ── */}
+        <section id="experience">
           <div className="wrap">
-            <div className="text-center mb-16 max-w-2xl mx-auto">
-              <div className="eyebrow" style={{ textAlign: 'center', marginBottom: '8px' }}>
-                MY PATH SO FAR
-              </div>
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-                Journey <span className="g">Timeline</span>
+            <div className="mb-8">
+              <h2>
+                Work <span className="g">Experience</span>
               </h2>
-              <p className="sub mx-auto" style={{ margin: '8px auto 0', textAlign: 'center' }}>
-                Perjalanan pendidikan dan pengalaman kerja yang membentuk kemampuan dan dedikasi saya saat ini.
+              <p className="sub" style={{ margin: '6px 0 0', maxWidth: '680px', textAlign: 'left' }}>
+                Rekam jejak profesional di production house, creative agency, freelance, dan organisasi kemahasiswaan.
               </p>
             </div>
 
-            {/* Timeline Tree */}
-            <div className="relative max-w-4xl mx-auto">
-              {/* Vertical Glowing Line */}
-              <div
-                className="absolute top-2 bottom-6 w-0.5 bg-gradient-to-b from-cyan-400 via-blue-500 to-purple-500 shadow-[0_0_12px_rgba(34,211,238,0.5)] left-6 md:left-1/2 -translate-x-1/2"
-                aria-hidden="true"
-              />
-
-              {/* Milestones */}
-              <div className="space-y-10 sm:space-y-12">
-                {(() => {
-                  const milestones = [
-                    {
-                      id: 'm-unicam',
-                      icon: '✨',
-                      period: 'Aug 2025 – Jan 2026',
-                      title: 'Editor & VFX Artist',
-                      institution: 'Unicam Studio — Yogyakarta',
-                      tag: 'Production House',
-                      description: 'Menggarap digital content perusahaan: company profile, video promosi, dan reels (VFX, motion graphic, color grading, sound design). Terlibat dalam proyek Castrol, YPTI, dan klien lain. Mengintegrasikan teknologi AI dan teknik visual effects.',
-                      tags: ['Production House', 'VFX Compositing', 'Castrol & YPTI', 'After Effects', 'AI Workflow']
-                    },
-                    {
-                      id: 'm-ezran',
-                      icon: '💼',
-                      period: 'Jan 2023 – Sekarang',
-                      title: 'Creative Team (Foto & Video)',
-                      institution: 'Ezran Core — Lhokseumawe',
-                      tag: 'Creative Agency',
-                      description: 'Menyediakan layanan profesional di bidang foto, video, dan editing video. Berkolaborasi menonjolkan visual branding menarik di media sosial untuk memikat klien dan memenangkan berbagai penghargaan kompetisi kreatif.',
-                      tags: ['Creative Agency', 'Branding', 'Videography', 'Social Media']
-                    },
-                    {
-                      id: 'm-kzn',
-                      icon: '🎥',
-                      period: 'Sep 2021 – Sekarang',
-                      title: 'Freelance Videographer & Editor',
-                      institution: 'KzN Visuals — Lhokseumawe',
-                      tag: 'Freelancer',
-                      description: 'Layanan jasa pembuatan dan editing video komersial/kreatif. Menyajikan hasil editing dengan kompleksitas tinggi dengan tingkat kepuasan klien mencapai 95%+ dan pengerjaan tepat waktu.',
-                      tags: ['Freelancer', 'Video Production', 'Color Grading', 'Premiere Pro']
-                    },
-                    {
-                      id: 'm-bem',
-                      icon: '🏛️',
-                      period: 'Aug 2023 – Nov 2024',
-                      title: 'Student Executive Board (Media Sosial & Konten)',
-                      institution: 'BEM Politeknik Negeri Lhokseumawe',
-                      tag: 'Organisasi Kampus',
-                      description: 'Mengelola akun media sosial Instagram organisasi kampus dan bertanggung jawab penuh dalam pembuatan seluruh konten visual (poster kegiatan, feed edukasi, after-movie kegiatan).',
-                      tags: ['Organisasi', 'Social Media', 'After-Movie', 'Graphic Design']
-                    },
-                    {
-                      id: 'm-edu',
-                      icon: '🎓',
-                      period: '2022 – 2026 (IPK: 3.40)',
-                      title: 'Diploma Teknik Rekayasa Multimedia',
-                      institution: 'Politeknik Negeri Lhokseumawe',
-                      tag: 'Pendidikan Resmi',
-                      description: 'Fokus pada produksi konten multimedia digital, videografi sinematik, visual effects, animasi 3D, dan riset perbandingan pemodelan 3D generatif AI (Tripo AI) vs konvensional (Blender).',
-                      tags: ['Multimedia', 'VFX', '3D Blender', 'Tripo AI']
-                    }
-                  ];
-
-                  return milestones.map((item, index) => {
-                    const isLeft = index % 2 === 0;
-
-                    return (
-                      <div key={item.id} className="relative flex flex-col md:flex-row items-start md:items-center">
-                        {/* Timeline Center Node Badge */}
-                        <div className="absolute left-6 md:left-1/2 -translate-x-1/2 w-10 h-10 rounded-full bg-[#080d1a] border-2 border-cyan-400 shadow-[0_0_14px_rgba(34,211,238,0.5)] flex items-center justify-center text-cyan-300 text-sm z-10">
-                          <span>{item.icon}</span>
-                        </div>
-
-                        {/* Card Container */}
-                        <div
-                          className={`w-full pl-14 md:pl-0 md:w-1/2 ${
-                            isLeft ? 'md:pr-12 md:text-left' : 'md:ml-auto md:pl-12 md:text-left'
-                          }`}
-                        >
-                          <div className="p-5 sm:p-6 rounded-2xl bg-[#0c1224]/85 border border-white/10 hover:border-cyan-500/40 transition-all duration-300 shadow-xl group">
-                            {/* Card Header */}
-                            <div className="flex items-center justify-between gap-2 mb-2">
-                              <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-                                {item.period}
-                              </span>
-                              <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-cyan-500/10 border border-cyan-500/20 text-cyan-300">
-                                {item.tag}
-                              </span>
-                            </div>
-
-                            {/* Title & Subtitle */}
-                            <h3 className="text-base sm:text-lg font-bold text-white group-hover:text-cyan-300 transition-colors">
-                              {item.title}
-                            </h3>
-                            <div className="text-xs font-semibold text-[#38bdf8] mb-3">
-                              {item.institution}
-                            </div>
-
-                            {/* Description */}
-                            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-normal mb-4 text-wrap-pretty">
-                              {item.description}
-                            </p>
-
-                            {/* Tags */}
-                            <div className="flex flex-wrap gap-1.5">
-                              {item.tags.map((t) => (
-                                <span
-                                  key={t}
-                                  className="px-2.5 py-0.5 rounded-md text-[11px] font-medium bg-white/[0.04] border border-white/8 text-slate-300"
-                                >
-                                  {t}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  });
-                })()}
-              </div>
+            <div className="grid">
+              {((config as any).experience || []).map((exp: any) => (
+                <div key={exp.id} className="box">
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <h3>{exp.title}</h3>
+                    {exp.tag && <span className="tag text-[10px] mt-0">{exp.tag}</span>}
+                  </div>
+                  <div className="text-xs text-[#38bdf8] font-medium mb-3">
+                    {exp.subtitle ? exp.subtitle : ''} {exp.period ? '• (' + exp.period + ')' : ''}
+                  </div>
+                  <p>{exp.description}</p>
+                </div>
+              ))}
             </div>
+
+            {/* PENDIDIKAN RESMI DARI CV */}
+            {((config as any).education && (config as any).education.length > 0) && (
+              <div className="mt-12 pt-10 border-t border-white/10">
+                <h3 className="text-xl font-black text-white mb-2 text-left">
+                  🎓 Riwayat <span className="g">Pendidikan</span>
+                </h3>
+                <div className="grid mt-4">
+                  {((config as any).education || []).map((edu: any) => (
+                    <div key={edu.id} className="box bg-gradient-to-br from-blue-950/20 to-transparent">
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <h4 className="text-lg font-bold text-white">{edu.institution}</h4>
+                        <span className="tag text-[10px] mt-0">IPK: {edu.gpa}</span>
+                      </div>
+                      <div className="text-xs text-[#38bdf8] font-medium mb-3">
+                        {edu.degree} • {edu.period} • {edu.location}
+                      </div>
+                      <p>{edu.description}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </section>
 
-        {/* ── CERTIFICATES SECTION (CHROMAGRID SPOTLIGHT & MODAL) ── */}
-        <section id="certificates" className="py-20">
+        {/* ── CERTIFICATES & AWARDS SECTION (LEFT-ALIGNED & CHROMAGRID) ── */}
+        <section id="certificates">
           <div className="wrap">
-            <div className="text-center mb-10 max-w-2xl mx-auto">
-              <div className="eyebrow" style={{ textAlign: 'center', marginBottom: '8px' }}>
+            <div className="mb-8">
+              <div className="eyebrow" style={{ textAlign: 'left', marginBottom: '8px' }}>
                 CREDENTIALS & HONORS
               </div>
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-                Certificates
+              <h2>
+                Certificates & <span className="g">Awards</span>
               </h2>
-              <p className="sub mx-auto" style={{ margin: '8px auto 0', textAlign: 'center' }}>
-                Sertifikat pembelajaran yang telah saya selesaikan dari berbagai platform dan institusi.
+              <p className="sub" style={{ margin: '6px 0 0', maxWidth: '680px', textAlign: 'left' }}>
+                Sertifikat pembelajaran dan kejuaraan kompetisi video kreatif tingkat regional, nasional, dan internasional yang telah saya raih.
               </p>
             </div>
 
             {/* ChromaGrid for Certificates with Spotlight Glow */}
-            <div className="max-w-6xl mx-auto">
-              <ChromaGrid
-                items={(config.certificates || []).map((cert: any) => ({
-                  title: cert.title,
-                  subtitle: cert.issuer,
-                  badge: cert.period || '2024',
-                  image: cert.image || '/certificates/cert-qris.svg',
-                  accent: cert.accent || '#38bdf8',
-                  rawProject: cert,
-                  onClick: () => setActiveCertificate(cert)
-                }))}
-                columns={isMobile ? 2 : 3}
-                minCardWidth={isMobile ? 140 : 220}
-                gap={isMobile ? 12 : 16}
-                radius={240}
-                aspectRatio="16 / 10"
-                cardRadius={18}
-                glow={0.5}
-                borderGlow={1}
-                reveal="spotlight"
-                theme="dark"
-              />
-            </div>
+            <ChromaGrid
+              items={(config.certificates || []).map((cert: any, idx: number) => ({
+                title: cert.title,
+                subtitle: cert.issuer,
+                badge: cert.period || '2024',
+                image: cert.image || '/certificates/cert-qris.svg',
+                accent: cert.accent || '#38bdf8',
+                rawProject: cert,
+                onClick: () => setActiveCertificateIndex(idx)
+              }))}
+              columns={isMobile ? 2 : 3}
+              minCardWidth={isMobile ? 140 : 220}
+              gap={isMobile ? 12 : 16}
+              radius={240}
+              aspectRatio="16 / 10"
+              cardRadius={18}
+              glow={0.5}
+              borderGlow={1}
+              reveal="spotlight"
+              theme="dark"
+            />
           </div>
         </section>
 
@@ -691,212 +631,376 @@ export default function Home() {
         </section>
       </main>
 
-      {/* ── MINIMALIST MODAL: CREATIVE PROJECT ── */}
-      {activeMediaProject && (() => {
-        const parsed = parseMediaUrl(activeMediaProject.link);
-        const projectImg = activeMediaProject.image || 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=800&q=80&auto=format&fit=crop';
-        const isInstagramProfile = activeMediaProject.link?.includes('instagram.com') && !activeMediaProject.link?.includes('/p/') && !activeMediaProject.link?.includes('/reel/');
+      {/* ── REFERENCE MODAL: CREATIVE PROJECT (MATCHING IMAGE 1) ── */}
+      {activeProjectIndex !== null && (() => {
+        const activeProject = (config.projects || [])[activeProjectIndex];
+        if (!activeProject) return null;
 
-        let ctaText = 'Buka di Sumber Asli';
-        if (parsed.type === 'instagram' || isInstagramProfile) ctaText = 'Tonton di Instagram';
-        else if (parsed.type === 'gdrive') ctaText = 'Buka di Google Drive';
-        else if (parsed.type === 'youtube') ctaText = 'Tonton di YouTube';
+        const parsed = parseMediaUrl(activeProject.link);
+        const projectImg = activeProject.image || 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=800&q=80&auto=format&fit=crop';
+        const total = (config.projects || []).length;
 
         return (
           <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/85 backdrop-blur-md transition-all duration-200"
-            onClick={() => setActiveMediaProject(null)}
+            className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 bg-black/85 backdrop-blur-md transition-all duration-200"
+            onClick={() => setActiveProjectIndex(null)}
           >
             <div
-              className="relative w-full max-w-lg bg-[#0e1424] border border-white/12 rounded-2xl shadow-2xl overflow-hidden flex flex-col"
+              className="relative w-full max-w-5xl max-h-[92vh] bg-[#121316] border border-white/12 rounded-xl sm:rounded-2xl shadow-[0_25px_80px_rgba(0,0,0,0.95)] overflow-hidden flex flex-col"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Media Preview Stage */}
-              <div className="relative w-full aspect-[16/10] bg-black overflow-hidden border-b border-white/10">
-                {(() => {
-                  if (parsed.type === 'gdrive') {
-                    return (
-                      <iframe
-                        src={parsed.embedUrl}
-                        className="w-full h-full border-0"
-                        allow="autoplay; fullscreen"
-                        title={activeMediaProject.title}
-                      />
-                    );
-                  } else if (parsed.type === 'youtube') {
-                    return (
-                      <iframe
-                        src={parsed.embedUrl}
-                        className="w-full h-full border-0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                        title={activeMediaProject.title}
-                      />
-                    );
-                  } else if (parsed.type === 'video') {
-                    return (
-                      <video
-                        src={parsed.embedUrl}
-                        controls
-                        autoPlay
-                        className="w-full h-full object-cover"
-                      />
-                    );
-                  } else {
-                    return (
-                      <div className="relative w-full h-full group">
-                        <img
-                          src={projectImg}
-                          alt={activeMediaProject.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#0e1424] via-transparent to-transparent opacity-60" />
-                      </div>
-                    );
-                  }
-                })()}
+              {/* Top Navigation Bar (Matching Image 1) */}
+              <div className="px-4 sm:px-6 py-2.5 sm:py-3 bg-[#18191d] border-b border-white/10 flex items-center justify-between gap-3 shrink-0">
+                {/* Left Badge & Meta */}
+                <div className="flex items-center gap-2.5">
+                  <span className="px-2.5 py-0.5 rounded-sm bg-[#eab308] text-black font-extrabold text-[11px] uppercase tracking-wider font-mono">
+                    {activeProject.badge || 'VIDEOGRAFI'}
+                  </span>
+                  <span className="text-xs text-white/70 font-mono tracking-wide hidden sm:inline">
+                    {activeProject.subField || activeProject.category || 'Reels'} • {activeProject.year || '2026'}
+                  </span>
+                </div>
 
-                {/* Close Button at Top Right Corner of Preview */}
-                <button
-                  type="button"
-                  onClick={() => setActiveMediaProject(null)}
-                  className="absolute top-3 right-3 w-7 h-7 rounded-full bg-black/70 hover:bg-black text-white/90 hover:text-white flex items-center justify-center text-xs font-bold transition-all border border-white/15 z-20 shadow-md"
-                  aria-label="Tutup"
-                >
-                  ✕
-                </button>
+                {/* Right Controls (Matching Image 1) */}
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <button
+                    type="button"
+                    onClick={handlePrevProject}
+                    className="px-2 sm:px-2.5 py-1 rounded bg-white/[0.06] hover:bg-white/[0.12] text-white/80 hover:text-white border border-white/15 text-[10px] sm:text-[11px] font-mono tracking-wider transition-colors flex items-center gap-1"
+                    title="Karya Sebelumnya (Panah Kiri)"
+                  >
+                    <span>|◀</span>
+                    <span className="hidden sm:inline">KARYA SEB.</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleNextProject}
+                    className="px-2 sm:px-2.5 py-1 rounded bg-white/[0.06] hover:bg-white/[0.12] text-white/80 hover:text-white border border-white/15 text-[10px] sm:text-[11px] font-mono tracking-wider transition-colors flex items-center gap-1"
+                    title="Karya Berikutnya (Panah Kanan)"
+                  >
+                    <span className="hidden sm:inline">KARYA BER.</span>
+                    <span>▶|</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveProjectIndex(null)}
+                    className="px-2.5 py-1 rounded bg-white/[0.08] hover:bg-rose-500/20 hover:text-rose-300 hover:border-rose-500/40 text-white/90 border border-white/15 text-[10px] sm:text-[11px] font-mono tracking-wider transition-colors"
+                  >
+                    TUTUP ✕
+                  </button>
+                </div>
               </div>
 
-              {/* Minimalist Info Body (Matching User Reference) */}
-              <div className="p-5 sm:p-6 space-y-2.5">
-                <div className="flex items-center gap-1.5 text-xs text-slate-400 font-medium">
-                  <span className="text-pink-400">🎗</span>
-                  <span>{activeMediaProject.category || 'Featured Work'}</span>
+              {/* Content Area: Split 2 Columns on Desktop */}
+              <div className="overflow-y-auto flex-1 grid grid-cols-1 lg:grid-cols-12">
+                {/* Left Column: Visual Media Stage with In-Media Arrows */}
+                <div className="lg:col-span-7 xl:col-span-8 bg-black relative flex items-center justify-center min-h-[260px] sm:min-h-[360px] lg:min-h-[460px] overflow-hidden border-b lg:border-b-0 lg:border-r border-white/10 group">
+                  {/* Left Arrow Button */}
+                  <button
+                    type="button"
+                    onClick={handlePrevProject}
+                    className="absolute left-0 top-1/2 -translate-y-1/2 w-8 sm:w-10 h-12 sm:h-14 bg-black/60 hover:bg-black/90 text-white/80 hover:text-white flex items-center justify-center rounded-r transition-colors z-20 text-base"
+                    aria-label="Previous"
+                  >
+                    ‹
+                  </button>
+
+                  {/* Media Viewer */}
+                  {(() => {
+                    if (parsed.type === 'gdrive') {
+                      return (
+                        <iframe
+                          src={parsed.embedUrl}
+                          className="w-full h-full border-0 min-h-[320px] lg:min-h-[440px]"
+                          allow="autoplay; fullscreen"
+                          title={activeProject.title}
+                        />
+                      );
+                    } else if (parsed.type === 'youtube') {
+                      return (
+                        <iframe
+                          src={parsed.embedUrl}
+                          className="w-full h-full border-0 min-h-[320px] lg:min-h-[440px]"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                          title={activeProject.title}
+                        />
+                      );
+                    } else if (parsed.type === 'video') {
+                      return (
+                        <video
+                          src={parsed.embedUrl}
+                          controls
+                          autoPlay
+                          className="w-full h-full object-cover max-h-[500px]"
+                        />
+                      );
+                    } else {
+                      return (
+                        <div className="relative w-full h-full flex items-center justify-center bg-black">
+                          <img
+                            src={projectImg}
+                            alt={activeProject.title}
+                            className="w-full h-full object-cover max-h-[500px]"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent pointer-events-none" />
+                        </div>
+                      );
+                    }
+                  })()}
+
+                  {/* Right Arrow Button */}
+                  <button
+                    type="button"
+                    onClick={handleNextProject}
+                    className="absolute right-0 top-1/2 -translate-y-1/2 w-8 sm:w-10 h-12 sm:h-14 bg-black/60 hover:bg-black/90 text-white/80 hover:text-white flex items-center justify-center rounded-l transition-colors z-20 text-base"
+                    aria-label="Next"
+                  >
+                    ›
+                  </button>
                 </div>
 
-                <h3 className="text-lg sm:text-xl font-bold text-white tracking-tight leading-snug">
-                  {activeMediaProject.title}
-                </h3>
+                {/* Right Column: Information, Metadata Table & Action Button */}
+                <div className="lg:col-span-5 xl:col-span-4 bg-[#141519] p-5 sm:p-6 flex flex-col justify-between overflow-y-auto space-y-4">
+                  <div>
+                    {/* Project Title */}
+                    <h3 className="text-lg sm:text-xl font-extrabold text-white tracking-tight uppercase leading-snug mb-3">
+                      {activeProject.title}
+                    </h3>
 
-                <div className="text-xs sm:text-sm font-semibold text-[#38bdf8]">
-                  {activeMediaProject.category || 'Portfolio Showcase'}
-                </div>
+                    {/* Description */}
+                    <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-normal mb-4 text-wrap-pretty">
+                      {activeProject.description}
+                    </p>
 
-                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed text-left text-wrap-pretty font-normal pt-1">
-                  {activeMediaProject.description}
-                </p>
+                    {/* Tags */}
+                    {activeProject.tags && activeProject.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 mb-5">
+                        {activeProject.tags.map((t: string) => (
+                          <span
+                            key={t}
+                            className="px-2 py-0.5 rounded bg-white/[0.05] border border-white/10 text-slate-300 text-[10px] font-mono uppercase tracking-wider"
+                          >
+                            {t}
+                          </span>
+                        ))}
+                      </div>
+                    )}
 
-                {activeMediaProject.tags && activeMediaProject.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5 pt-2">
-                    {activeMediaProject.tags.map((t: string) => (
-                      <span
-                        key={t}
-                        className="px-2.5 py-0.5 rounded-md text-[11px] font-medium bg-white/[0.04] border border-white/10 text-slate-300"
-                      >
-                        {t}
-                      </span>
-                    ))}
+                    {/* Metadata Key-Value Table (Matching Image 1) */}
+                    <div className="border-t border-b border-white/10 divide-y divide-white/[0.07] text-[11px] font-mono">
+                      <div className="py-2 flex items-center justify-between">
+                        <span className="text-slate-400 uppercase tracking-wider">Kategori</span>
+                        <span className="text-white font-semibold text-right">{activeProject.category || 'Videografi'}</span>
+                      </div>
+                      <div className="py-2 flex items-center justify-between">
+                        <span className="text-slate-400 uppercase tracking-wider">Sub-Bidang</span>
+                        <span className="text-[#f59e0b] font-semibold text-right">{activeProject.subField || 'Reels'}</span>
+                      </div>
+                      <div className="py-2 flex items-center justify-between">
+                        <span className="text-slate-400 uppercase tracking-wider">Sorotan</span>
+                        <span className="text-[#f59e0b] font-semibold text-right">{activeProject.highlight || activeProject.category || 'Reels'}</span>
+                      </div>
+                      <div className="py-2 flex items-center justify-between">
+                        <span className="text-slate-400 uppercase tracking-wider">Instansi / Klien</span>
+                        <span className="text-white font-semibold text-right">{activeProject.client || 'KzN Visuals'}</span>
+                      </div>
+                      <div className="py-2 flex items-center justify-between">
+                        <span className="text-slate-400 uppercase tracking-wider">Tahun Karya</span>
+                        <span className="text-white font-semibold text-right">{activeProject.year || '2026'}</span>
+                      </div>
+                    </div>
                   </div>
-                )}
 
-                {activeMediaProject.link && (
-                  <div className="pt-3 border-t border-white/8 mt-3 flex items-center justify-between">
+                  {/* Bottom CTA Button (Matching Image 1) */}
+                  <div className="pt-2">
                     <a
                       href={parsed.originalUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-400 hover:text-blue-300 transition-colors"
+                      className="w-full py-2.5 px-4 rounded bg-[#d97706] hover:bg-[#b45309] text-white font-bold text-xs uppercase tracking-wider font-mono flex items-center justify-center gap-2 shadow-lg transition-colors"
                     >
-                      <span>{ctaText}</span>
-                      <span>↗</span>
+                      <span>↗ LIHAT POSTINGAN DI INSTAGRAM</span>
                     </a>
-                    <button
-                      type="button"
-                      onClick={() => setActiveMediaProject(null)}
-                      className="text-xs text-slate-400 hover:text-white transition-colors"
-                    >
-                      Tutup
-                    </button>
                   </div>
-                )}
+                </div>
               </div>
             </div>
           </div>
         );
       })()}
 
-      {/* ── MINIMALIST MODAL: CERTIFICATE (MATCHING USER REFERENCE) ── */}
-      {activeCertificate && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/85 backdrop-blur-md transition-all duration-200"
-          onClick={() => setActiveCertificate(null)}
-        >
+      {/* ── REFERENCE MODAL: CERTIFICATE (MATCHING IMAGE 5) ── */}
+      {activeCertificateIndex !== null && (() => {
+        const activeCert = (config.certificates || [])[activeCertificateIndex];
+        if (!activeCert) return null;
+
+        const certImg = activeCert.image || '/certificates/cert-qris.svg';
+        const total = (config.certificates || []).length;
+
+        return (
           <div
-            className="relative w-full max-w-lg bg-[#0e1424] border border-white/12 rounded-2xl shadow-2xl overflow-hidden flex flex-col"
-            onClick={(e) => e.stopPropagation()}
+            className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 bg-black/85 backdrop-blur-md transition-all duration-200"
+            onClick={() => setActiveCertificateIndex(null)}
           >
-            {/* Certificate Preview Stage */}
-            <div className="relative w-full aspect-[16/10] bg-[#f8fafc] overflow-hidden border-b border-white/10">
-              <img
-                src={activeCertificate.image || '/certificates/cert-qris.svg'}
-                alt={activeCertificate.title}
-                className="w-full h-full object-contain p-2"
-              />
-              <button
-                type="button"
-                onClick={() => setActiveCertificate(null)}
-                className="absolute top-3 right-3 w-7 h-7 rounded-full bg-black/70 hover:bg-black text-white/90 hover:text-white flex items-center justify-center text-xs font-bold transition-all border border-white/15 z-20 shadow-md"
-                aria-label="Tutup"
-              >
-                ✕
-              </button>
-            </div>
-
-            {/* Minimalist Info Body */}
-            <div className="p-5 sm:p-6 space-y-2.5">
-              <div className="flex items-center gap-1.5 text-xs text-slate-400 font-medium">
-                <span className="text-pink-400">🎗</span>
-                <span>{activeCertificate.period || '2024'}</span>
-              </div>
-
-              <h3 className="text-lg sm:text-xl font-bold text-white tracking-tight leading-snug">
-                {activeCertificate.title}
-              </h3>
-
-              <div className="text-xs sm:text-sm font-semibold text-[#38bdf8]">
-                {activeCertificate.issuer}
-              </div>
-
-              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed text-left text-wrap-pretty font-normal pt-1">
-                {activeCertificate.description}
-              </p>
-
-              {activeCertificate.tags && activeCertificate.tags.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 pt-2">
-                  {activeCertificate.tags.map((t: string) => (
-                    <span
-                      key={t}
-                      className="px-2.5 py-0.5 rounded-md text-[11px] font-medium bg-white/[0.04] border border-white/10 text-slate-300"
-                    >
-                      {t}
-                    </span>
-                  ))}
+            <div
+              className="relative w-full max-w-5xl max-h-[92vh] bg-[#121316] border border-white/12 rounded-xl sm:rounded-2xl shadow-[0_25px_80px_rgba(0,0,0,0.95)] overflow-hidden flex flex-col"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Top Navigation Bar (Matching Image 5) */}
+              <div className="px-4 sm:px-6 py-2.5 sm:py-3 bg-[#18191d] border-b border-white/10 flex items-center justify-between gap-3 shrink-0">
+                {/* Left Badge & Meta */}
+                <div className="flex items-center gap-2.5">
+                  <span className="px-2.5 py-0.5 rounded-sm bg-[#eab308] text-black font-extrabold text-[11px] uppercase tracking-wider font-mono">
+                    {activeCert.badge || '🏆 LOMBA'}
+                  </span>
+                  <span className="text-xs text-white/70 font-mono tracking-wide hidden sm:inline">
+                    {activeCert.period || '2026'}
+                  </span>
                 </div>
-              )}
 
-              <div className="pt-3 border-t border-white/8 mt-3 flex items-center justify-end">
-                <button
-                  type="button"
-                  onClick={() => setActiveCertificate(null)}
-                  className="px-4 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-semibold transition-all"
-                >
-                  Tutup
-                </button>
+                {/* Right Controls (Matching Image 5) */}
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <button
+                    type="button"
+                    onClick={handlePrevCert}
+                    className="px-2 sm:px-2.5 py-1 rounded bg-white/[0.06] hover:bg-white/[0.12] text-white/80 hover:text-white border border-white/15 text-[10px] sm:text-[11px] font-mono tracking-wider transition-colors flex items-center gap-1"
+                    title="Sertifikat Sebelumnya (Panah Kiri)"
+                  >
+                    <span>|◀</span>
+                    <span className="hidden sm:inline">SERTIF SEB.</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleNextCert}
+                    className="px-2 sm:px-2.5 py-1 rounded bg-white/[0.06] hover:bg-white/[0.12] text-white/80 hover:text-white border border-white/15 text-[10px] sm:text-[11px] font-mono tracking-wider transition-colors flex items-center gap-1"
+                    title="Sertifikat Berikutnya (Panah Kanan)"
+                  >
+                    <span className="hidden sm:inline">SERTIF BER.</span>
+                    <span>▶|</span>
+                  </button>
+                  <a
+                    href={certImg}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-2 sm:px-2.5 py-1 rounded bg-white/[0.06] hover:bg-white/[0.12] text-white/80 hover:text-white border border-white/15 text-[10px] sm:text-[11px] font-mono tracking-wider transition-colors flex items-center gap-1"
+                  >
+                    <span>🔍</span>
+                    <span className="hidden sm:inline">PERBESAR</span>
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => setActiveCertificateIndex(null)}
+                    className="px-2.5 py-1 rounded bg-white/[0.08] hover:bg-rose-500/20 hover:text-rose-300 hover:border-rose-500/40 text-white/90 border border-white/15 text-[10px] sm:text-[11px] font-mono tracking-wider transition-colors"
+                  >
+                    TUTUP ✕
+                  </button>
+                </div>
+              </div>
+
+              {/* Content Area: Split 2 Columns */}
+              <div className="overflow-y-auto flex-1 grid grid-cols-1 lg:grid-cols-12">
+                {/* Left Column: Certificate Document Display with In-Media Arrows */}
+                <div className="lg:col-span-7 xl:col-span-8 bg-[#0a0c10] relative flex items-center justify-center p-3 sm:p-5 border-b lg:border-b-0 lg:border-r border-white/10 group">
+                  {/* Left Arrow Button */}
+                  <button
+                    type="button"
+                    onClick={handlePrevCert}
+                    className="absolute left-0 top-1/2 -translate-y-1/2 w-8 sm:w-10 h-12 sm:h-14 bg-black/60 hover:bg-black/90 text-white/80 hover:text-white flex items-center justify-center rounded-r transition-colors z-20 text-base"
+                    aria-label="Previous"
+                  >
+                    ‹
+                  </button>
+
+                  {/* Certificate Image Frame */}
+                  <div className="w-full h-full flex items-center justify-center max-h-[500px]">
+                    <img
+                      src={certImg}
+                      alt={activeCert.title}
+                      className="max-w-full max-h-[460px] object-contain rounded-lg shadow-2xl"
+                    />
+                  </div>
+
+                  {/* Right Arrow Button */}
+                  <button
+                    type="button"
+                    onClick={handleNextCert}
+                    className="absolute right-0 top-1/2 -translate-y-1/2 w-8 sm:w-10 h-12 sm:h-14 bg-black/60 hover:bg-black/90 text-white/80 hover:text-white flex items-center justify-center rounded-l transition-colors z-20 text-base"
+                    aria-label="Next"
+                  >
+                    ›
+                  </button>
+                </div>
+
+                {/* Right Column: Metadata & Details */}
+                <div className="lg:col-span-5 xl:col-span-4 bg-[#141519] p-5 sm:p-6 flex flex-col justify-between overflow-y-auto space-y-4">
+                  <div>
+                    {/* Certificate Title */}
+                    <h3 className="text-lg sm:text-xl font-extrabold text-white tracking-tight uppercase leading-snug mb-3">
+                      {activeCert.title}
+                    </h3>
+
+                    {/* Description */}
+                    <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-normal mb-4 text-wrap-pretty">
+                      {activeCert.description}
+                    </p>
+
+                    {/* Tags */}
+                    {activeCert.tags && activeCert.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 mb-5">
+                        {activeCert.tags.map((t: string) => (
+                          <span
+                            key={t}
+                            className="px-2 py-0.5 rounded bg-white/[0.05] border border-white/10 text-slate-300 text-[10px] font-mono uppercase tracking-wider"
+                          >
+                            {t}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Metadata Key-Value Table (Matching Image 5) */}
+                    <div className="border-t border-b border-white/10 divide-y divide-white/[0.07] text-[11px] font-mono">
+                      <div className="py-2 flex items-center justify-between">
+                        <span className="text-slate-400 uppercase tracking-wider">Kategori</span>
+                        <span className="text-white font-semibold text-right">{activeCert.category || 'Lomba'}</span>
+                      </div>
+                      <div className="py-2 flex items-center justify-between">
+                        <span className="text-slate-400 uppercase tracking-wider">Jumlah Slide</span>
+                        <span className="text-white font-semibold text-right">{activeCert.slides || '1 Halaman'}</span>
+                      </div>
+                      <div className="py-2 flex items-center justify-between">
+                        <span className="text-slate-400 uppercase tracking-wider">Penerbit</span>
+                        <span className="text-white font-semibold text-right max-w-[180px] truncate">{activeCert.issuer}</span>
+                      </div>
+                      <div className="py-2 flex items-center justify-between">
+                        <span className="text-slate-400 uppercase tracking-wider">Tahun / Masa Berlaku</span>
+                        <span className="text-white font-semibold text-right">{activeCert.period || '2026'}</span>
+                      </div>
+                      <div className="py-2 flex items-center justify-between">
+                        <span className="text-slate-400 uppercase tracking-wider">No. / Keterangan</span>
+                        <span className="text-white font-semibold text-right">{activeCert.keterangan || activeCert.tag || 'Juara 1 Content Reels'}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Bottom CTA Button */}
+                  <div className="pt-2">
+                    <a
+                      href={certImg}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full py-2.5 px-4 rounded bg-[#d97706] hover:bg-[#b45309] text-white font-bold text-xs uppercase tracking-wider font-mono flex items-center justify-center gap-2 shadow-lg transition-colors"
+                    >
+                      <span>↗ BUKA DOKUMEN ASLI</span>
+                    </a>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* ── FOOTER ── */}
       <footer>

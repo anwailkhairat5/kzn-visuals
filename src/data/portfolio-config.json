@@ -137,7 +137,12 @@
         "Premiere Pro"
       ],
       "link": "https://www.instagram.com/kzn.visuals",
-      "mediaType": "instagram"
+      "mediaType": "instagram",
+      "badge": "VIDEOGRAFI",
+      "subField": "Company Profile & Reels",
+      "highlight": "VFX & 3D Logo",
+      "client": "Castrol & YPTI (Unicam Studio)",
+      "year": "2025 – 2026"
     },
     {
       "id": "proj-2",
@@ -153,7 +158,12 @@
         "Directing"
       ],
       "link": "https://www.instagram.com/kzn.visuals",
-      "mediaType": "instagram"
+      "mediaType": "instagram",
+      "badge": "FILM PENDEK",
+      "subField": "Sinematografi",
+      "highlight": "Juara 1 KIP Aceh",
+      "client": "KIP Aceh",
+      "year": "2024"
     },
     {
       "id": "proj-3",
@@ -169,13 +179,18 @@
         "Color Grading"
       ],
       "link": "https://www.instagram.com/kzn.visuals",
-      "mediaType": "instagram"
+      "mediaType": "instagram",
+      "badge": "MOTION",
+      "subField": "Reels & AI Workflow",
+      "highlight": "Juara 1 Bank Indonesia",
+      "client": "Bank Indonesia",
+      "year": "2024"
     },
     {
       "id": "proj-4",
       "title": "Ezran Core & KzN Visual Showcase",
       "category": "Videografi & Branding",
-      "image": "https://images.unsplash.com/photo-1536240478700-b869070f9279?w=900&q=80&auto=format&fit=crop",
+      "image": "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=800&q=80&auto=format&fit=crop",
       "accent": "#a855f7",
       "description": "Koleksi karya videografi dan fotografi komersial untuk kebutuhan branding media sosial klien, menekankan tampilan modern, estetika visual tinggi, color tone berkarakter, dan komposisi frame modern yang siap memikat audiens.",
       "tags": [
@@ -185,7 +200,12 @@
         "Fotografi"
       ],
       "link": "https://www.instagram.com/kzn.visuals",
-      "mediaType": "instagram"
+      "mediaType": "instagram",
+      "badge": "BRANDING",
+      "subField": "Showcase Komersial",
+      "highlight": "Social Media Visuals",
+      "client": "Ezran Core & KzN Visuals",
+      "year": "2023 – 2026"
     }
   ],
   "experience": [
@@ -237,7 +257,11 @@
         "QRIS",
         "Video Reels",
         "Juara 1"
-      ]
+      ],
+      "badge": "🏆 LOMBA",
+      "category": "Lomba",
+      "slides": "1 Halaman",
+      "keterangan": "Juara 1 Video Reels QRIS"
     },
     {
       "id": "award-2",
@@ -253,7 +277,11 @@
         "Internasional",
         "IQRA USK",
         "Video Reels"
-      ]
+      ],
+      "badge": "🌍 INTERNASIONAL",
+      "category": "Internasional",
+      "slides": "1 Halaman",
+      "keterangan": "Juara 2 Video Reels Internasional"
     },
     {
       "id": "award-3",
@@ -269,7 +297,11 @@
         "Nasional",
         "Video Favorit",
         "Inspiratif"
-      ]
+      ],
+      "badge": "⭐ FAVORIT",
+      "category": "Kompetisi Nasional",
+      "slides": "1 Halaman",
+      "keterangan": "Karya: Aku dan Mimpiku"
     },
     {
       "id": "award-4",
@@ -285,7 +317,11 @@
         "Milenial",
         "Juara 1",
         "Kreatif"
-      ]
+      ],
+      "badge": "🏆 LOMBA",
+      "category": "Lomba Kreatif",
+      "slides": "1 Halaman",
+      "keterangan": "Juara 1 Kreativitas Milenial"
     },
     {
       "id": "award-5",
@@ -301,7 +337,11 @@
         "Film Pendek",
         "Sinematografi",
         "Juara 1"
-      ]
+      ],
+      "badge": "🎬 JUARA 1",
+      "category": "Film Festival",
+      "slides": "1 Halaman",
+      "keterangan": "Juara 1 Film Pendek Demokrasi"
     },
     {
       "id": "award-6",
@@ -317,7 +357,11 @@
         "Pase Fest",
         "Budaya",
         "Juara 1"
-      ]
+      ],
+      "badge": "🏆 LOMBA",
+      "category": "Lomba",
+      "slides": "1 Halaman",
+      "keterangan": "Juara 1 Content Reels Pase Fest"
     },
     {
       "id": "award-7",
@@ -333,7 +377,11 @@
         "Duta CBP Rupiah",
         "Content Creator",
         "Juara 1"
-      ]
+      ],
+      "badge": "🏆 DUTA",
+      "category": "Pemilihan Duta",
+      "slides": "1 Halaman",
+      "keterangan": "Duta Content Creator CBP Rupiah"
     },
     {
       "id": "award-8",
@@ -349,7 +397,11 @@
         "Score 400",
         "English Proficiency",
         "Certified"
-      ]
+      ],
+      "badge": "📜 SERTIFIKASI",
+      "category": "Sertifikasi",
+      "slides": "1 Halaman",
+      "keterangan": "Standardized English Score 400"
     }
   ],
   "education": [
