@@ -59,26 +59,41 @@ export default function AdminPage() {
   // Fetch initial config
   useEffect(() => {
     async function loadConfig() {
+      let localCached: any = null;
       try {
-        setLoading(true);
-        // Optimistic local cache first
-        try {
-          const cached = localStorage.getItem('kzn_portfolio_config');
-          if (cached) {
-            setConfig(JSON.parse(cached));
-          }
-        } catch {}
+        const cachedRaw = localStorage.getItem('kzn_portfolio_config');
+        if (cachedRaw) {
+          localCached = JSON.parse(cachedRaw);
+          setConfig(localCached);
+          setLoading(false); // Render immediately with cached edits, no blank screen!
+        }
+      } catch (e) {
+        console.warn('Failed to parse cached config', e);
+      }
 
+      try {
         const res = await fetch(`/api/admin/config?t=${Date.now()}`, { cache: 'no-store' });
         const json = await res.json();
         if (json.success && json.data) {
-          setConfig(json.data);
-          try {
-            localStorage.setItem('kzn_portfolio_config', JSON.stringify(json.data));
-          } catch {}
+          const serverTime = Number(json.data._updatedAt || 0);
+          const localTime = Number(localCached?._updatedAt || 0);
+
+          // Only overwrite if server has equal or newer timestamp
+          if (serverTime >= localTime || !localCached) {
+            setConfig(json.data);
+            try {
+              localStorage.setItem('kzn_portfolio_config', JSON.stringify(json.data));
+            } catch {}
+          } else {
+            console.info('Retaining newer local unsaved edits');
+            setSaveMessage({
+              text: '💡 Perhatian: Ada editan lokal yang belum tersimpan ke Cloud. Klik "Simpan Perubahan" untuk menyinkronkannya.',
+              type: 'error'
+            });
+          }
         }
       } catch (err) {
-        console.error('Failed to load config:', err);
+        console.error('Failed to load config from server:', err);
       } finally {
         setLoading(false);
       }
@@ -114,7 +129,7 @@ export default function AdminPage() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  });
+  }, [config]);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -133,41 +148,66 @@ export default function AdminPage() {
       setSaving(true);
       setSaveMessage(null);
 
-      // Save locally to localStorage for zero-latency instant preview
+      // Stamp updated timestamp
+      const stampedConfig = {
+        ...config,
+        _updatedAt: Date.now()
+      };
+      setConfig(stampedConfig);
+
+      // Save locally to localStorage immediately
       try {
-        localStorage.setItem('kzn_portfolio_config', JSON.stringify(config));
+        localStorage.setItem('kzn_portfolio_config', JSON.stringify(stampedConfig));
       } catch {}
 
       const res = await fetch('/api/admin/config', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(config)
+        body: JSON.stringify(stampedConfig)
       });
       const json = await res.json();
-      if (json.success) {
+      if (json.success && json.synced?.github) {
         setSaveMessage({
-          text: '✓ ' + (json.message || 'Semua perubahan berhasil disimpan & disinkronkan ke Cloud!'),
+          text: '✓ ' + (json.message || 'Semua perubahan berhasil disimpan & disinkronkan permanen ke Cloud (GitHub)!'),
+          type: 'success'
+        });
+      } else if (json.success) {
+        setSaveMessage({
+          text: '✓ ' + (json.message || 'Konfigurasi berhasil disimpan secara lokal!'),
           type: 'success'
         });
       } else {
-        setSaveMessage({ text: `Gagal menyimpan: ${json.error}`, type: 'error' });
+        setSaveMessage({
+          text: `❌ Gagal menyimpan ke Cloud: ${json.error || 'Terjadi kesalahan saat sinkronisasi'}`,
+          type: 'error'
+        });
       }
     } catch (err: any) {
       setSaveMessage({ text: `Terjadi error: ${err.message}`, type: 'error' });
     } finally {
       setSaving(false);
-      setTimeout(() => setSaveMessage(null), 6000);
+      setTimeout(() => setSaveMessage(null), 8000);
     }
   };
 
   const updateConfigValue = (pathStr: string, value: any) => {
-    const parts = pathStr.split('.');
+    const parts = pathStr.replace(/\[(\d+)\]/g, '.$1').split('.');
     setConfig((prev: any) => {
-      const next = { ...prev };
+      const next = Array.isArray(prev) ? [...prev] : { ...(prev || {}) };
       let curr = next;
       for (let i = 0; i < parts.length - 1; i++) {
-        curr[parts[i]] = { ...(curr[parts[i]] || {}) };
-        curr = curr[parts[i]];
+        const key = parts[i];
+        const nextKey = parts[i + 1];
+        const isNextNumeric = !isNaN(Number(nextKey));
+
+        if (Array.isArray(curr[key])) {
+          curr[key] = [...curr[key]];
+        } else if (curr[key] && typeof curr[key] === 'object') {
+          curr[key] = { ...curr[key] };
+        } else {
+          curr[key] = isNextNumeric ? [] : {};
+        }
+        curr = curr[key];
       }
       curr[parts[parts.length - 1]] = value;
       return next;

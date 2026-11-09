@@ -16,16 +16,19 @@ const NO_CACHE_HEADERS = {
 
 export async function GET() {
   try {
-    // 1. If GITHUB_TOKEN is present, fetch the latest live state from GitHub API
+    // 1. If GITHUB_TOKEN is present, fetch the absolute latest live state from GitHub API
     if (GITHUB_TOKEN) {
       try {
         const ghRes = await fetch(
-          `https://api.github.com/repos/${GITHUB_REPO}/contents/src/data/portfolio-config.json?ref=main`,
+          `https://api.github.com/repos/${GITHUB_REPO}/contents/src/data/portfolio-config.json?ref=main&_nocache=${Date.now()}`,
           {
             headers: {
               Authorization: `Bearer ${GITHUB_TOKEN}`,
               Accept: 'application/vnd.github.v3+json',
-              'User-Agent': 'KZN-Visuals-Admin'
+              'User-Agent': 'KZN-Visuals-Admin',
+              'Cache-Control': 'no-cache, no-store, must-revalidate',
+              Pragma: 'no-cache',
+              'If-None-Match': ''
             },
             cache: 'no-store'
           }
@@ -36,10 +39,12 @@ export async function GET() {
             const decoded = Buffer.from(ghData.content, 'base64').toString('utf-8');
             const parsed = JSON.parse(decoded);
             return NextResponse.json(
-              { success: true, data: parsed, source: 'github' },
+              { success: true, data: parsed, source: 'github', sha: ghData.sha },
               { headers: NO_CACHE_HEADERS }
             );
           }
+        } else {
+          console.warn('GitHub API GET contents non-ok status:', ghRes.status);
         }
       } catch (ghErr) {
         console.warn('GitHub API fetch failed, falling back to local file:', ghErr);
@@ -72,79 +77,104 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Timestamp this configuration save
+    updatedConfig._updatedAt = Date.now();
+
     const jsonString = JSON.stringify(updatedConfig, null, 2);
 
-    // 1. Try local filesystem write (works in localhost)
+    // 1. Try local filesystem write (works on localhost development)
     let localSaved = false;
     try {
       await fs.writeFile(configFilePath, jsonString, 'utf-8');
       localSaved = true;
-    } catch (fsErr: any) {
-      console.warn('Local fs.writeFile failed (expected on Vercel):', fsErr.message);
+    } catch {
+      // Expected on Vercel read-only runtime
     }
 
-    // 2. If GITHUB_TOKEN exists, commit directly to GitHub repository!
+    // 2. If GITHUB_TOKEN exists, commit directly to GitHub repository with automatic retry on 409 Conflict
     let githubSaved = false;
     let githubError: string | null = null;
+    let finalSha: string | undefined = undefined;
+
     if (GITHUB_TOKEN) {
-      try {
-        // Fetch current file SHA
-        const getFileRes = await fetch(
-          `https://api.github.com/repos/${GITHUB_REPO}/contents/src/data/portfolio-config.json?ref=main`,
-          {
-            headers: {
-              Authorization: `Bearer ${GITHUB_TOKEN}`,
-              Accept: 'application/vnd.github.v3+json',
-              'User-Agent': 'KZN-Visuals-Admin'
-            },
-            cache: 'no-store'
+      const maxRetries = 3;
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+          // Always fetch current live file SHA directly from GitHub with fresh cache-busting
+          const getFileRes = await fetch(
+            `https://api.github.com/repos/${GITHUB_REPO}/contents/src/data/portfolio-config.json?ref=main&_t=${Date.now()}_${attempt}`,
+            {
+              headers: {
+                Authorization: `Bearer ${GITHUB_TOKEN}`,
+                Accept: 'application/vnd.github.v3+json',
+                'User-Agent': 'KZN-Visuals-Admin',
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                Pragma: 'no-cache',
+                'If-None-Match': ''
+              },
+              cache: 'no-store'
+            }
+          );
+
+          let currentSha: string | undefined;
+          if (getFileRes.ok) {
+            const fileData = await getFileRes.json();
+            currentSha = fileData.sha;
           }
-        );
 
-        let currentSha: string | undefined;
-        if (getFileRes.ok) {
-          const fileData = await getFileRes.json();
-          currentSha = fileData.sha;
-        }
+          const base64Content = Buffer.from(jsonString).toString('base64');
+          const putRes = await fetch(
+            `https://api.github.com/repos/${GITHUB_REPO}/contents/src/data/portfolio-config.json`,
+            {
+              method: 'PUT',
+              headers: {
+                Authorization: `Bearer ${GITHUB_TOKEN}`,
+                Accept: 'application/vnd.github.v3+json',
+                'Content-Type': 'application/json',
+                'User-Agent': 'KZN-Visuals-Admin'
+              },
+              body: JSON.stringify({
+                message: `Admin CMS: Update portfolio configuration (${new Date().toLocaleTimeString('id-ID')})`,
+                content: base64Content,
+                branch: 'main',
+                ...(currentSha ? { sha: currentSha } : {})
+              })
+            }
+          );
 
-        const base64Content = Buffer.from(jsonString).toString('base64');
-        const putRes = await fetch(
-          `https://api.github.com/repos/${GITHUB_REPO}/contents/src/data/portfolio-config.json`,
-          {
-            method: 'PUT',
-            headers: {
-              Authorization: `Bearer ${GITHUB_TOKEN}`,
-              Accept: 'application/vnd.github.v3+json',
-              'Content-Type': 'application/json',
-              'User-Agent': 'KZN-Visuals-Admin'
-            },
-            body: JSON.stringify({
-              message: 'Admin CMS: Update portfolio configuration',
-              content: base64Content,
-              branch: 'main',
-              ...(currentSha ? { sha: currentSha } : {})
-            })
+          if (putRes.ok) {
+            const putData = await putRes.json();
+            githubSaved = true;
+            finalSha = putData.content?.sha;
+            githubError = null;
+            break; // Success!
+          } else {
+            const errBody = await putRes.text();
+            githubError = `GitHub HTTP ${putRes.status}: ${errBody}`;
+            console.warn(`GitHub commit attempt ${attempt} failed: ${putRes.status}`, errBody);
+
+            if (putRes.status === 409 && attempt < maxRetries) {
+              // SHA mismatch / concurrent commit, wait 350ms and retry
+              await new Promise((r) => setTimeout(r, 350 * attempt));
+              continue;
+            }
           }
-        );
-
-        if (putRes.ok) {
-          githubSaved = true;
-        } else {
-          const errBody = await putRes.text();
-          githubError = `GitHub HTTP ${putRes.status}: ${errBody}`;
-          console.error('GitHub API commit error:', putRes.status, errBody);
+        } catch (ghErr: any) {
+          githubError = ghErr.message;
+          console.error(`GitHub commit attempt ${attempt} network error:`, ghErr);
+          if (attempt < maxRetries) {
+            await new Promise((r) => setTimeout(r, 350 * attempt));
+          }
         }
-      } catch (ghErr: any) {
-        githubError = ghErr.message;
-        console.error('Failed to commit config to GitHub:', ghErr);
       }
     }
 
     if (githubSaved) {
       return NextResponse.json({
         success: true,
-        message: 'Konfigurasi berhasil disimpan dan disinkronkan ke Cloud (GitHub)!',
+        message: 'Konfigurasi berhasil disimpan dan disinkronkan permanen ke Cloud (GitHub)!',
         data: updatedConfig,
+        sha: finalSha,
         synced: { github: true, local: localSaved }
       }, { headers: NO_CACHE_HEADERS });
     }
@@ -152,20 +182,19 @@ export async function POST(req: NextRequest) {
     if (localSaved) {
       return NextResponse.json({
         success: true,
-        message: 'Konfigurasi berhasil disimpan secara lokal!' + (githubError ? ` (Cloud sync pending: ${githubError})` : ''),
+        message: 'Konfigurasi berhasil disimpan di disk lokal!' + (githubError ? ` (Peringatan Cloud: ${githubError})` : ''),
         data: updatedConfig,
         synced: { github: false, local: true }
       }, { headers: NO_CACHE_HEADERS });
     }
 
-    // Client-side cache fallback
+    // If both failed (e.g. running on Vercel without a working GitHub token):
     return NextResponse.json({
-      success: true,
-      message: 'Konfigurasi disimpan di sesi ini (browser cache aktif).',
+      success: false,
+      error: `Gagal menyimpan ke Cloud (GitHub): ${githubError || 'Token GitHub tidak valid atau tidak memiliki izin repo'}. Perubahan tidak tersimpan di server!`,
       data: updatedConfig,
-      warning: githubError || 'Cloud token belum terhubung.',
       synced: { github: false, local: false }
-    }, { headers: NO_CACHE_HEADERS });
+    }, { status: 500, headers: NO_CACHE_HEADERS });
   } catch (error: any) {
     console.error('Error writing config file:', error);
     return NextResponse.json(

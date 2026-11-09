@@ -70,26 +70,38 @@ export default function Home() {
 
     window.addEventListener('resize', checkMobile);
 
-    // Instant local cache check for administrator view
+    // Detect if page is running inside Admin Live Preview iframe
+    const isInsideIframe = typeof window !== 'undefined' && window.self !== window.top;
+    let localTime = 0;
+
+    // Instant local cache check for fast rendering
     try {
       const cached = localStorage.getItem('kzn_portfolio_config');
       if (cached) {
-        setConfig(JSON.parse(cached));
+        const parsed = JSON.parse(cached);
+        setConfig(parsed);
+        localTime = Number(parsed._updatedAt || 0);
       }
     } catch {}
 
-    // Fetch live config from cloud/admin with cache-busting
-    fetch('/api/admin/config?t=' + Date.now(), { cache: 'no-store' })
-      .then((res) => res.json())
-      .then((json) => {
-        if (json.success && json.data) {
-          setConfig(json.data);
-          try {
-            localStorage.setItem('kzn_portfolio_config', JSON.stringify(json.data));
-          } catch {}
-        }
-      })
-      .catch(() => {});
+    // When running inside Admin preview iframe, DO NOT fetch or overwrite localStorage!
+    // The admin editor streams changes directly via postMessage.
+    if (!isInsideIframe) {
+      fetch('/api/admin/config?t=' + Date.now(), { cache: 'no-store' })
+        .then((res) => res.json())
+        .then((json) => {
+          if (json.success && json.data) {
+            const serverTime = Number(json.data._updatedAt || 0);
+            if (serverTime >= localTime) {
+              setConfig(json.data);
+              try {
+                localStorage.setItem('kzn_portfolio_config', JSON.stringify(json.data));
+              } catch {}
+            }
+          }
+        })
+        .catch(() => {});
+    }
 
     // Listen for real-time config updates from Admin preview
     const handleMessage = (event: MessageEvent) => {
