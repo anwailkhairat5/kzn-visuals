@@ -189,8 +189,12 @@ export default function Home() {
       {/* ── NAVIGATION ── */}
       <nav className="site-nav" aria-label="Menu utama">
         <div className="wrap">
-          <a className="logo" href="#home">
-            {config.general?.brandLogo || 'Anwail Khairat'}<i>.</i>
+          <a className="logo flex items-center gap-2.5 transition-transform hover:scale-105" href="#home" title="KzN Visuals — Anwail Khairat">
+            <img
+              src="/logo.png"
+              alt="KzN Visuals"
+              className="h-8 md:h-10 w-auto max-w-[160px] md:max-w-[190px] object-contain drop-shadow-[0_2px_14px_rgba(24,211,255,0.45)]"
+            />
           </a>
 
           {/* ── GOOEY SVG LIQUID PILL NAVIGATION ── */}
@@ -643,8 +647,9 @@ export default function Home() {
         </section>
       </main>
 
-      {/* ── COMPACT ELEGANT MODAL: CREATIVE PROJECT (BLUE/CYAN THEME & FADE ANIMATION) ── */}
+      {/* ── SPACIOUS LUXURY MODAL: CREATIVE PROJECT (GENEROUS PADDING, DIRECT PLAYER & CLEAR FOOTER) ── */}
       {activeProjectIndex !== null && (() => {
+        const totalProjects = (config.projects || []).length;
         const activeProject = (config.projects || [])[activeProjectIndex];
         if (!activeProject) return null;
 
@@ -659,15 +664,61 @@ export default function Home() {
 
         return (
           <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md modal-backdrop-enter"
+            className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 md:p-8 bg-black/85 backdrop-blur-md modal-backdrop-enter"
             onClick={() => setActiveProjectIndex(null)}
           >
             <div
-              className="relative w-full max-w-md sm:max-w-lg max-h-[90vh] bg-[#0c101d] border border-white/12 rounded-2xl sm:rounded-3xl shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9)] overflow-hidden flex flex-col modal-fade-enter"
+              className="relative w-full max-w-2xl sm:max-w-3xl lg:max-w-4xl max-h-[92vh] bg-[#090d1a] border border-white/15 rounded-3xl shadow-[0_30px_90px_-15px_rgba(0,0,0,0.95)] overflow-hidden flex flex-col modal-fade-enter"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Media Preview Stage */}
-              <div className="relative w-full aspect-video bg-black shrink-0 overflow-hidden border-b border-white/10">
+              {/* Top Navigation & Status Bar */}
+              <div className="shrink-0 px-5 sm:px-7 py-3.5 bg-[#060813] border-b border-white/10 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5 flex-wrap">
+                  <span className="px-3 py-1 rounded-full text-[11px] font-bold tracking-wide uppercase bg-[#18d3ff]/15 text-[#18d3ff] border border-[#18d3ff]/30">
+                    {activeProject.category || 'Creative Video'}
+                  </span>
+                  <span className="flex items-center gap-1 text-xs font-semibold text-pink-400">
+                    <span>🎗</span>
+                    <span>{activeProject.year || activeProject.badge || '2025 - 2026'}</span>
+                  </span>
+                  <span className="text-xs text-white/30 hidden sm:inline">•</span>
+                  <span className="text-xs font-medium text-white/50 hidden sm:inline">
+                    Karya {activeProjectIndex + 1} dari {totalProjects}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handlePrevProject}
+                    className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/15 text-white/80 hover:text-white flex items-center justify-center text-xs font-bold transition-all border border-white/10"
+                    title="Karya Sebelumnya"
+                    aria-label="Karya Sebelumnya"
+                  >
+                    ←
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleNextProject}
+                    className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/15 text-white/80 hover:text-white flex items-center justify-center text-xs font-bold transition-all border border-white/10"
+                    title="Karya Selanjutnya"
+                    aria-label="Karya Selanjutnya"
+                  >
+                    →
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveProjectIndex(null)}
+                    className="w-8 h-8 rounded-full bg-white/10 hover:bg-rose-500/20 hover:text-rose-400 text-white/90 flex items-center justify-center text-xs font-bold transition-all border border-white/15 ml-1"
+                    aria-label="Tutup"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+
+              {/* Direct Playable Media Viewer Stage */}
+              <div className="relative w-full aspect-video max-h-[440px] bg-black shrink-0 overflow-hidden flex items-center justify-center border-b border-white/10">
                 {(() => {
                   if (parsed.type === 'gdrive') {
                     return (
@@ -694,82 +745,103 @@ export default function Home() {
                         src={parsed.embedUrl}
                         controls
                         autoPlay
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-contain"
                       />
+                    );
+                  } else if (parsed.type === 'instagram') {
+                    return (
+                      <div className="w-full h-full flex flex-col items-center justify-center relative bg-gradient-to-b from-[#100e20] to-black">
+                        <iframe
+                          src={parsed.embedUrl}
+                          className="w-full max-w-[420px] h-full border-0 rounded-xl"
+                          allowTransparency={true}
+                          scrolling="no"
+                          title={activeProject.title}
+                        />
+                        <div className="absolute bottom-3 right-3 z-10">
+                          <a
+                            href={parsed.originalUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-3.5 py-1.5 rounded-lg bg-black/85 hover:bg-black text-pink-400 border border-pink-500/30 text-xs font-semibold backdrop-blur-md transition-all flex items-center gap-1.5 shadow-lg"
+                          >
+                            <span>Buka di App Instagram</span>
+                            <span>↗</span>
+                          </a>
+                        </div>
+                      </div>
                     );
                   } else {
                     return (
-                      <div className="relative w-full h-full">
+                      <div className="relative w-full h-full flex items-center justify-center">
                         <img
                           src={projectImg}
                           alt={activeProject.title}
                           className="w-full h-full object-cover"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#0c101d] via-transparent to-transparent opacity-60" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#090d1a] via-transparent to-transparent opacity-50" />
                       </div>
                     );
                   }
                 })()}
-
-                {/* Close Button at Top Right Corner */}
-                <button
-                  type="button"
-                  onClick={() => setActiveProjectIndex(null)}
-                  className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/60 hover:bg-black/90 text-white/90 hover:text-white flex items-center justify-center text-xs font-bold transition-all border border-white/15 z-20 shadow-md backdrop-blur-md"
-                  aria-label="Tutup"
-                >
-                  ✕
-                </button>
               </div>
 
-              {/* Information Body (Matching Image 1 Professional Typography) */}
-              <div className="p-5 sm:p-6 space-y-3 overflow-y-auto font-sans">
-                {/* Year / Ribbon Tag */}
-                <div className="flex items-center gap-1.5 text-xs font-medium text-pink-400">
-                  <span>🎗</span>
-                  <span>{activeProject.year || activeProject.badge || '2025'}</span>
+              {/* Information Body (Comfortable Editorial Spacing) */}
+              <div className="p-6 sm:p-8 space-y-4 overflow-y-auto font-sans flex-1">
+                <div className="space-y-1.5">
+                  <h3 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight leading-snug">
+                    {activeProject.title}
+                  </h3>
+                  <div className="text-sm sm:text-base font-semibold text-[#18d3ff] tracking-normal flex items-center gap-2">
+                    <span>🏢 {activeProject.client || activeProject.category}</span>
+                  </div>
                 </div>
 
-                {/* Project Title */}
-                <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight leading-snug">
-                  {activeProject.title}
-                </h3>
-
-                {/* Client / Organization in Signature Cyan */}
-                <div className="text-sm font-semibold text-[#18d3ff] tracking-normal">
-                  {activeProject.client || activeProject.category}
-                </div>
-
-                {/* Description */}
-                <p className="text-sm text-slate-300 leading-relaxed font-normal pt-0.5 text-wrap-pretty">
+                <p className="text-sm sm:text-base text-slate-200 leading-relaxed font-normal pt-1 text-wrap-pretty">
                   {activeProject.description}
                 </p>
 
-                {/* Software / Skills Tags */}
                 {activeProject.tags && activeProject.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-2 pt-1.5">
+                  <div className="flex flex-wrap gap-2 pt-2">
                     {activeProject.tags.map((t: string) => (
                       <span
                         key={t}
-                        className="px-3 py-1 rounded-full text-xs font-medium bg-white/[0.04] border border-white/10 text-slate-300"
+                        className="px-3.5 py-1.5 rounded-xl text-xs font-medium bg-white/[0.05] border border-white/10 text-slate-200"
                       >
                         {t}
                       </span>
                     ))}
                   </div>
                 )}
+              </div>
 
-                {/* Blue / Cyan Action Footer Button */}
-                <div className="pt-4 border-t border-white/8 mt-4 flex items-center justify-between gap-3">
-                  <a
-                    href={parsed.originalUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 shadow-lg shadow-blue-500/25"
+              {/* Dedicated Fixed Bottom Action Footer Bar (Zero Cutoff, Guaranteed Clearance) */}
+              <div className="shrink-0 bg-[#060813] border-t border-white/10 px-6 sm:px-8 py-4 flex flex-wrap items-center justify-between gap-3 rounded-b-3xl">
+                <a
+                  href={parsed.originalUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 via-[#2f77ff] to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white text-xs sm:text-sm font-bold transition-all flex items-center gap-2 shadow-lg shadow-blue-500/30 hover:shadow-cyan-500/40 hover:scale-[1.02]"
+                >
+                  <span>{ctaText}</span>
+                  <span>↗</span>
+                </a>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handlePrevProject}
+                    className="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold text-white/70 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-colors"
                   >
-                    <span>{ctaText}</span>
-                    <span>↗</span>
-                  </a>
+                    ← Sebelumnya
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleNextProject}
+                    className="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold text-white/70 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-colors"
+                  >
+                    Selanjutnya →
+                  </button>
                   <button
                     type="button"
                     onClick={() => setActiveProjectIndex(null)}
@@ -784,8 +856,9 @@ export default function Home() {
         );
       })()}
 
-      {/* ── COMPACT ELEGANT MODAL: CERTIFICATE (MATCHING IMAGE 1 EXACTLY) ── */}
+      {/* ── SPACIOUS LUXURY MODAL: CERTIFICATE (GENEROUS MATTE FRAME & NO CLIPPING) ── */}
       {activeCertificateIndex !== null && (() => {
+        const totalCerts = (config.certificates || [])[activeCertificateIndex];
         const activeCert = (config.certificates || [])[activeCertificateIndex];
         if (!activeCert) return null;
 
@@ -793,80 +866,121 @@ export default function Home() {
 
         return (
           <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md modal-backdrop-enter"
+            className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 md:p-8 bg-black/85 backdrop-blur-md modal-backdrop-enter"
             onClick={() => setActiveCertificateIndex(null)}
           >
             <div
-              className="relative w-full max-w-md sm:max-w-lg max-h-[90vh] bg-[#0c101d] border border-white/12 rounded-2xl sm:rounded-3xl shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9)] overflow-hidden flex flex-col modal-fade-enter"
+              className="relative w-full max-w-2xl sm:max-w-3xl lg:max-w-4xl max-h-[92vh] bg-[#090d1a] border border-white/15 rounded-3xl shadow-[0_30px_90px_-15px_rgba(0,0,0,0.95)] overflow-hidden flex flex-col modal-fade-enter"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Certificate Preview Stage (Clean Document Frame with Close Button) */}
-              <div className="relative w-full aspect-[4/3] sm:aspect-[16/11] bg-[#f8fafc] overflow-hidden flex items-center justify-center p-3 sm:p-4 border-b border-white/10 shrink-0">
+              {/* Top Navigation & Status Bar */}
+              <div className="shrink-0 px-5 sm:px-7 py-3.5 bg-[#060813] border-b border-white/10 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5 flex-wrap">
+                  <span className="flex items-center gap-1.5 text-xs font-semibold text-pink-400">
+                    <span>🎗</span>
+                    <span>Tahun {activeCert.period || '2026'}</span>
+                  </span>
+                  <span className="text-xs text-white/30 hidden sm:inline">•</span>
+                  <span className="text-xs font-medium text-white/50 hidden sm:inline">
+                    Sertifikat {activeCertificateIndex + 1} dari {(config.certificates || []).length}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handlePrevCert}
+                    className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/15 text-white/80 hover:text-white flex items-center justify-center text-xs font-bold transition-all border border-white/10"
+                    title="Sertifikat Sebelumnya"
+                    aria-label="Sertifikat Sebelumnya"
+                  >
+                    ←
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleNextCert}
+                    className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/15 text-white/80 hover:text-white flex items-center justify-center text-xs font-bold transition-all border border-white/10"
+                    title="Sertifikat Selanjutnya"
+                    aria-label="Sertifikat Selanjutnya"
+                  >
+                    →
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveCertificateIndex(null)}
+                    className="w-8 h-8 rounded-full bg-white/10 hover:bg-rose-500/20 hover:text-rose-400 text-white/90 flex items-center justify-center text-xs font-bold transition-all border border-white/15 ml-1"
+                    aria-label="Tutup"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+
+              {/* Certificate Document Stage (Elegant Matte Exhibition Frame) */}
+              <div className="relative w-full bg-[#05070e] p-4 sm:p-6 border-b border-white/10 flex items-center justify-center shrink-0">
                 <img
                   src={certImg}
                   alt={activeCert.title}
-                  className="max-w-full max-h-full object-contain rounded-lg shadow-md"
+                  className="max-h-[340px] sm:max-h-[400px] w-auto max-w-full object-contain rounded-xl shadow-[0_15px_40px_rgba(0,0,0,0.8)] border border-white/15 transition-transform hover:scale-[1.01]"
                 />
-
-                {/* Close Button at Top Right Corner */}
-                <button
-                  type="button"
-                  onClick={() => setActiveCertificateIndex(null)}
-                  className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/60 hover:bg-black/90 text-white/90 hover:text-white flex items-center justify-center text-xs font-bold transition-all border border-white/15 z-20 shadow-md backdrop-blur-md"
-                  aria-label="Tutup"
-                >
-                  ✕
-                </button>
               </div>
 
-              {/* Information Body (Matching Image 1 EXACTLY) */}
-              <div className="p-5 sm:p-6 space-y-3 overflow-y-auto font-sans">
-                {/* Ribbon + Year */}
-                <div className="flex items-center gap-1.5 text-xs font-medium text-pink-400">
-                  <span>🎗</span>
-                  <span>{activeCert.period || '2026'}</span>
+              {/* Information Body (Generous Padding & Readable Spacing) */}
+              <div className="p-6 sm:p-8 space-y-3.5 overflow-y-auto font-sans flex-1">
+                <div className="space-y-1">
+                  <h3 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight leading-snug">
+                    {activeCert.title}
+                  </h3>
+                  <div className="text-sm sm:text-base font-semibold text-[#18d3ff] tracking-normal flex items-center gap-1.5">
+                    <span>🏛️ {activeCert.issuer}</span>
+                  </div>
                 </div>
 
-                {/* Certificate Title */}
-                <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight leading-snug">
-                  {activeCert.title}
-                </h3>
-
-                {/* Issuer in Signature Cyan */}
-                <div className="text-sm font-semibold text-[#18d3ff] tracking-normal">
-                  {activeCert.issuer}
-                </div>
-
-                {/* Description */}
-                <p className="text-sm text-slate-300 leading-relaxed font-normal pt-0.5 text-wrap-pretty">
+                <p className="text-sm sm:text-base text-slate-200 leading-relaxed font-normal pt-1 text-wrap-pretty">
                   {activeCert.description}
                 </p>
 
-                {/* Tags */}
                 {activeCert.tags && activeCert.tags.length > 0 && (
                   <div className="flex flex-wrap gap-2 pt-1.5">
                     {activeCert.tags.map((t: string) => (
                       <span
                         key={t}
-                        className="px-3 py-1 rounded-full text-xs font-medium bg-white/[0.04] border border-white/10 text-slate-300"
+                        className="px-3.5 py-1.5 rounded-xl text-xs font-medium bg-white/[0.05] border border-white/10 text-slate-200"
                       >
                         {t}
                       </span>
                     ))}
                   </div>
                 )}
+              </div>
 
-                {/* Blue / Cyan Action Footer Button */}
-                <div className="pt-4 border-t border-white/8 mt-4 flex items-center justify-between gap-3">
-                  <a
-                    href={certImg}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 shadow-lg shadow-blue-500/25"
+              {/* Dedicated Fixed Bottom Action Footer Bar */}
+              <div className="shrink-0 bg-[#060813] border-t border-white/10 px-6 sm:px-8 py-4 flex flex-wrap items-center justify-between gap-3 rounded-b-3xl">
+                <a
+                  href={certImg}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 via-[#2f77ff] to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white text-xs sm:text-sm font-bold transition-all flex items-center gap-2 shadow-lg shadow-blue-500/30 hover:shadow-cyan-500/40 hover:scale-[1.02]"
+                >
+                  <span>Buka Dokumen Asli / Resolusi Penuh</span>
+                  <span>↗</span>
+                </a>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handlePrevCert}
+                    className="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold text-white/70 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-colors"
                   >
-                    <span>Buka Dokumen Asli</span>
-                    <span>↗</span>
-                  </a>
+                    ← Sebelumnya
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleNextCert}
+                    className="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold text-white/70 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-colors"
+                  >
+                    Selanjutnya →
+                  </button>
                   <button
                     type="button"
                     onClick={() => setActiveCertificateIndex(null)}

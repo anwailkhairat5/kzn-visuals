@@ -355,6 +355,40 @@ export default function AdminPage() {
     );
   };
 
+  // Auto-fill project metadata & description from URL
+  const handleAutoFillProjectMedia = async (idx: number, linkUrl: string) => {
+    if (!linkUrl || !linkUrl.trim()) return;
+    try {
+      setSaveMessage({ text: '⏳ Mengambil info otomatis dari link...', type: 'success' });
+      const res = await fetch(`/api/admin/media-info?url=${encodeURIComponent(linkUrl.trim())}`);
+      const json = await res.json();
+      if (json.success) {
+        const updated = [...(config.projects || [])];
+        const current = updated[idx] || {};
+        updated[idx] = {
+          ...current,
+          link: json.originalUrl || linkUrl,
+          mediaType: json.mediaType || current.mediaType,
+          embedUrl: json.embedUrl || current.embedUrl,
+          title: (!current.title || current.title === 'Proyek Baru' || current.title.trim() === '') ? json.title : current.title,
+          category: (!current.category || current.category === '3D Production & Visuals' || current.category.trim() === '') ? json.category : current.category,
+          description: (!current.description || current.description.startsWith('Deskripsi proyek') || current.description.trim() === '') ? json.description : current.description,
+          tags: (current.tags && current.tags.length > 0 && current.tags[0] !== 'Blender 3D') ? current.tags : json.tags,
+          client: current.client || json.client
+        };
+        updateConfigValue('projects', updated);
+        setSaveMessage({
+          text: '✓ Info & deskripsi berhasil diisi otomatis! Klik "Simpan Perubahan" untuk sinkronisasi.',
+          type: 'success'
+        });
+      } else {
+        setSaveMessage({ text: `Gagal auto-fill: ${json.error}`, type: 'error' });
+      }
+    } catch (err: any) {
+      setSaveMessage({ text: 'Gagal auto-fill: ' + err.message, type: 'error' });
+    }
+  };
+
   // Add Project
   const handleAddProject = () => {
     const newProj = {
@@ -2123,15 +2157,26 @@ export default function AdminPage() {
                     </div>
 
                     <div className="md:col-span-2 bg-[#080a12] p-3 rounded-xl border border-white/10 space-y-2">
-                      <div className="flex items-center justify-between">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
                         <label className="text-[11px] font-bold uppercase text-[#18d3ff] flex items-center gap-1.5">
                           <span>🔗 Link Video / Media (Instagram Reel/Post, Google Drive, YouTube)</span>
                         </label>
-                        {proj.link && (
-                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${parseMediaUrl(proj.link).badgeColor}`}>
-                            {parseMediaUrl(proj.link).badgeText}
-                          </span>
-                        )}
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleAutoFillProjectMedia(idx, proj.link || '')}
+                            disabled={!proj.link}
+                            className="text-[10px] font-bold px-2.5 py-1 rounded-lg bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white flex items-center gap-1 shadow-sm transition-all disabled:opacity-40"
+                            title="Ambil otomatis judul, kategori, deskripsi, dan embed player dari link"
+                          >
+                            <span>⚡ Auto-Isi Info & Deskripsi</span>
+                          </button>
+                          {proj.link && (
+                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${parseMediaUrl(proj.link).badgeColor}`}>
+                              {parseMediaUrl(proj.link).badgeText}
+                            </span>
+                          )}
+                        </div>
                       </div>
                       <input
                         type="text"
@@ -2151,8 +2196,8 @@ export default function AdminPage() {
                         }}
                         className="w-full bg-black/60 border border-white/20 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-[#18d3ff] font-mono"
                       />
-                      <p className="text-[10px] text-white/40">
-                        ⚡ Cukup paste link Instagram atau Google Drive, video otomatis ter-embed dan pengunjung dapat menonton langsung di website atau membukanya di aplikasi.
+                      <p className="text-[10px] text-white/50">
+                        ⚡ Cukup paste link Instagram atau Google Drive, lalu klik <span className="text-[#18d3ff] font-bold">&quot;Auto-Isi Info &amp; Deskripsi&quot;</span> agar deskripsi dan pemutar video otomatis terpasang tanpa perlu ketik manual.
                       </p>
                     </div>
                   </div>
