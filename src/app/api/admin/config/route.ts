@@ -16,7 +16,7 @@ const NO_CACHE_HEADERS = {
 
 export async function GET() {
   try {
-    // 1. If GITHUB_TOKEN is present, fetch the absolute latest live state from GitHub API
+    // 1. If GITHUB_TOKEN is present, fetch the absolute latest live state from GitHub Cloud
     if (GITHUB_TOKEN) {
       try {
         const ghRes = await fetch(
@@ -33,18 +33,56 @@ export async function GET() {
             cache: 'no-store'
           }
         );
+
         if (ghRes.ok) {
           const ghData = await ghRes.json();
-          if (ghData.content) {
+          let parsedData: any = null;
+
+          // GitHub API contents returns base64 content for files <= 1MB
+          if (ghData.content && ghData.content.trim().length > 0) {
             const decoded = Buffer.from(ghData.content, 'base64').toString('utf-8');
-            const parsed = JSON.parse(decoded);
+            parsedData = JSON.parse(decoded);
+          } else if (ghData.download_url) {
+            // For files > 1MB, GitHub omits content and provides download_url
+            const rawRes = await fetch(`${ghData.download_url}?_t=${Date.now()}`, {
+              headers: {
+                Authorization: `Bearer ${GITHUB_TOKEN}`,
+                'User-Agent': 'KZN-Visuals-Admin'
+              },
+              cache: 'no-store'
+            });
+            if (rawRes.ok) {
+              parsedData = await rawRes.json();
+            }
+          }
+
+          if (parsedData) {
             return NextResponse.json(
-              { success: true, data: parsed, source: 'github', sha: ghData.sha },
+              { success: true, data: parsedData, source: 'github', sha: ghData.sha },
               { headers: NO_CACHE_HEADERS }
             );
           }
         } else {
-          console.warn('GitHub API GET contents non-ok status:', ghRes.status);
+          console.warn('GitHub API contents endpoint returned status:', ghRes.status);
+        }
+
+        // Direct raw fallback from raw.githubusercontent.com
+        const rawFallbackRes = await fetch(
+          `https://raw.githubusercontent.com/${GITHUB_REPO}/main/src/data/portfolio-config.json?_t=${Date.now()}`,
+          {
+            headers: {
+              Authorization: `Bearer ${GITHUB_TOKEN}`,
+              'User-Agent': 'KZN-Visuals-Admin'
+            },
+            cache: 'no-store'
+          }
+        );
+        if (rawFallbackRes.ok) {
+          const parsedData = await rawFallbackRes.json();
+          return NextResponse.json(
+            { success: true, data: parsedData, source: 'github-raw' },
+            { headers: NO_CACHE_HEADERS }
+          );
         }
       } catch (ghErr) {
         console.warn('GitHub API fetch failed, falling back to local file:', ghErr);
